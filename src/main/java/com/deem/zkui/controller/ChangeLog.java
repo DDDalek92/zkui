@@ -52,6 +52,7 @@ public class ChangeLog extends HttpServlet {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
             Dao dao = new Dao(globalProps);
             Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("historyLimit", dao.getHistoryLimit());
             List<History> historyLst = dao.fetchHistoryRecords();
             templateParam.put("historyLst", historyLst);
             templateParam.put("historyNode", "");
@@ -74,11 +75,13 @@ public class ChangeLog extends HttpServlet {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
             Dao dao = new Dao(globalProps);
             Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("historyLimit", dao.getHistoryLimit());
             String action = request.getParameter("action");
             List<History> historyLst;
-            if (action.equals("showhistory")) {
+            if ("showhistory".equals(action)) {
 
                 String historyNode = request.getParameter("historyNode");
+                if (historyNode == null) historyNode = "";
                 historyLst = dao.fetchHistoryRecordsByNode("%" + historyNode + "%");
                 templateParam.put("historyLst", historyLst);
                 templateParam.put("historyNode", historyNode);
