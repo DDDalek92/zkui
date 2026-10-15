@@ -17,6 +17,10 @@
     </properties>
     
     <dependencies>
+        <!-- Isolated migration rehearsal only; not packaged with the application. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>13.10.0</version><scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.unboundid</groupId>
             <artifactId>unboundid-ldapsdk</artifactId>
@@ -135,6 +139,10 @@
                                 <type>jar</type>
                                 <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory>
                                 <destFileName>h2-candidate.jar</destFileName>
+                            </artifactItem><artifactItem>
+                                <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>4.2.0</version><type>jar</type>
+                                <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory>
+                                <destFileName>flyway-bridge.jar</destFileName>
                             </artifactItem></artifactItems>
                         </configuration>
                     </execution>
@@ -155,6 +163,7 @@
                 <configuration>
                     <failIfNoTests>true</failIfNoTests>
                     <systemPropertyVariables>
+                        <zkui.migration.bridge.jar>${project.build.directory}/migration-drivers/flyway-bridge.jar</zkui.migration.bridge.jar>
                         <zkui.migration.h2.jar>${project.build.directory}/migration-drivers/h2-candidate.jar</zkui.migration.h2.jar>
                         <zkui.test.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</zkui.test.jar>
                         <zkui.test.config>${project.basedir}/config.cfg</zkui.test.config>

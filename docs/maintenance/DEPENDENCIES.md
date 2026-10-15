@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> 后续更新：Fork #23已合并。启动迁移失败/历史列不可读时停止HTTP启动，显式启用旧Flyway校验；历史写入失败明确返回503并提示先核对已执行的ZK变更。见DATABASE_READINESS.md及PR #23的105项/三平台CI。下文关于原先“吞错继续”的描述为历史基线，不再代表当前策略。驱动/Flyway跨版本迁移仍未放行。
+
 2026-10-15。依赖清单由固定工具 `org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree` 实取，见 DEPENDENCY_TREE.txt；不等于 CVE 扫描。
 
 已实现阶段（Fork PR #16）：SLF4J 1.7.36、显式 reload4j 1.2.27，排除 ZK 传递的 Log4j 1/旧绑定；Commons FileUpload 1.6.0、512字节part头上限，原有32parts/1MiB/2MiB等限制仍有效。组装包检查及86项Java回归通过。日志格式兼容现有 log4j.properties，不使用网络Appender。
