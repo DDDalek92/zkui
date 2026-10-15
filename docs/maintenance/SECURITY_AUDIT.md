@@ -1,10 +1,10 @@
-# ZKUI 初步安全审计（待动态验证）
+# ZKUI 安全审计与修复跟踪
 
-> 来源：Fork `master` 基线 `1b3e7c1` 静态代码审查，2026-10-15。**这是待验证风险清单，不是已证实漏洞或 CVE 报告。** 不应直接将当前版本暴露到公网。
+> 来源：Fork `master` 基线 `1b3e7c1` 静态代码审查，2026-10-15。**SEC-01 已在隔离环境动态复现并修复；其余项仍是待验证风险，不是 CVE 报告。** 不应直接将当前版本暴露到公网。
 
 | ID | 优先级 | 静态发现与证据 | 建议的验证及处置 |
 | --- | --- | --- | --- |
-| SEC-01 | P0 | [`AuthFilter.java`](../../src/main/java/com/deem/zkui/filter/AuthFilter.java) 只检查登录态；[`Import.java`](../../src/main/java/com/deem/zkui/controller/Import.java) 的 `doPost` 无 ADMIN 角色校验，与 [`Home.java`](../../src/main/java/com/deem/zkui/controller/Home.java) 中写操作的校验不一致 | 使用 USER 角色尝试导入并验证 ZooKeeper 状态；若允许写入，添加服务端授权并禁止越权 |
+| SEC-01 | P0（已修复） | [`AuthFilter.java`](../../src/main/java/com/deem/zkui/filter/AuthFilter.java) 只检查登录态；[`Import.java`](../../src/main/java/com/deem/zkui/controller/Import.java) 的 `doPost` 无 ADMIN 角色校验，与 [`Home.java`](../../src/main/java/com/deem/zkui/controller/Home.java) 中写操作的校验不一致 | 已复现 USER/未知角色可写入。`Import.doPost` 入口校验 ADMIN，在解析上传、创建 Dao、获取 URL 前返回 403。6 项真实 JAR 回归通过，见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md) |
 | SEC-02 | P0 | [`RestAccess.java`](../../src/main/java/com/deem/zkui/controller/RestAccess.java) 与 `AuthFilter` 允许匿名访问 `/acd/appconfig`；[`config.cfg`](../../config.cfg) 默认 `blockPwdOverRest=false`，REST 路径会将角色设置成 ADMIN | 验证包含密钥的节点是否被匿名读取；重新设计最小权限策略，默认阻断敏感字段，评估 REST 认证 |
 | SEC-03 | P1 | [`Import.java`](../../src/main/java/com/deem/zkui/controller/Import.java) 将请求构造的地址交给 `new URL(...).openConnection()` | 在隔离环境测试服务端请求伪造（SSRF）路径；限制协议/目的地址并配置超时，考虑禁用远程 URL 导入 |
 | SEC-04 | P1 | [`ZooKeeperUtil.java`](../../src/main/java/com/deem/zkui/utils/ZooKeeperUtil.java) 在节点创建、修改、导入时可输出原始值；`Import` 历史记录可能包含导入行 | 对密钥、令牌、密码以及普通值统一脱敏，避免将原始数据写入日志和持久化历史 |
@@ -22,4 +22,4 @@
 1. 先在隔离环境建立 USER/ADMIN 两组凭据及含模拟敏感数据的测试节点。禁止使用真实生产密码。
 2. 对 SEC-01/02 分别验证“未授权请求被拒绝”和“已授权请求正常”，不以页面按钮隐藏代替服务端权限检查。
 3. 安全变更单独 PR，附复现与修复前后的测试；高风险事项在 CI/功能完成前也可优先处理。
-4. 当前没有扫描结果、CVE 关联或实际利用证据，文档中的“风险”均须经动态验证和依赖审计确认。
+4. 当前没有依赖扫描结果或 CVE 关联；除明确标记已动态验证的项目外，其余风险仍须验证。
