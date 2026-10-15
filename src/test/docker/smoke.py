@@ -18,7 +18,7 @@ for attempt in range(60):
             html = response.read().decode("utf-8")
             assert response.status == 200
             break
-    except (urllib.error.URLError, ConnectionError):
+    except (urllib.error.URLError, ConnectionError, TimeoutError):
         if attempt == 59:
             raise
         time.sleep(0.25)
