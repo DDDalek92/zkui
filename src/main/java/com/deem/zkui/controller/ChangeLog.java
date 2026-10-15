@@ -43,6 +43,10 @@ public class ChangeLog extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (!"ADMIN".equals(request.getSession(false).getAttribute("authRole"))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator role required for history");
+            return;
+        }
         logger.debug("History Get Action!");
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
@@ -61,6 +65,10 @@ public class ChangeLog extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (!"ADMIN".equals(request.getSession(false).getAttribute("authRole"))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator role required for history");
+            return;
+        }
         logger.debug("History Post Action!");
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");

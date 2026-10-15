@@ -50,7 +50,7 @@ public class Monitor extends HttpServlet {
             Map<String, Object> templateParam = new HashMap<>();
             StringBuffer stats = new StringBuffer();
             for (String zkObj : zkServerLst) {
-                stats.append("<br/><hr/><br/>").append("Server: ").append(zkObj).append("<br/><hr/><br/>");
+                stats.append("\n--------------------\n").append("Server: ").append(zkObj).append("\n--------------------\n");
                 String[] monitorZKServer = zkObj.split(":");
                 stats.append(CmdUtil.INSTANCE.executeCmd("stat", monitorZKServer[0], monitorZKServer[1]));
                 stats.append(CmdUtil.INSTANCE.executeCmd("envi", monitorZKServer[0], monitorZKServer[1]));
