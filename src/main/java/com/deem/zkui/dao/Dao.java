@@ -62,6 +62,7 @@ public class Dao {
     public void checkNCreate() {
         try {
             Flyway flyway = new Flyway();
+            flyway.setValidateOnMigrate(true);
             flyway.setDataSource(globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
             //Will wipe db each time. Avoid this in prod.
             if ("dev".equals(globalProps.getProperty("env", "prod"))) {
