@@ -211,3 +211,10 @@ Session and CSRF protection
 ---------------------------
 
 Successful login rotates both the session ID and the CSRF token. Session cookies are HttpOnly and URL-only session IDs are disabled. Every POST (including login, history search and logout) requires the current session's `csrfToken` form field or `X-CSRF-Token` header. Multipart imports also accept a `csrfToken` multipart field. Fetch `/login` before login to obtain the initial cookie and token; fetch `/home` or `/login` with the new cookie after login to obtain the rotated token for later POSTs. Do not put tokens into URLs. GET `/logout` returns 405; use the rendered logout form or a token-protected POST. REST GET requests need no CSRF token.
+
+Import input limits
+-------------------
+
+Imports accept one UTF-8 text file up to 1 MiB, at most 32 multipart parts (including CSRF and controls), a 2 MiB complete multipart request, and at most 10,000 records. All records and paths are checked before any ZooKeeper write. Root/system `/zookeeper` paths are refused. Oversized content returns 413; invalid, unavailable or unapproved input returns 400. The import history stores counts/overwrite intent rather than original values, filenames or URLs. ZooKeeper failures during application can still leave a partially applied batch; this is not a transaction.
+
+Remote import is disabled by default and its UI controls are hidden. Operators may set `remoteImportEnabled=true` and list exact, complete HTTP(S) URLs in `remoteImportAllowedUrls`, separated by `|`. Requests can submit `remoteUrl` or the legacy SCM fields; the resulting complete URL must exactly match the operator's list. Userinfo/fragments, `file:` and other schemes are refused. Redirects are never followed. Responses must be HTTP 200, are capped at 1 MiB, and use 3-second connection/read timeouts plus a 10-second body-read deadline. Only list endpoints whose DNS, content and availability you trust; enabling a URL explicitly grants the application network access to that endpoint, including internal hosts if deliberately listed. Keep the list empty when remote import is unnecessary.
