@@ -135,6 +135,7 @@ final class TestApplication extends ExternalResource {
             reply.status = connection.getResponseCode();
             reply.cookie = connection.getHeaderField("Set-Cookie");
             reply.location = connection.getHeaderField("Location");
+            reply.cacheControl = connection.getHeaderField("Cache-Control");
             InputStream stream = reply.status >= 400 ? connection.getErrorStream() : connection.getInputStream();
             if (stream != null) {
                 try (InputStream in = stream; ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
@@ -178,6 +179,7 @@ final class TestApplication extends ExternalResource {
         int status;
         String cookie;
         String location;
+        String cacheControl;
         String body = "";
     }
 }

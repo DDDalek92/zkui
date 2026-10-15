@@ -1,5 +1,7 @@
 # ZKUI 接管审计：代码基线（初稿）
 
+> 安全修复进度：SEC-01/02 已复现并修复，当前测试为 3 项单元 + 21 项集成；详见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md)。下文仍保留首次审计记录。
+
 > 后续进度：现已补充 JDK 8 真实构建、3 个单元测试、5 个隔离集成测试及 CI 配置，详见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)。下文保留首次静态审计时的状态，不代表这些验证仍未运行。JDK 17 构建已实测在旧 ActiveJDBC 插件处失败。
 
 > 审计日期：2026-10-15。目标仓库：[DDDalek92/zkui](https://github.com/DDDalek92/zkui)；上游：[DeemOpen/zkui](https://github.com/DeemOpen/zkui)。

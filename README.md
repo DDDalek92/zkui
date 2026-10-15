@@ -97,7 +97,13 @@ File uploads and remote URL imports require a logged-in ADMIN. USER and unknown 
 
 REST call
 ====================
-A lot of times you require your shell scripts to be able to read properties from zookeeper. This can now be achieved with a http call. Password are not exposed via rest api for security reasons. The rest call is a read only operation requiring no authentication.
+Shell scripts can read ZooKeeper properties through this read-only HTTP endpoint. **Maintenance change:** REST now requires a login session by default; anonymous requests receive HTTP 401. This also applies to existing configurations that omit the new `allowAnonymousRest` setting.
+
+`blockPwdOverRest=true` is the new default. Password property names containing `pwd`, `password` or `passwd` are masked case-insensitively. Only an authenticated ADMIN with explicit `blockPwdOverRest=false` can read their original values. Missing or invalid settings keep masking enabled; USER and unknown roles never receive ADMIN access through this flag. Responses use `Cache-Control: no-store`.
+
+For scripts migrating from anonymous REST, log in and reuse the session cookie as shown below. An explicit `allowAnonymousRest=true` restores anonymous lookups for compatibility, with password masking enforced even when `blockPwdOverRest=false`. Name-based masking does not detect every secret: tokens and private values under other names can still be exposed. Enable anonymous compatibility only for intentionally public configuration on a trusted network. Host/app/cluster parameters select lookup paths; they do not authorize a caller to a particular host or subtree.
+
+Missing/empty `propNames` returns HTTP 400; an unknown host mapping returns HTTP 404.
 
 Eg:
 http://localhost:9090/acd/appconfig?propNames=foo&host=myhost.com
@@ -112,9 +118,21 @@ app=myapp
 http://localhost:9090/acd/appconfig?propNames=foo&app=myapp&host=myhost.com
 In this case the lookup will happen on lookup path + myapp.
 
-A shell script will call this via
-MY_PROPERTY="$(curl -f -s -S -k "http://localhost:9090/acd/appconfig?propNames=foo&host=`hostname -f`" | cut -d '=' -f 2)"
-echo $MY_PROPERTY
+A shell script can log in with a dedicated USER account and reuse its cookie:
+
+```sh
+# Set ZKUI_URL, ZKUI_USER and ZKUI_PASSWORD in your environment.
+curl --fail --silent --show-error --cookie-jar zkui-cookies.txt \
+  --data-urlencode "username=$ZKUI_USER" \
+  --data-urlencode "password=$ZKUI_PASSWORD" "$ZKUI_URL/login"
+MY_PROPERTY="$(curl --fail --silent --show-error --cookie zkui-cookies.txt \
+  --get --data-urlencode 'propNames=foo' --data-urlencode "host=$(hostname -f)" \
+  "$ZKUI_URL/acd/appconfig" | cut -d '=' -f 2-)"
+echo "$MY_PROPERTY"
+rm -f zkui-cookies.txt
+```
+
+A cookie is only usable after successful login; expired sessions require login again. Protect the cookie file as a credential. HTTP Basic authentication is not implemented by this endpoint.
 
 Standardization
 ====================

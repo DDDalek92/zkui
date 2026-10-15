@@ -31,6 +31,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -45,13 +46,17 @@ public class RestAccess extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.debug("Rest Action!");
+        response.setHeader("Cache-Control", "no-store");
         ZooKeeper zk = null;
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
             String zkServer = globalProps.getProperty("zkServer");
             String[] zkServerLst = zkServer.split(",");
             String accessRole = ZooKeeperUtil.ROLE_USER;
-            if ((globalProps.getProperty("blockPwdOverRest") != null) && (Boolean.valueOf(globalProps.getProperty("blockPwdOverRest")) == Boolean.FALSE)) {
+            HttpSession session = request.getSession(false);
+            if (session != null && session.getAttribute("authName") != null
+                    && ZooKeeperUtil.ROLE_ADMIN.equals(session.getAttribute("authRole"))
+                    && "false".equalsIgnoreCase(globalProps.getProperty("blockPwdOverRest", "true").trim())) {
                 accessRole = ZooKeeperUtil.ROLE_ADMIN;
             }
             StringBuilder resultOut = new StringBuilder();
@@ -59,6 +64,16 @@ public class RestAccess extends HttpServlet {
             String appName = request.getParameter("app");
             String hostName = request.getParameter("host");
             String[] propNames = request.getParameterValues("propNames");
+            if (propNames == null || propNames.length == 0) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "propNames is required");
+                return;
+            }
+            for (String propName : propNames) {
+                if (propName.trim().isEmpty()) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Property names must not be empty");
+                    return;
+                }
+            }
             String propValue = "";
             LeafBean propertyNode;
 
@@ -75,6 +90,10 @@ public class RestAccess extends HttpServlet {
                 hostsNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, ZooKeeperUtil.ZK_HOSTS, ZooKeeperUtil.ZK_HOSTS + "/" + hostName, hostName, accessRole);
             }
 
+            if (hostsNode == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Host mapping not found");
+                return;
+            }
             String lookupPath = hostsNode.getStrValue();
             logger.trace("Root Path:" + lookupPath);
             String[] pathElements = lookupPath.split("/");

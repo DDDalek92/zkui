@@ -12,7 +12,7 @@
 
 运行：Linux/macOS `./mvnw clean verify`；Windows PowerShell `.\mvnw.cmd clean verify`。JDK 8 须自行安装，Wrapper 只负责 Maven。
 
-隔离：测试不接受外部 ZooKeeper 地址；嵌入式服务只绑定 `127.0.0.1`、随机端口，数据库和配置位于临时目录。测试进程在 finally 中退出。HTTP 用例使用模拟随机密码。已新增 `ImportAuthorizationIT` 的 6 项 HTTP 权限回归，覆盖 USER/未知角色拒绝、匿名跳转、解析及远程取文件前拒绝、ADMIN 正常操作。当前共 3 个单元测试、11 个集成测试。仍没有 MySQL、Digest/LDAP 或 CSRF 测试，不能据此宣称权限安全已验收。
+隔离：测试不接受外部 ZooKeeper 地址；嵌入式服务只绑定 `127.0.0.1`、随机端口，数据库和配置位于临时目录。测试进程在 finally 中退出。HTTP 用例使用模拟随机密码。已新增 `ImportAuthorizationIT` 的 6 项 HTTP 权限回归，覆盖 USER/未知角色拒绝、匿名跳转、解析及远程取文件前拒绝、ADMIN 正常操作。另有 `RestAccessIT` 的 10 项回归，覆盖默认/缺失/非法/旧配置、角色、匿名兼容、混合大小写密码字段、参数错误及精确路由。当前共 3 个单元测试、21 个集成测试。仍没有 MySQL、Digest/LDAP 或 CSRF 测试，不能据此宣称权限安全已验收。
 
 ## 0. 基线采集
 
