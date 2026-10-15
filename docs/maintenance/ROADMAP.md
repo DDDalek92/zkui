@@ -70,6 +70,8 @@
 9. 验证客户端 ACL/Digest 及 LDAP，再处理 #50/#107（M3）。
 10. 在历史数据副本上规划 H2/Jetty/驱动升级（M4）。
 
+详细执行入口：[TASKS.md](TASKS.md)，包含全部 14 个上游 PR、46 个 Issue 的逐项状态。
+
 ## 工作协议
 
 每项用 `maintenance/<topic>` 或 `fix/<topic>` 分支单独提交 → CI → 审阅 → 合并到受保护的 `master`。绝不直接批量关闭原作者仓库 Issue；对作者贡献保留来源。动态测试未完成的结论标记“待验证”。

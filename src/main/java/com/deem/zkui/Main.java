@@ -21,6 +21,8 @@ import com.deem.zkui.dao.Dao;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
+import java.util.Collections;
+import javax.servlet.SessionTrackingMode;
 import java.util.Properties;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.http.HttpVersion;
@@ -65,6 +67,8 @@ public class Main {
 
         WebAppContext servletContextHandler = new WebAppContext();
         servletContextHandler.setContextPath("/");
+        servletContextHandler.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
+        servletContextHandler.getSessionHandler().setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
         servletContextHandler.setResourceBase("src/main/resources/" + webFolder);
         ClassList clist = ClassList.setServerDefault(server);
         clist.addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
