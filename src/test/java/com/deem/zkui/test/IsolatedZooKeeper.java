@@ -15,10 +15,14 @@ final class IsolatedZooKeeper implements AutoCloseable {
     private final NIOServerCnxnFactory factory;
 
     IsolatedZooKeeper(File directory) throws Exception {
+        this(directory, 0);
+    }
+
+    IsolatedZooKeeper(File directory, int port) throws Exception {
         server = new ZooKeeperServer(directory, directory, 2000);
         factory = new NIOServerCnxnFactory();
         try {
-            factory.configure(new InetSocketAddress("127.0.0.1", 0), 20);
+            factory.configure(new InetSocketAddress("127.0.0.1", port), 20);
             factory.startup(server);
         } catch (Exception e) {
             close();
@@ -42,6 +46,14 @@ final class IsolatedZooKeeper implements AutoCloseable {
             throw new IllegalStateException("Isolated ZooKeeper connection timed out");
         }
         return client;
+    }
+
+    java.util.Set<Long> sessions() {
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        for (org.apache.zookeeper.server.ServerCnxn connection : factory.getConnections()) {
+            if (connection.getSessionId() != 0) ids.add(connection.getSessionId());
+        }
+        return ids;
     }
 
     @Override

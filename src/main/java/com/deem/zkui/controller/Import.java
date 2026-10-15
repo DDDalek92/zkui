@@ -111,8 +111,7 @@ public class Import extends HttpServlet {
             }
             if (records.isEmpty()) throw new IOException("Import contains no records");
             boolean overwrite = Boolean.parseBoolean(fields.getOrDefault("scmOverwrite", "false"));
-            ZooKeeperUtil.INSTANCE.importData(records, overwrite, ServletUtil.INSTANCE.getZookeeper(
-                    request, response, props.getProperty("zkServer"), props));
+            ZooKeeperUtil.INSTANCE.importData(records, overwrite, ServletUtil.INSTANCE.getZookeeper(request, props));
             // Values, filenames and URLs can contain secrets or markup; keep only a summary.
             new Dao(props).insertHistory((String) session.getAttribute("authName"), request.getRemoteAddr(),
                     "Imported " + records.size() + " entries; overwrite=" + overwrite);
@@ -127,6 +126,8 @@ public class Import extends HttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid import upload");
             }
+        } catch (ServletUtil.ZooKeeperUnavailableException ex) {
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "ZooKeeper is unavailable");
         } catch (FileUploadException | IOException | IllegalArgumentException ex) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid, unavailable or unapproved import input");
         } catch (InterruptedException ex) {
