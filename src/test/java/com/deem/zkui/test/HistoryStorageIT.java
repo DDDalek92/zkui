@@ -81,7 +81,8 @@ public class HistoryStorageIT {
         try { dao.fetchHistoryRecords(); fail("Missing table must fail"); }
         catch (IllegalStateException expected) { assertTrue(expected.getCause() instanceof SQLException); }
         dao.assertReleased();
-        dao.insertHistory("test", "127.0.0.1", "fails-on-missing-table");
+        try { dao.insertHistory("test", "127.0.0.1", "fails-on-missing-table"); fail("Failed audit must be reported"); }
+        catch (Dao.HistoryWriteException expected) { assertNull(expected.getCause()); }
         dao.assertReleased();
         TrackingDao recovery = new TrackingDao(config());
         recovery.checkNCreate();

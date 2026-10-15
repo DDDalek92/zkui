@@ -126,6 +126,10 @@ public class Import extends HttpServlet {
                     "Imported " + records.size() + " entries; overwrite=" + overwrite);
             session.setAttribute("flashMsg", "Import Completed!");
             response.sendRedirect(request.getContextPath() + "/home");
+        } catch (Dao.HistoryWriteException ex) {
+            session.removeAttribute("flashMsg");
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                    "History write failed. ZooKeeper changes may already be applied; inspect state before retrying.");
         } catch (FileUploadBase.SizeLimitExceededException | FileUploadBase.FileSizeLimitExceededException | ImportSafety.TooLargeException ex) {
             response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Import exceeds input limits");
         } catch (FileUploadBase.FileUploadIOException ex) {
