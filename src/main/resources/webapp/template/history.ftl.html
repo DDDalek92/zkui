@@ -53,11 +53,11 @@
                     <tbody>
                         <#list historyLst as history>
                         <tr>
-                            <td>${history.id}</td>
-                            <td>${history.changeDate}</td>
-                            <td>${history.changeUser?html}</td>
-                            <td>${history.changeIp?html}</td>
-                            <td>${history.changeSummary?html}</td>
+                            <td>${history.id?c}</td>
+                            <td>${history.changeDate!""}</td>
+                            <td>${(history.changeUser!"")?html}</td>
+                            <td>${(history.changeIp!"")?html}</td>
+                            <td>${(history.changeSummary!"")?html}</td>
                         </tr>
                         </#list>
                     </tbody>

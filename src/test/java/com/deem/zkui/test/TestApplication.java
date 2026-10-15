@@ -211,6 +211,22 @@ final class TestApplication extends ExternalResource {
         }
     }
 
+    void seedHistoryRow(long id, String user, java.sql.Timestamp date, String summary, String ip) throws Exception {
+        Properties config = new Properties();
+        try (InputStream in = new FileInputStream(System.getProperty("zkui.test.config"))) { config.load(in); }
+        try (java.sql.Connection connection = java.sql.DriverManager.getConnection(historyUrl,
+                config.getProperty("jdbcUser"), config.getProperty("jdbcPwd"));
+                java.sql.PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO histories (ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP) VALUES (?, ?, ?, ?, ?)")) {
+            statement.setLong(1, id);
+            statement.setString(2, user);
+            statement.setTimestamp(3, date);
+            statement.setString(4, summary);
+            statement.setString(5, ip);
+            if (statement.executeUpdate() != 1) throw new AssertionError("Synthetic history fixture was not inserted");
+        }
+    }
+
     String zkAddress() { return server.address(); }
 
     java.util.Set<Long> sessions() { return server.sessions(); }
