@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 
 /** Render real templates for the browser checks, with isolated, synthetic data. */
 public class BrowserPagesIT {
-    @ClassRule public static TestApplication app = new TestApplication("browser-pages");
+    @ClassRule public static TestApplication app = new TestApplication("browser-pages", "baseURL", "/zkui/");
 
     @Test public void renderBrowserFixturesFromPackagedApplication() throws Exception {
         app.create("/appconfig/sort", "parent\n  中文");

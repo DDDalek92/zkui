@@ -18,15 +18,17 @@ async function pageFor(name) {
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     assert.equal(url.origin, 'http://zkui.test', 'Page must work without external resources');
-    if (url.pathname === '/home' || url.pathname === '/search') {
+    assert.ok(url.pathname.startsWith('/zkui/'), 'Assets and navigation must keep the context prefix');
+    const pathname = url.pathname.substring('/zkui'.length);
+    if (pathname === '/home' || pathname === '/search') {
       await route.fulfill({ contentType: 'text/html; charset=UTF-8', body: await fs.readFile('target/browser-pages/' + name + '.html', 'utf8') });
     } else {
-      const file = path.resolve(web, '.' + url.pathname);
+      const file = path.resolve(web, '.' + pathname);
       assert.ok(file.startsWith(web + path.sep));
       await route.fulfill({ path: file });
     }
   });
-  await page.goto('http://zkui.test/' + (name === 'search' ? 'search' : 'home'));
+  await page.goto('http://zkui.test/zkui/' + (name === 'search' ? 'search' : 'home'));
   return { page, failures };
 }
 

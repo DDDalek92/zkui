@@ -55,6 +55,8 @@ final class TestApplication extends ExternalResource {
                 if (overrides[i + 1] == null) config.remove(overrides[i]);
                 else config.setProperty(overrides[i], overrides[i + 1]);
             }
+            String context = config.getProperty("baseURL", "/");
+            if (!"/".equals(context)) base += context.endsWith("/") ? context.substring(0, context.length() - 1) : context;
             config.setProperty("serverPort", Integer.toString(port));
             config.setProperty("zkServer", server.address());
             if (Boolean.parseBoolean(config.getProperty("testEnsemble", "false"))

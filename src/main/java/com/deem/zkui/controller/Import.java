@@ -125,7 +125,7 @@ public class Import extends HttpServlet {
             new Dao(props).insertHistory((String) session.getAttribute("authName"), request.getRemoteAddr(),
                     "Imported " + records.size() + " entries; overwrite=" + overwrite);
             session.setAttribute("flashMsg", "Import Completed!");
-            response.sendRedirect("/home");
+            response.sendRedirect(request.getContextPath() + "/home");
         } catch (FileUploadBase.SizeLimitExceededException | FileUploadBase.FileSizeLimitExceededException | ImportSafety.TooLargeException ex) {
             response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Import exceeds input limits");
         } catch (FileUploadBase.FileUploadIOException ex) {

@@ -54,6 +54,7 @@ public enum ServletUtil {
                 }
                 Properties props = (Properties) request.getServletContext().getAttribute("globalProps");
                 templateParam.put("zkHostsPath", new PathPolicy(props).hosts(props));
+                templateParam.put("contextPath", request.getContextPath());
                 templateParam.put("authName", session.getAttribute("authName"));
                 templateParam.put("authRole", session.getAttribute("authRole"));
                 templateParam.put("csrfToken", CsrfUtil.token(session));
@@ -84,6 +85,7 @@ public enum ServletUtil {
             Configuration config = new Configuration();
             config.setClassForTemplateLoading(request.getServletContext().getClass(), "/");
             template = config.getTemplate("/webapp/template/error.ftl.html");
+            templateParam.put("contextPath", request.getContextPath());
             templateParam.put("error", error);
             template.process(templateParam, response.getWriter());
         } catch (TemplateException | IOException ex) {

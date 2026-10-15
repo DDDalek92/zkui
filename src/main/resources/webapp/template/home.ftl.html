@@ -19,7 +19,7 @@
 <@main.page>
 
 <div class="container">
-    <form method="post" action="/home">
+    <form method="post" action="${contextPath?html}/home">
         <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
         <!--Bread crumb-->
         <div class="row-fluid">
@@ -32,7 +32,7 @@
 
                 <ul class="breadcrumb">
                     <#list breadCrumbs as crumb>
-                    <li><a href="/home?zkPath=${crumb.path?url('UTF-8')?html}" class="breadcrumb-select">${crumb.name?html}</a></li>
+                    <li><a href="${contextPath?html}/home?zkPath=${crumb.path?url('UTF-8')?html}" class="breadcrumb-select">${crumb.name?html}</a></li>
                     </#list>
                 </ul>
 
@@ -42,12 +42,12 @@
         <div class="row-fluid">
             <div class="col-md-3 well pre-scrollable scroll-pane" >
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${parentPath?url('UTF-8')?html}"><..></a>
+                <a href="${contextPath?html}/home?zkPath=${parentPath?url('UTF-8')?html}"><..></a>
                 <br/>
                 <#list nodeLst as node>
                 <input type="checkbox" name="nodeChkGroup" value="${currentPath?html}${node?html}"/>
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${(currentPath + node)?url('UTF-8')?html}">${node?html}</a>
+                <a href="${contextPath?html}/home?zkPath=${(currentPath + node)?url('UTF-8')?html}">${node?html}</a>
                 <br/>
                 </#list>
 
@@ -83,7 +83,7 @@
                                 </#if>
                             </td>
                             <#if navigate?? && navigate == 'true'>
-                            <td><a href="/home?zkPath=${leaf.strValue?url('UTF-8')?html}">${leaf.strValue?html}</a></td>
+                            <td><a href="${contextPath?html}/home?zkPath=${leaf.strValue?url('UTF-8')?html}">${leaf.strValue?html}</a></td>
                             <#else>
                             <td>
                                 <#if leaf.value??>
@@ -207,7 +207,7 @@
     <div class="row-fluid">
         <div class="col-md-12">
             <!-- Import Modal -->
-            <form id="importForm" method="post" action="/import" enctype="multipart/form-data">
+            <form id="importForm" method="post" action="${contextPath?html}/import" enctype="multipart/form-data">
         <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
                 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">

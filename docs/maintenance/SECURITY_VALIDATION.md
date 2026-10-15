@@ -111,3 +111,9 @@ historyLimit默认50且校验1–1000，所有/筛选查询同限额，标题显
 ## 上传头边界与日志依赖（#105部分重写）
 
 FileUpload1.6.0（Java8兼容）配置512字节part头上限。新增真实HTTP回归在1.4上返回302并接受1024字节文件名头，修复后返回413且无节点写入；其余大小/parts/UTF-8/权限/CSRF回归保留。SLF4J1.7.36+reload4j1.2.27，排除ZooKeeper传递Log4j1和旧绑定，保留现有log4j.properties格式；组装JAR元数据验证仅选定绑定，既有敏感日志回归继续通过。完整Java8 verify86项（14单元+72集成）通过。依赖树用maven-dependency-plugin3.8.1实取，见DEPENDENCY_TREE.txt；这是依赖清单，不是漏洞扫描通过报告。Jetty/H2/MySQL/ZK等老组件仍需后续迁移，不宣称已完成安全发行验收。
+
+## 子路径部署（Issue #14/#100）
+
+baseURL配置规范化为本地路径前缀（默认/，支持尾斜杠）；拒绝完整URL、双斜杠、点段、转义及换行。Servlet和静态资源共享上下文；入口/旧index路由、所有控制器重定向、模板链接/表单/JS/CSS/图片均保留前缀。Session Cookie使用上下文路径，AuthFilter仍按Servlet相对路径做精确认证/CSRF检查。
+
+独立旧代码baseURL=/zkui/时/zkui/login返回302并跳到根/login，未在配置前缀提供登录页；修复后ContextPathIT验证登录/入口/静态资源、Cookie Path+HttpOnly、上下文外/home为404、CRUD/中文导入/导出/历史/REST、CSRF拒绝及退出POST。新增配置单元测试拒绝非法前缀。完整Java8 verify90项（15单元+75集成）通过。既有3组Chrome排序检查的真实JAR页面改为/zkui前缀，并要求每个资源请求都保留前缀；最终浏览器结果以CI为准。nginx示例保留相同前缀，未运行真实nginx。

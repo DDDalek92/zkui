@@ -165,7 +165,7 @@ public class Home extends HttpServlet {
                         request.getSession().setAttribute("flashMsg", "Node created!");
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Creating node: " + currentPath + newNode);
                     }
-                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Save Property":
                     if (!newProperty.equals("") && !currentPath.equals("") && authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
@@ -177,7 +177,7 @@ public class Home extends HttpServlet {
                         }
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Saving Property: " + currentPath + "," + newProperty);
                     }
-                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Update Property":
                     if (!newProperty.equals("") && !currentPath.equals("") && authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
@@ -189,7 +189,7 @@ public class Home extends HttpServlet {
                         }
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Updating Property: " + currentPath + "," + newProperty);
                     }
-                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Search":
                     Set<LeafBean> searchResult = ZooKeeperUtil.INSTANCE.searchTree(searchStr, displayPath, ServletUtil.INSTANCE.getZookeeper(request, globalProps), authRole);
@@ -217,10 +217,10 @@ public class Home extends HttpServlet {
                         }
 
                     }
-                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
+                    response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 default:
-                    response.sendRedirect("/home");
+                    response.sendRedirect(request.getContextPath() + "/home");
             }
 
         } catch (KeeperException.NoAuthException ex) {

@@ -20,14 +20,14 @@
     <div class="container">
 
         <div class="navbar-header">
-            <a href="/home"><img src="images/zookeeper.png"/></a>
+            <a href="${contextPath?html}/home"><img src="${contextPath?html}/images/zookeeper.png"/></a>
             &nbsp;&nbsp;
         </div>
 
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <#if displayPath??>
-                <li><a href="/home?zkPath=${zkHostsPath?url('UTF-8')?html}&amp;navigate=true">Hosts</a></li>
+                <li><a href="${contextPath?html}/home?zkPath=${zkHostsPath?url('UTF-8')?html}&amp;navigate=true">Hosts</a></li>
 
                 <#if authRole?? && authRole == 'ADMIN' >
                 <li><a href="#" data-toggle="modal" data-target="#addNodeModal">Add Node</a></li>
@@ -36,14 +36,14 @@
                 <li><a href="#" data-toggle="modal" data-target="#importModal">Import</a></li>
                 </#if>
 
-                <li><a href="/export?zkPath=${displayPath?url('UTF-8')?html}" target="_blank">Export</a></li>
+                <li><a href="${contextPath?html}/export?zkPath=${displayPath?url('UTF-8')?html}" target="_blank">Export</a></li>
                 <li><a href="#" data-toggle="modal" data-target="#searchModal">Search</a></li>
-                <#if authRole?? && authRole == 'ADMIN'><li><a href="/history">History</a></li></#if>
-                <li><a href="/monitor">Monitor</a></li>
+                <#if authRole?? && authRole == 'ADMIN'><li><a href="${contextPath?html}/history">History</a></li></#if>
+                <li><a href="${contextPath?html}/monitor">Monitor</a></li>
 
                 <#else>
-                <#if authRole?? && authRole == 'ADMIN'><li><a href="/history">History</a></li></#if>
-                <li><a href="/monitor">Monitor</a></li>
+                <#if authRole?? && authRole == 'ADMIN'><li><a href="${contextPath?html}/history">History</a></li></#if>
+                <li><a href="${contextPath?html}/monitor">Monitor</a></li>
                 </#if>
 
             </ul>
@@ -53,14 +53,14 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <span class="glyphicon glyphicon-user"></span>&nbsp;${authName?html}&nbsp;<b class="caret"></b>&nbsp;</a>
                     <ul class="dropdown-menu">
-                        <li><form method="post" action="/logout">
+                        <li><form method="post" action="${contextPath?html}/logout">
                             <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
                             <button type="submit" class="btn btn-link">Logout</button>
                         </form></li>
                     </ul>
                 </li>
                 <#else>
-                <li><a href="/login">Login</a></li>
+                <li><a href="${contextPath?html}/login">Login</a></li>
                 </#if>
 
             </ul>

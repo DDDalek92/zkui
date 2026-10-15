@@ -279,3 +279,17 @@ Use the Name/Value headings on the home table or Path/Name/Value on search resul
 History configuration
 ---------------------
 `historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Never set `env=dev` against a database you want to preserve: that explicit legacy mode cleans it before migration. History connections now close even after database errors. Property values retain their original whitespace.
+
+Reverse proxy and context path
+------------------------------
+Set `baseURL=/zkui/` to serve zkui under `/zkui` (default `/`). It is a local path prefix, not a full external URL. Login/logout redirects, cookie paths, forms and bundled assets use it. Preserve the same prefix at the reverse proxy; a minimal nginx location is:
+
+```nginx
+location /zkui/ {
+    proxy_pass http://127.0.0.1:9090;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+The `proxy_pass` here has no trailing URI slash, so nginx keeps `/zkui/` upstream. Visit `/zkui/`; do not strip the prefix upstream while configuring zkui with it. Only enable `X-Forwarded-For=true` when requests reach zkui exclusively through a trusted proxy. Direct application/context behavior is tested; deployment-specific nginx/TLS settings still require verification.

@@ -37,7 +37,7 @@ public class Logout extends HttpServlet {
         logger.debug("Logout Action!");
         javax.servlet.http.HttpSession session = request.getSession(false);
         if (session != null) session.invalidate();
-        response.sendRedirect("/login");
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 
 }
