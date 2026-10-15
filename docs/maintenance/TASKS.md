@@ -63,7 +63,7 @@
 | [#111](https://github.com/DeemOpen/zkui/issues/111) | Unable to find image 'zkui:latest' locally | 待处理 |
 | [#108](https://github.com/DeemOpen/zkui/issues/108) | Does zkui support ipv4/ipv6? | 待处理 |
 | [#106](https://github.com/DeemOpen/zkui/issues/106) | LDAP 无法正常登录 | not-reproducible，原 Issue 无正文和环境，不能声称已复现；排查说明见 Fork PR #11 |
-| [#100](https://github.com/DeemOpen/zkui/issues/100) | How to change base url | 待处理 |
+| [#100](https://github.com/DeemOpen/zkui/issues/100) | How to change base url | fixed，Fork PR #17，ContextPathIT/带前缀浏览器页面 |
 | [#99](https://github.com/DeemOpen/zkui/issues/99) | How to config the defaultAcl field in config.cfg file? | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#98](https://github.com/DeemOpen/zkui/issues/98) | ERROR ServletUtil:76 - Error :KeeperErrorCode = ConnectionLoss for / | 待处理 |
 | [#95](https://github.com/DeemOpen/zkui/issues/95) | 没有看见初始化表结构的sql | 待处理 |
@@ -103,5 +103,5 @@
 | [#29](https://github.com/DeemOpen/zkui/issues/29) | 左边菜单栏应该增加属性显示，这样比较直观。 | 待处理 |
 | [#28](https://github.com/DeemOpen/zkui/issues/28) | ldap authentication - DN is not constructed correctly | fixed，可配置并转义 DN 模板；Fork PR #11，真实 LDAP 绑定测试 |
 | [#18](https://github.com/DeemOpen/zkui/issues/18) | Kerberos implementation | 待处理 |
-| [#14](https://github.com/DeemOpen/zkui/issues/14) | How do I run this behind an nginx proxy? | 待处理 |
+| [#14](https://github.com/DeemOpen/zkui/issues/14) | How do I run this behind an nginx proxy? | fixed（应用子路径），Fork PR #17；nginx配置文档，未运行真实nginx |
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | 待处理 |

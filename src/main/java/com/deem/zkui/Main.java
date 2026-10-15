@@ -59,6 +59,8 @@ public class Main {
             System.exit(1);
         }
 
+        String contextPath = com.deem.zkui.utils.WebPaths.context(globalProps.getProperty("baseURL", "/"));
+        String urlPrefix = "/".equals(contextPath) ? "" : contextPath;
         new com.deem.zkui.utils.PathPolicy(globalProps).hosts(globalProps);
         com.deem.zkui.utils.ZkClientAuth.validate(globalProps);
         com.deem.zkui.utils.ZooKeeperUtil.INSTANCE.setDefaultAcl(globalProps.getProperty("defaultAcl"));
@@ -69,7 +71,7 @@ public class Main {
         Server server = new Server();
 
         WebAppContext servletContextHandler = new WebAppContext();
-        servletContextHandler.setContextPath("/");
+        servletContextHandler.setContextPath(contextPath);
         servletContextHandler.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
         servletContextHandler.getSessionHandler().setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
         servletContextHandler.setResourceBase("src/main/resources/" + webFolder);
@@ -86,8 +88,23 @@ public class Main {
         staticResourceHandler.setBaseResource(staticResources);
         staticResourceHandler.setWelcomeFiles(new String[]{"html/index.html"});
 
+        org.eclipse.jetty.server.handler.ContextHandler staticContext = new org.eclipse.jetty.server.handler.ContextHandler();
+        staticContext.setContextPath(contextPath);
+        staticContext.setHandler(staticResourceHandler);
+        Handler indexRedirect = new org.eclipse.jetty.server.handler.AbstractHandler() {
+            @Override public void handle(String target, org.eclipse.jetty.server.Request baseRequest,
+                    javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response)
+                    throws java.io.IOException {
+                String uri = request.getRequestURI();
+                if (uri.equals(urlPrefix + "/") || (!urlPrefix.isEmpty() && uri.equals(urlPrefix))
+                        || uri.equals(urlPrefix + "/html/index.html")) {
+                    response.sendRedirect(urlPrefix + "/home");
+                    baseRequest.setHandled(true);
+                }
+            }
+        };
         HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{staticResourceHandler, servletContextHandler});
+        handlers.setHandlers(new Handler[]{indexRedirect, staticContext, servletContextHandler});
 
         server.setHandler(handlers);
         HttpConfiguration http_config = new HttpConfiguration();

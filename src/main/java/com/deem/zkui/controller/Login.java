@@ -99,7 +99,7 @@ public class Login extends HttpServlet {
                 logger.info("Login successful: " + username);
                 session.setAttribute("authName", username);
                 session.setAttribute("authRole", role);
-                response.sendRedirect("/home");
+                response.sendRedirect(request.getContextPath() + "/home");
             } else {
                 session.removeAttribute("authName");
                 session.removeAttribute("authRole");
