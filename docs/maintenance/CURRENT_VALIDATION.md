@@ -1,5 +1,15 @@
 # 当前维护验证快照
 
+## 当前增量：Fork #23（2026-10-15）
+
+已审查合并[数据库就绪/审计失败策略 #23](https://github.com/DDDalek92/zkui/pull/23)，head `748ad0c86bf3b2721ffdd32414afe90400aea1ab`，[CI 38736989054](https://github.com/DDDalek92/zkui/actions/runs/38736989054)四个job全成功。逐一核对日志：Ubuntu116428803611、macOS116428802960、Windows116428803570各16单元+89集成=105项，0失败/错误/跳过；Linux Chrome3项，0失败/跳过；container116428803377构建、UID/GID10001及登录/环境覆盖/前缀资产冒烟成功。独立detached checkout同一准确head，本地OpenJDK17完整clean verify也是105项通过；本机没有执行Chrome/Docker。
+
+迁移异常/必需表读取失败现在启动前停止；审计写失败显式503且不冒充ZK回滚，见[DATABASE_READINESS.md](DATABASE_READINESS.md)。V1 blob仍为 `fadfd7e9462b348131965f855949529ac6ceaa39`，运行H2/Flyway未升级。#22隔离H2预演在[运行38728588004](https://github.com/DDDalek92/zkui/actions/runs/38728588004)四job成功、三平台各100项，是先前增量证据。
+
+并行出现的同目标 #24 已关闭未合并，分支保留，没有覆盖 #23；#24本地104项不能冒充 #23准确head的105项。#25是后续Flyway桥接实验，必须独立检查其新head及CI；本段不宣称它已成功。完整H2/Flyway迁移、实际MySQL、其余失败矩阵/差量恢复/I02/依赖和部署验收仍未完成。
+
+## 先前证据与历史记录
+
 已核对并合并Fork #21：head37369d1127c9729ced003169a4ba27f894823adf，[运行38716523453](https://github.com/DDDalek92/zkui/actions/runs/38716523453)四job全成功；Linux/Windows/macOS的Temurin17各16单元+81集成=97项，0失败/错误/跳过，Chrome3组与Java17非root容器冒烟成功。新增H2隔离预演及其新head验证见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)和对应Fork PR。
 
 当前Java17/Jetty12 EE8/JDBC基线见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)及对应Fork PR准确head的CI。以下保留PR #18/#20的Java8结果和当时阻塞作为历史，不代表Java17的执行结果。
@@ -22,7 +32,7 @@
 
 保留的验收限制：
 
-- 当前仍是Java8/旧Jetty和数据库栈，不是已完成现代Java安全发行版。DEPENDENCIES.md列出Java17/Jetty12、H2/Flyway/MySQL/ZK/模板/传递依赖的迁移和审计队列；依赖树不是漏洞扫描通过报告。
+- 上表Java8/旧Jetty是历史结果；当前Java17/Jetty12已在#21完成，但H2/Flyway/MySQL/ZK/模板/传递依赖的迁移和审计仍未完成。依赖树不是漏洞扫描通过报告，不能宣称已完成现代Java安全发行版。
 - 未升级/迁移用户历史数据库，没有删除或改写V1/Flyway记录；H2旧库到新库、实际MySQL、新旧版本回滚组合仍需独立验证。
 - 真实AD、LDAPS可信证书链、Kerberos/JAAS、双栈ZK网络、实际nginx/TLS与Firefox真实登录未验证。
 - 30万子节点、原Windows9秒延迟的原配置/网络未复现；普通CI不能说明那些性能问题已解决。
