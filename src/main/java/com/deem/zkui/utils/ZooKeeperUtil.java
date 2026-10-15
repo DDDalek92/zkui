@@ -192,7 +192,7 @@ public enum ZooKeeperUtil {
 
                 if (!nodeExists) {
                     //If node doesnt exist then create it.
-                    createPathAndNode(path, name, value.getBytes(), true, zk);
+                    createPathAndNode(path, name, value.getBytes(java.nio.charset.StandardCharsets.UTF_8), true, zk);
                 } else {
                     //If node exists then update only if overwrite flag is set.
                     if (overwrite) {
@@ -345,7 +345,7 @@ public enum ZooKeeperUtil {
             byte[] dataBytes = zk.getData(childPath, false, new Stat());
             if (!authRole.equals(ROLE_ADMIN)) {
                 if (checkIfPwdField(child)) {
-                    return (new LeafBean(path, child, SOPA_PIPA.getBytes()));
+                    return (new LeafBean(path, child, SOPA_PIPA.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
                 } else {
                     return (new LeafBean(path, child, dataBytes));
                 }
@@ -366,22 +366,22 @@ public enum ZooKeeperUtil {
     public void createNode(String path, String name, String value, ZooKeeper zk) throws KeeperException, InterruptedException {
         String nodePath = path + name;
         logger.debug("Creating node " + nodePath);
-        zk.create(nodePath, value == null ? null : value.getBytes(), defaultAcl(), CreateMode.PERSISTENT);
+        zk.create(nodePath, value == null ? null : value.getBytes(java.nio.charset.StandardCharsets.UTF_8), defaultAcl(), CreateMode.PERSISTENT);
 
     }
 
     public void createFolder(String folderPath, String propertyName, String propertyValue, ZooKeeper zk) throws KeeperException, InterruptedException {
 
         logger.debug("Creating folder " + folderPath);
-        zk.create(folderPath, "".getBytes(), defaultAcl(), CreateMode.PERSISTENT);
-        zk.create(folderPath + "/" + propertyName, propertyValue == null ? null : propertyValue.getBytes(), defaultAcl(), CreateMode.PERSISTENT);
+        zk.create(folderPath, "".getBytes(java.nio.charset.StandardCharsets.UTF_8), defaultAcl(), CreateMode.PERSISTENT);
+        zk.create(folderPath + "/" + propertyName, propertyValue == null ? null : propertyValue.getBytes(java.nio.charset.StandardCharsets.UTF_8), defaultAcl(), CreateMode.PERSISTENT);
 
     }
 
     public void setPropertyValue(String path, String name, String value, ZooKeeper zk) throws KeeperException, InterruptedException {
         String nodePath = path + name;
         logger.debug("Setting property " + nodePath);
-        zk.setData(nodePath, value.getBytes(), -1);
+        zk.setData(nodePath, value.getBytes(java.nio.charset.StandardCharsets.UTF_8), -1);
 
     }
 

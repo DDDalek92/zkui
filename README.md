@@ -261,3 +261,7 @@ ldapRoleSet={"users":[{"username":"alice","role":"ADMIN"},{"username":"*","role"
 ```
 
 The `{0}` username is escaped as a DN value. An empty pattern preserves domain/UPN behavior; `userDNPattern` is accepted as an alias. Passwords must be nonempty. Timeouts are milliseconds, 1–30000, per bind; up to eight space-separated LDAP URLs and eight domain candidates are supported. Authentication referrals fail closed. LDAPS uses normal JVM trust/certificate checks; configure a trusted directory certificate. StartTLS is not implemented here. Real loopback LDAP binds are tested; production AD and LDAPS certificate-chain compatibility still require deployment verification. For login failures inspect the chosen principal format, URL/reachability, TLS trust, and role keys; application responses intentionally omit directory diagnostics and passwords.
+
+Text values and parent nodes
+---------------------------
+HTTP forms, node writes, uploaded text and exported text use UTF-8 explicitly. Configuration value whitespace is preserved. The home page displays the current node’s own value even when it has children, with HTML escaping and the same password-name masking as other values; this display is read-only. The legacy export format escapes newlines as literal `\n` and removes carriage returns: it is not a lossless binary backup format.

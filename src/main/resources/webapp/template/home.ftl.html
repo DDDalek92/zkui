@@ -63,6 +63,10 @@
 
             </div>
             <div class="col-md-9 pre-scrollable scroll-pane">
+                <#if currentNode??>
+                <h4>Current node value</h4>
+                <pre class="mono-pre-wrap">${currentNode.strValue?html}</pre>
+                </#if>
                 <table class="table table-striped table-bordered wrap-table">
                     <thead>
                         <tr>

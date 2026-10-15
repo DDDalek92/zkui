@@ -21,6 +21,11 @@ public class NodeValueTest {
     }
 
     @Test
+    public void nullNodeDataDisplaysAsEmptyText() {
+        assertEquals("", new LeafBean("/test", "key", null).getStrValue());
+    }
+
+    @Test
     public void exportsNullAsEmptyValue() {
         assertEquals("", ServletUtil.INSTANCE.externalizeNodeValue(null));
     }

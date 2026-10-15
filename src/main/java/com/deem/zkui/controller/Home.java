@@ -85,6 +85,9 @@ public class Home extends HttpServlet {
                 }
             }
 
+            String nodeName = "/".equals(displayPath) ? "/" : displayPath.substring(displayPath.lastIndexOf('/') + 1);
+            LeafBean currentNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, parentPath, displayPath, nodeName, authRole);
+            templateParam.put("currentNode", currentNode);
             templateParam.put("displayPath", displayPath);
             templateParam.put("parentPath", parentPath);
             templateParam.put("currentPath", currentPath);
@@ -125,7 +128,8 @@ public class Home extends HttpServlet {
             String[] nodeChkGroup = request.getParameterValues("nodeChkGroup");
             String[] propChkGroup = request.getParameterValues("propChkGroup");
 
-            String searchStr = request.getParameter("searchStr").trim();
+            String searchStr = request.getParameter("searchStr");
+            searchStr = searchStr == null ? "" : searchStr.trim();
             String authRole = (String) request.getSession().getAttribute("authRole");
 
             switch (action) {
