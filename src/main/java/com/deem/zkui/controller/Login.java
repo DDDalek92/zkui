@@ -77,21 +77,10 @@ public class Login extends HttpServlet {
             Boolean authenticated = false;
             //if ldap is provided then it overrides roleset.
             if (globalProps.getProperty("ldapAuth").equals("true")) {
-                authenticated = new LdapAuth().authenticateUser(globalProps.getProperty("ldapUrl"), username, password, globalProps.getProperty("ldapDomain"));
+                authenticated = new LdapAuth().authenticateUser(globalProps, username, password);
                 if (authenticated) {
                     JSONArray jsonRoleSet = (JSONArray) ((JSONObject) new JSONParser().parse(globalProps.getProperty("ldapRoleSet"))).get("users");
-                    for (Iterator it = jsonRoleSet.iterator(); it.hasNext();) {
-                        JSONObject jsonUser = (JSONObject) it.next();
-                        if (jsonUser.get("username") != null && jsonUser.get("username").equals("*")) {
-                            role = (String) jsonUser.get("role");
-                        }
-                        if (jsonUser.get("username") != null && jsonUser.get("username").equals(username)) {
-                            role = (String) jsonUser.get("role");
-                        }
-                    }
-                    if (role == null) {
-                        role = ZooKeeperUtil.ROLE_USER;
-                    }
+                    role = LdapAuth.roleForUser(jsonRoleSet, username);
 
                 }
             } else {
@@ -112,6 +101,8 @@ public class Login extends HttpServlet {
                 session.setAttribute("authRole", role);
                 response.sendRedirect("/home");
             } else {
+                session.removeAttribute("authName");
+                session.removeAttribute("authRole");
                 session.setAttribute("flashMsg", "Invalid Login");
                 ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "login.ftl.html");
             }

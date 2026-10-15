@@ -243,3 +243,21 @@ defaultAcl={"acls":[{"scheme":"auth","id":"","perms":"*"}]}
 The credentials authenticate the application's shared ZK service identity. The `auth` ACL grants newly created nodes to that authenticated identity; it does not change existing ACLs. Leave both authentication fields empty for an unauthenticated client. Invalid/incomplete credentials and malformed/empty ACL lists stop startup instead of falling back to open access. Blank `defaultAcl` retains the legacy world-open creation policy.
 
 For explicit `digest` ACL entries use `username:base64(SHA1(username:password))` as the ID, never the plaintext credential. `defaultAcl` is not a login mechanism. See the [official 3.5.7 ACL guide](https://zookeeper.apache.org/doc/r3.5.7/zookeeperProgrammers.html#sc_ZooKeeperAccessControl). Protect credentials in config files and in transit. UI ADMIN cannot bypass a read-only or unauthorized ZK identity; affected operations return HTTP 403. Per-web-user ZK identities and Kerberos are not implemented by these settings.
+
+LDAP login configuration
+------------------------
+
+`ldapAuth=true` uses LDAP; otherwise `userSet` provides web users. The legacy default constructs `DOMAIN\username` from each comma-separated `ldapDomain`; already-qualified `DOMAIN\username` and `user@example.test` inputs are sent unchanged. Do not confuse an AD NetBIOS domain with the DNS domain. LDAP roles match the submitted username case-insensitively: an explicit account always overrides `*`, regardless of array order; unmatched users default to USER.
+
+For a directory requiring a full DN:
+
+```properties
+ldapAuth=true
+ldapUrl=ldaps://directory.example.test:636
+ldapUserDnPattern=uid={0},ou=people,dc=example,dc=test
+ldapConnectTimeout=3000
+ldapReadTimeout=3000
+ldapRoleSet={"users":[{"username":"alice","role":"ADMIN"},{"username":"*","role":"USER"}]}
+```
+
+The `{0}` username is escaped as a DN value. An empty pattern preserves domain/UPN behavior; `userDNPattern` is accepted as an alias. Passwords must be nonempty. Timeouts are milliseconds, 1–30000, per bind; up to eight space-separated LDAP URLs and eight domain candidates are supported. Authentication referrals fail closed. LDAPS uses normal JVM trust/certificate checks; configure a trusted directory certificate. StartTLS is not implemented here. Real loopback LDAP binds are tested; production AD and LDAPS certificate-chain compatibility still require deployment verification. For login failures inspect the chosen principal format, URL/reachability, TLS trust, and role keys; application responses intentionally omit directory diagnostics and passwords.

@@ -11,7 +11,7 @@
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | 修复中文乱码 | 修改后整合候选 | 确保 UTF-8 端到端一致；新增日志可能泄露原始节点值，需删除/脱敏 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | 多 ZooKeeper 地址与监控 | 已重做并验证，Fork PR #9 | 完整 ensemble、chroot、监控失败隔离及超时；#64/#48 有直接回归 |
 | [#50](https://github.com/DeemOpen/zkui/pull/50) | ZooKeeper 客户端认证 | 已重做，Fork PR #10 | 独立客户端凭据、正确/错误身份、只读 ZK 权限及创建者 ACL 测试 |
-| [#107](https://github.com/DeemOpen/zkui/pull/107) | LDAP 登录调整 | 需安全审计后整合或重写 | 域/OU、空口令、TLS、超时、角色映射、回归 #28/#52/#106 |
+| [#107](https://github.com/DeemOpen/zkui/pull/107) | LDAP 登录调整 | 已重做，Fork PR #11 | DN 模板与原域登录兼容、空密码/超时/角色回归；真实 AD/LDAPS 待验证 |
 | [#41](https://github.com/DeemOpen/zkui/pull/41) | 输入修剪及其他功能 | 拆分后评估 | 涉及 15 文件、数据库迁移/描述能力，不能视为单一 trim 补丁 |
 | [#105](https://github.com/DeemOpen/zkui/pull/105) | Jetty/日志/MySQL 依赖升级 | 吸收升级意图，重新制定版本 | 2022 年版本已过时；需完整依赖树与兼容性测试 |
 | [#103](https://github.com/DeemOpen/zkui/pull/103) | MySQL Connector/J 版本更新 | 归入统一依赖迁移 | 驱动坐标和 JDBC URL、ActiveJDBC 兼容 |
@@ -27,6 +27,8 @@
 
 - **#50 → Fork PR #10，rewritten**。作者 `xyzker`，提交 `5538e61893c43691f62576f5d1e504ed86fb7bb8`，完整差异及2条讨论已审。采纳客户端认证需求；不从 defaultAcl 取凭据，改为独立 zkAuthScheme/zkAuthCredentials，UI/REST 同路径应用；DigestAuthenticationIT 验证正确/错误身份、只读ZK身份、创建者ACL和匿名拒绝。
 - **#87 → Fork PR #10，rewritten**。作者 `dgqypl`，提交 `01fdd110d4de4819a213661b5e9f750d2b40f709`，完整差异/讨论已审（无评论）。采纳 JSON 引号/闭括号修正（样例实际解析2条ACL）；不采纳明文密码作为Digest ACL标识的示例，改为明确区分凭据/摘要及auth创建者ACL。依据 [ZooKeeper 3.5.7 ACL 文档](https://zookeeper.apache.org/doc/r3.5.7/zookeeperProgrammers.html#sc_ZooKeeperAccessControl)。
+
+- **#107 → Fork PR #11，rewritten**。作者 `zhangdong1015`，提交 `d584537b73d6d04cffbad7b20781ce2e60cbf6c0`；全量差异/讨论已审（无评论）。采纳可配置LDAP绑定目标的需求，不强制固定uid/OU、不删除AD域/UPN或通配角色、不解析并回显服务端reason错误。新增DN模板与转义、空口令拒绝、超时、上下文关闭、精确角色优先（大小写不敏感）及失败重登录清除身份。真实隔离 LDAP 和 HTTP 测试通过；真实 AD/LDAPS 链路另列待验证。
 
 ## 已关闭历史 PR 的复查
 
@@ -58,4 +60,4 @@
 
 ## 审核清单字段
 
-最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109/#86/#50/#87 已完成记录外，其余项目上述字段仍 **待完成**。
+最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109/#86/#50/#87/#107 已完成记录外，其余项目上述字段仍 **待完成**。

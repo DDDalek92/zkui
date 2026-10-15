@@ -79,3 +79,11 @@ zkAuthScheme=digest 和 zkAuthCredentials=username:password 提供客户端身�
 新增2项配置单元测试、4项真实JAR Digest回归、1项真实ZK重复权限回归；完整JDK8 verify共58项（8单元+50集成）通过。覆盖UI/Export/REST正确身份、错误身份403、Web ADMIN使用只读ZK身份不能写、创建者ACL拒绝匿名、普通日志不含凭据、重复r仍只读、无效配置不回显。配置注释JSON实际解析成功。
 
 PR来源及重写说明见 PR_REVIEW.md，关联 #112/#99/#80/#69/#59/#42/#36 的Digest连接问题。认证身份是应用全局服务身份，Web角色仍独立控制应用操作；没有实现每个Web用户独立ZK身份、Kerberos或任意SASL提供者验证。Digest凭据必须通过可信网络/TLS传输并保护配置文件。
+
+## LDAP 绑定和角色（上游 #107、Issue #28/#52/#106）
+
+保留 DOMAIN\username 和 UPN，不重复拼接已限定域的用户名；新增 ldapUserDnPattern（兼容 userDNPattern 别名），使用 Rdn.escapeValue 和 LdapName 防止用户名注入DN。空用户名/空口令在联网前拒绝；单次绑定连接/读取超时默认3000ms，范围1–30000。支持原生JNDI多URL列表（最多8个）及多域（最多8个），不跟随认证 referral；成功/失败均关闭上下文，UI仅显示通用登录失败，不解析或回显目录错误。
+
+LDAP精确账号规则优先于通配规则，匹配大小写不敏感，避免后置星号/大小写变化绕过明确的USER规则。失败重登录清除旧认证。新增4项策略单元测试和5项隔离LDAP/真实JAR集成测试，包括真实DN绑定、错误/空密码、DN转义、URL故障转移、HTTP角色优先级、失败重登录和无响应目录超时；完整JDK8 verify共67项（12单元+55集成）通过。测试用UnboundID LDAP SDK 7.0.5仅为test依赖，不进入应用JAR。
+
+#28 的DN配置问题有直接修复。#52补充域/UPN及角色配置说明，但没有访问原AD服务；#106没有正文/环境，标为无法复现，不把通用LDAP改进当作原故障根因。实际AD、受信LDAPS证书链和浏览器仍待部署验证；JNDI原生LDAPS使用JVM信任设置，不关闭证书检查，未新增StartTLS功能。
