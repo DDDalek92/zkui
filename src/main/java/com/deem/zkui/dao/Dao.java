@@ -63,12 +63,16 @@ public class Dao {
         try {
             Flyway flyway = new Flyway();
             flyway.setValidateOnMigrate(true);
-            flyway.setDataSource(globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
+            flyway.setDataSource(new com.googlecode.flyway.core.util.jdbc.DriverDataSource(
+                    globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"),
+                    globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd")));
+            try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
             //Will wipe db each time. Avoid this in prod.
             if ("dev".equals(globalProps.getProperty("env", "prod"))) {
                 flyway.clean();
             }
             //Remove the above line if deploying to prod.
+            try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
             flyway.migrate();
             // A migration record alone does not prove the application table is usable.
             try (Connection connection = openConnection();

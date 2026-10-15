@@ -77,3 +77,59 @@ jobs:
             -e LOGIN_MESSAGE='Container smoke' \
             -e USER_SET='{"users":[{"username":"container-test","password":"synthetic-container-only","role":"ADMIN"}]}' zkui:ci
           python3 src/test/docker/smoke.py
+
+  mysql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build owned MySQL migration helpers
+        run: ./mvnw -B -ntp -DskipTests verify
+      - name: Genuine old MySQL export to modern verified-TLS application
+        env:
+          ZKUI_OWNED_MYSQL_FIXTURE: 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tls="$RUNNER_TEMP/zkui-ci-tls"
+          mkdir "$tls"
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$tls/ca.key" -out "$tls/ca.crt" -days 2 -subj /CN=zkui-ci-test-ca
+          openssl req -newkey rsa:2048 -nodes -keyout "$tls/server.key" -out "$tls/server.csr" -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
+          openssl x509 -req -in "$tls/server.csr" -CA "$tls/ca.crt" -CAkey "$tls/ca.key" -CAcreateserial -out "$tls/server.crt" -days 2 -copy_extensions copy
+          chmod 755 "$tls"
+          chmod 644 "$tls"/*
+          keytool -importcert -noprompt -alias ci-ca -file "$tls/ca.crt" -keystore "$tls/trust.p12" -storetype PKCS12 -storepass synthetic-trust-only
+          trap 'docker logs zkui-mysql56 || true; docker logs zkui-mysql84 || true; docker rm -fv zkui-mysql56 zkui-mysql84 || true' EXIT
+          docker run -d --name zkui-mysql56 -p 127.0.0.1:13306:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -e MYSQL_DATABASE=zkui_fixture mysql:5.6.51@sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql-mode=NO_ENGINE_SUBSTITUTION --skip-ssl
+          docker run -d --name zkui-mysql84 -p 127.0.0.1:13307:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -v "$tls:/ci-tls:ro" mysql:8.4@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00 --ssl-ca=/ci-tls/ca.crt --ssl-cert=/ci-tls/server.crt --ssl-key=/ci-tls/server.key --require-secure-transport=ON
+          for name in zkui-mysql56 zkui-mysql84; do
+            ready=false
+            for attempt in $(seq 1 120); do
+              if docker exec "$name" mysqladmin -h127.0.0.1 -uroot -psynthetic-mysql-ci-only ping --silent; then ready=true; break; fi
+              sleep 1
+            done
+            test "$ready" = true
+          done
+          docker image inspect -f '{{index .RepoDigests 0}}' mysql:5.6.51@sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae mysql:8.4@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70 | tee target/mysql-image-digests.txt
+          java -Duser.timezone=UTC -cp target/test-classes:target/classes:target/migration-drivers/mysql-old.jar:target/migration-drivers/flyway-old.jar com.deem.zkui.test.MySqlMigrationSmoke seed
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_fixture > target/mysql-synthetic-export.sql
+          docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-synthetic-export.sql
+          docker exec zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_fresh CHARACTER SET utf8mb4; CREATE DATABASE zkui_unknown CHARACTER SET utf8mb4'
+          java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlMigrationSmoke verify
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/mysql-runtime-dependencies.txt
+          cat target/mysql-runtime-dependencies.txt
+      - name: Save synthetic migration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mysql-migration-evidence
+          path: |
+            target/mysql-image-digests.txt
+            target/mysql-original-snapshot.txt
+            target/mysql-runtime-dependencies.txt
+          retention-days: 14
