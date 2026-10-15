@@ -69,7 +69,11 @@ public class Home extends HttpServlet {
             parentPath = paths.parent(displayPath);
             currentPath = "/".equals(displayPath) ? "/" : displayPath + "/";
             ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, globalProps);
-            ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, displayPath, authRole);
+            int page = request.getParameter("page") == null ? 1 : Integer.parseInt(request.getParameter("page"));
+            ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, displayPath, authRole, page);
+            templateParam.put("pageNumber", zkNode.getPage());
+            templateParam.put("pageCount", zkNode.getPageCount());
+            templateParam.put("totalChildren", zkNode.getTotalChildren());
             nodeLst = zkNode.getNodeLst();
             leafLst = zkNode.getLeafBeanLSt();
             java.util.List<Map<String, String>> crumbs = new java.util.ArrayList<>();
@@ -103,6 +107,8 @@ public class Home extends HttpServlet {
 
             ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "home.ftl.html");
 
+        } catch (com.deem.zkui.utils.TreeWork.LimitException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, ex.getMessage());
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (KeeperException | InterruptedException | TemplateException ex) {
@@ -197,25 +203,15 @@ public class Home extends HttpServlet {
                     ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "search.ftl.html");
                     break;
                 case "Delete":
-                    if (authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
-
-                        if (propChkGroup != null) {
-                            for (String prop : propChkGroup) {
-                                List delPropLst = Arrays.asList(prop);
-                                ZooKeeperUtil.INSTANCE.deleteLeaves(delPropLst, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
-                                request.getSession().setAttribute("flashMsg", "Delete Completed!");
-                                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Deleting Property: " + delPropLst.toString());
-                            }
-                        }
-                        if (nodeChkGroup != null) {
-                            for (String node : nodeChkGroup) {
-                                List delNodeLst = Arrays.asList(node);
-                                ZooKeeperUtil.INSTANCE.deleteFolders(delNodeLst, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
-                                request.getSession().setAttribute("flashMsg", "Delete Completed!");
-                                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Deleting Nodes: " + delNodeLst.toString());
-                            }
-                        }
-
+                    List<String> selected = new java.util.ArrayList<>();
+                    if (propChkGroup != null) selected.addAll(Arrays.asList(propChkGroup));
+                    if (nodeChkGroup != null) selected.addAll(Arrays.asList(nodeChkGroup));
+                    if (!selected.isEmpty()) {
+                        // One preflight/budget across all selected roots before the first deletion.
+                        ZooKeeperUtil.INSTANCE.deleteFolders(selected, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
+                        request.getSession().setAttribute("flashMsg", "Delete Completed!");
+                        dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(),
+                                "Deleting nodes: " + selected);
                     }
                     response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
@@ -227,6 +223,8 @@ public class Home extends HttpServlet {
             request.getSession().removeAttribute("flashMsg");
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
                     "History write failed. ZooKeeper changes may already be applied; inspect state before retrying.");
+        } catch (com.deem.zkui.utils.TreeWork.LimitException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, ex.getMessage());
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | TemplateException | KeeperException ex) {

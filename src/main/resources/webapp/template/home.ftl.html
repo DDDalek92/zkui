@@ -21,6 +21,11 @@
 <div class="container">
     <form method="post" action="${contextPath?html}/home">
         <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
+        <nav aria-label="Child pages">
+            <p>Page ${pageNumber?c} of ${pageCount?c}; ${totalChildren?c} children. Sorting applies to this page.</p>
+            <#if pageNumber gt 1><a rel="prev" href="${contextPath?html}/home?zkPath=${displayPath?url('UTF-8')?html}&amp;page=${(pageNumber - 1)?c}">Previous page</a></#if>
+            <#if pageNumber lt pageCount><a rel="next" href="${contextPath?html}/home?zkPath=${displayPath?url('UTF-8')?html}&amp;page=${(pageNumber + 1)?c}">Next page</a></#if>
+        </nav>
         <!--Bread crumb-->
         <div class="row-fluid">
             <div class="col-md-12">

@@ -63,6 +63,8 @@ public class Export extends HttpServlet {
                 out.write(output.toString());
             }
 
+        } catch (com.deem.zkui.utils.TreeWork.LimitException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, ex.getMessage());
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | KeeperException ex) {
