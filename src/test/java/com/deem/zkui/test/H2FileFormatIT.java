@@ -26,10 +26,10 @@ public class H2FileFormatIT {
         return props;
     }
 
-    private void createModernDatabase(Path base) throws Exception {
-        Path log = base.resolveSibling("candidate-create.log");
+    private void createDatabase(Path base, boolean modern) throws Exception {
+        Path log = base.resolveSibling(modern ? "candidate-create.log" : "old-create.log");
         Process process = new ProcessBuilder(java(), "-cp",
-                new File(System.getProperty("zkui.migration.h2.jar")).getAbsolutePath(),
+                new File(System.getProperty(modern ? "zkui.migration.h2.jar" : "zkui.migration.old.h2.jar")).getAbsolutePath(),
                 "org.h2.tools.Shell", "-url", "jdbc:h2:" + base.toAbsolutePath(),
                 "-user", "sa", "-password", "", "-sql",
                 "CREATE TABLE owned_evidence(id BIGINT PRIMARY KEY, value_text VARCHAR(100)); "
@@ -41,7 +41,7 @@ public class H2FileFormatIT {
             assertEquals(Files.readString(log), 0, process.exitValue());
             assertTrue(Files.readString(log), Files.readString(log).contains("9007199254740993"));
             assertTrue(Files.readString(log), Files.readString(log).contains("preserve-me"));
-            assertTrue(Files.isRegularFile(Path.of(base + ".mv.db")));
+            assertTrue(Files.isRegularFile(Path.of(base + (modern ? ".mv.db" : ".h2.db"))));
         } finally { stop(process); }
     }
 
@@ -52,7 +52,7 @@ public class H2FileFormatIT {
     @Test public void isolatedCandidateGuardRefusesOldFileWithoutOpeningOrCreatingAnything() throws Exception {
         Path work = temporary.newFolder().toPath();
         Path base = work.resolve("history");
-        new Dao(config(base)).checkNCreate();
+        createDatabase(base, false);
         Files.writeString(work.resolve("owned-fixture"), "owned-format-guard");
         byte[] before = hash(Path.of(base + ".h2.db"));
         String classpath = new File(System.getProperty("zkui.migration.h2.jar")).getAbsolutePath()
@@ -72,10 +72,10 @@ public class H2FileFormatIT {
         assertFalse(Files.exists(work.resolve("fresh.mv.db")));
     }
 
-    @Test public void oldRuntimeMustNotSilentlyCreateAnEmptyDatabaseBesideModernData() throws Exception {
+    @Test public void modernRuntimeMustNotSilentlyCreateAnEmptyDatabaseBesideOldData() throws Exception {
         Path base = temporary.newFolder().toPath().resolve("history");
-        createModernDatabase(base);
-        byte[] before = hash(Path.of(base + ".mv.db"));
+        createDatabase(base, false);
+        byte[] before = hash(Path.of(base + ".h2.db"));
         Properties props = config(base);
         // Include an ordinary URL setting: the guard must inspect the database base, not the full URL.
         props.setProperty("jdbcUrl", "jdbc:h2:file:" + base.toAbsolutePath() + ";DB_CLOSE_ON_EXIT=FALSE");
@@ -86,22 +86,44 @@ public class H2FileFormatIT {
             assertEquals("History database initialization failed; HTTP server was not started", expected.getMessage());
             assertNull(expected.getCause());
         }
-        assertFalse("Never create a parallel empty PageStore database", Files.exists(Path.of(base + ".h2.db")));
-        assertArrayEquals(before, hash(Path.of(base + ".mv.db")));
+        assertFalse("Never create a parallel empty modern database", Files.exists(Path.of(base + ".mv.db")));
+        assertArrayEquals(before, hash(Path.of(base + ".h2.db")));
         // Direct DAO access must not bypass the same preflight either.
         try { new Dao(props).fetchHistoryRecords(); fail("Read must be refused"); }
         catch (IllegalStateException expected) { assertEquals("History query failed", expected.getMessage()); }
+        assertFalse(Files.exists(Path.of(base + ".mv.db")));
+    }
+
+    @Test public void isolatedGenuineOldDriverStillRefusesModernFileAndStorageSwitch() throws Exception {
+        Path work = temporary.newFolder().toPath();
+        Path base = work.resolve("history");
+        createDatabase(base, true);
+        Files.writeString(work.resolve("owned-fixture"), "owned-format-guard");
+        byte[] before = hash(Path.of(base + ".mv.db"));
+        String classpath = new File(System.getProperty("zkui.migration.old.h2.jar")).getAbsolutePath()
+                + File.pathSeparator + new File("target/classes").getAbsolutePath()
+                + File.pathSeparator + new File("target/test-classes").getAbsolutePath();
+        Path log = work.resolve("legacy-guard.log");
+        Process process = new ProcessBuilder(java(), "-cp", classpath,
+                "com.deem.zkui.dao.H2FileFormatGuardProbe", work.toString(), "legacy")
+                .redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        try {
+            assertTrue(process.waitFor(20, TimeUnit.SECONDS));
+            assertEquals(Files.readString(log), 0, process.exitValue());
+            assertTrue(Files.readString(log).contains("LEGACY_GUARD_REFUSED_MODERN_FILE_WITHOUT_CONNECTION"));
+            assertTrue(Files.readString(log).contains("LEGACY_MV_STORE_SETTING_REFUSED_WITHOUT_CONNECTION"));
+        } finally { stop(process); }
+        assertArrayEquals(before, hash(Path.of(base + ".mv.db")));
         assertFalse(Files.exists(Path.of(base + ".h2.db")));
+        assertFalse(Files.exists(work.resolve("fresh.h2.db")));
     }
 
     @Test public void packagedDevStartupRefusesAmbiguousFormatsBeforeCleanOrHttp() throws Exception {
         Path work = temporary.newFolder().toPath();
         Path base = work.resolve("history");
         Properties props = config(base);
-        Dao dao = new Dao(props);
-        dao.checkNCreate();
-        dao.insertHistory("synthetic-user", "127.0.0.1", "old-history-must-survive-dev-clean");
-        createModernDatabase(base);
+        createDatabase(base, false);
+        createDatabase(base, true);
         byte[] oldBefore = hash(Path.of(base + ".h2.db"));
         byte[] modernBefore = hash(Path.of(base + ".mv.db"));
         Properties application = new Properties();

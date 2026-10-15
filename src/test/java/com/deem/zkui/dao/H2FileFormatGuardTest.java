@@ -22,7 +22,7 @@ public class H2FileFormatGuardTest {
 
     @Test public void checksAbsoluteAndRelativeBasesBeforeSettingsAndRejectsSuffixedUrls() throws Exception {
         Path base = temporary.newFolder().toPath().resolve("history");
-        Files.writeString(Path.of(base + ".mv.db"), "owned-marker");
+        Files.writeString(Path.of(base + ".h2.db"), "owned-marker");
         refused("org.h2.Driver", "jdbc:h2:" + base + ";PASSWORD=synthetic-secret");
         String relative = Path.of("").toAbsolutePath().relativize(base.toAbsolutePath()).toString();
         refused("org.h2.Driver", "jdbc:h2:file:./" + relative);
@@ -30,17 +30,17 @@ public class H2FileFormatGuardTest {
         refused("org.h2.Driver", "jdbc:h2:" + base + ".h2.db");
         refused("org.h2.Driver", "jdbc:h2:" + base + ".MV.DB");
         refused("org.h2.Driver", "jdbc:h2:" + base + ".H2.DB");
-        assertEquals("owned-marker", Files.readString(Path.of(base + ".mv.db")));
-        assertFalse(Files.exists(Path.of(base + ".h2.db")));
+        assertEquals("owned-marker", Files.readString(Path.of(base + ".h2.db")));
+        assertFalse(Files.exists(Path.of(base + ".mv.db")));
     }
 
-    @Test public void freshAndExistingPageStoreAreAllowedWithoutOpeningEither() throws Exception {
+    @Test public void freshAndExistingModernFileAreAllowedWithoutOpeningEither() throws Exception {
         Path base = temporary.newFolder().toPath().resolve("history");
         H2FileFormatGuard.check("org.h2.Driver", "jdbc:h2:" + base);
-        assertFalse(Files.exists(Path.of(base + ".h2.db")));
-        Files.writeString(Path.of(base + ".h2.db"), "owned-old-marker");
+        assertFalse(Files.exists(Path.of(base + ".mv.db")));
+        Files.writeString(Path.of(base + ".mv.db"), "owned-modern-marker");
         H2FileFormatGuard.check("org.h2.Driver", "jdbc:h2:file:" + base);
-        assertEquals("owned-old-marker", Files.readString(Path.of(base + ".h2.db")));
+        assertEquals("owned-modern-marker", Files.readString(Path.of(base + ".mv.db")));
     }
 
     @Test public void nonLocalUrlsDoNotPretendToBeInspectedAndOtherBackendsRemainUnchanged() throws Exception {
@@ -61,7 +61,7 @@ public class H2FileFormatGuardTest {
     @Test public void homeAbbreviationChecksTheExpandedBase() throws Exception {
         String previous = System.getProperty("user.home");
         Path owned = temporary.newFolder().toPath();
-        Files.writeString(owned.resolve("history.mv.db"), "owned-marker");
+        Files.writeString(owned.resolve("history.h2.db"), "owned-marker");
         try {
             System.setProperty("user.home", owned.toString());
             refused("org.h2.Driver", "jdbc:h2:~/history");
@@ -73,7 +73,7 @@ public class H2FileFormatGuardTest {
 
     @Test public void otherFormatNameOccupiedByDirectoryIsNotTreatedAsMissing() throws Exception {
         Path base = temporary.newFolder().toPath().resolve("history");
-        Files.createDirectory(Path.of(base + ".mv.db"));
+        Files.createDirectory(Path.of(base + ".h2.db"));
         refused("org.h2.Driver", "jdbc:h2:" + base);
     }
 
@@ -81,13 +81,6 @@ public class H2FileFormatGuardTest {
         Path base = temporary.newFolder().toPath().resolve("history");
         refused("org.h2.Driver", "jdbc:h2:" + base + ";mv_store=TRUE");
         refused("org.h2.Driver", "jdbc:h2:" + base + ";MV_STORE=FALSE");
-        String previous = System.getProperty("h2.mvStore");
-        try {
-            System.setProperty("h2.mvStore", "true");
-            refused("org.h2.Driver", "jdbc:h2:" + base);
-        } finally {
-            if (previous == null) System.clearProperty("h2.mvStore"); else System.setProperty("h2.mvStore", previous);
-        }
         assertFalse(Files.exists(Path.of(base + ".h2.db")));
         assertFalse(Files.exists(Path.of(base + ".mv.db")));
     }

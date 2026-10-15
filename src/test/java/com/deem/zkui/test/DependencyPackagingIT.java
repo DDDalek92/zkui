@@ -36,13 +36,15 @@ public class DependencyPackagingIT {
     @Test public void java17JarHasOneEe8ApiAlignedJettyAndNoLegacyOrm() throws Exception {
         try (JarFile jar = new JarFile(System.getProperty("zkui.test.jar"))) {
             assertNull(jar.getEntry("org/javalite/activejdbc/Model.class"));
-            // The legacy H2 artifact has no Maven pom.properties; inspect only the assembled JAR.
+            assertEquals("13.10.3", version(jar, "org.flywaydb/flyway-core"));
+            // Legacy Flyway remains only for the separately validated MySQL path in this increment.
+            assertEquals("2.2.1", version(jar, "com.googlecode.flyway/flyway-core"));
             try (java.net.URLClassLoader isolated = new java.net.URLClassLoader(
                     new java.net.URL[]{new java.io.File(jar.getName()).toURI().toURL()}, ClassLoader.getPlatformClassLoader())) {
                 Class<?> constants = isolated.loadClass("org.h2.engine.Constants");
-                assertEquals(1, constants.getField("VERSION_MAJOR").get(null));
-                assertEquals(3, constants.getField("VERSION_MINOR").get(null));
-                assertEquals(174, constants.getField("BUILD_ID").get(null));
+                assertEquals(2, constants.getField("VERSION_MAJOR").get(null));
+                assertEquals(5, constants.getField("VERSION_MINOR").get(null));
+                assertEquals(252, constants.getField("BUILD_ID").get(null));
             }
             assertNull(jar.getEntry("org/eclipse/jetty/webapp/WebAppContext.class"));
             assertNull(jar.getEntry("META-INF/maven/javax.servlet/javax.servlet-api/pom.properties"));

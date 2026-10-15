@@ -1,5 +1,7 @@
 # 上游开放 PR 审核台账（初稿）
 
+> H2接续（2026-10-15）：本增量以2.5.252/现代Flyway13.10.3重做#102的运行时升级意图，独立新建方言及原V1离线桥接后的真实Main/HTTP/重启见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，仍须准确head全部CI准入。不直接采用旧2.1.210补丁；任意历史库/真实权限磁盘/更广时区夹具及正式迁移放行仍延期，不能把这项有限应用验收或14项分类叫做全部问题修复。
+
 > 当前处置补充（2026-10-15）：#103已由Fork #28的Connector/J26.7/MySQL8.4+方言、真实5.6逻辑迁移/TLS路径superseded；#105日志/Jetty/MySQL意图分别由#16/#21/#28重写，不采用其历史目标版本。#102完整H2应用/驱动迁移仍延期；#25仅证明有限合成副本桥接。下方#103/MySQL deferred及旧ORM描述是历史，不是当前全部状态。14项处置不等于全部功能修复，具体head证据见MYSQL_VALIDATION.md、CURRENT_VALIDATION.md和Fork PR。
 
 > D01后续更新（2026-10-15）：#93/#104的旧Jetty方案已由Java17/Jetty12.1.14 EE8整体实现superseded；#105日志/Jetty部分重写，MySQL仍deferred。ActiveJDBC改用参数化JDBC以保留旧H2，见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)及对应Fork PR准确head的CI。#103/#102仍延期。下方最初预审和#16决策保留为历史，不能将14项都叫做全部功能修复。

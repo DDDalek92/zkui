@@ -18,6 +18,10 @@ final class TestApplication extends ExternalResource {
     private final TemporaryFolder temporary = new TemporaryFolder();
     private final String name;
     private final java.util.function.Supplier<String[]> overrideProvider;
+    interface HistoryInitializer { void prepare(java.nio.file.Path ownedDatabaseBase) throws Exception; }
+    private final HistoryInitializer historyInitializer;
+    private ProcessBuilder configuredBuilder;
+    private File applicationLog;
     private final String password = UUID.randomUUID().toString();
     private IsolatedZooKeeper server;
     private Process process;
@@ -31,8 +35,13 @@ final class TestApplication extends ExternalResource {
     }
 
     TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider) {
+        this(name, overrideProvider, base -> { });
+    }
+
+    TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider, HistoryInitializer initializer) {
         this.name = name;
         this.overrideProvider = overrideProvider;
+        this.historyInitializer = initializer;
     }
 
     @Override protected void before() throws Throwable {
@@ -73,8 +82,10 @@ final class TestApplication extends ExternalResource {
                 }
             }
             config.setProperty("env", "prod");
-            historyUrl = "jdbc:h2:" + new File(work, "history").getAbsolutePath();
+            historyUrl = "jdbc:h2:" + new File(work, "history").getAbsolutePath() + ";MODE=LEGACY";
+            if (Boolean.parseBoolean(config.getProperty("testHistoryUtc", "false"))) historyUrl += ";TIME ZONE=UTC";
             config.setProperty("jdbcUrl", historyUrl);
+            historyInitializer.prepare(new File(work, "history").toPath());
             config.setProperty("userSet", "{\"users\":[" + user("test-admin", "ADMIN") + ","
                     + user("test-user", "USER") + "," + user("test-other", "OTHER") + "]}");
             config.setProperty("ldapAuth", config.getProperty("testUseLdap", "false"));
@@ -98,6 +109,7 @@ final class TestApplication extends ExternalResource {
             log.getParentFile().mkdirs();
             ProcessBuilder builder = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
                     "-Dfile.encoding=" + config.getProperty("testFileEncoding", "UTF-8"),
+                    "-Duser.timezone=" + config.getProperty("testTimeZone", java.util.TimeZone.getDefault().getID()),
                     "-Dlog4j.configuration=" + new File("target/test-classes/log4j.properties").toURI(),
                     "-jar", System.getProperty("zkui.test.jar"))
                     .directory(work).redirectErrorStream(true).redirectOutput(log);
@@ -105,7 +117,28 @@ final class TestApplication extends ExternalResource {
                 builder.environment().remove(name);
             }
             builder.environment().putAll(testEnvironment);
-            process = builder.start();
+            configuredBuilder = builder;
+            applicationLog = log;
+            startConfiguredApplication();
+        } catch (Throwable failure) {
+            after();
+            throw failure;
+        }
+    }
+
+    String historyJdbcUrl() { return historyUrl; }
+
+    void restart() throws Exception {
+        process.destroy();
+        if (!process.waitFor(5, TimeUnit.SECONDS)) {
+            process.destroyForcibly();
+            if (!process.waitFor(5, TimeUnit.SECONDS)) throw new AssertionError("Owned app did not stop");
+        }
+        startConfiguredApplication();
+    }
+
+    private void startConfiguredApplication() throws Exception {
+            process = configuredBuilder.start();
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
             while (process.isAlive() && System.nanoTime() < deadline) {
                 try {
@@ -116,11 +149,7 @@ final class TestApplication extends ExternalResource {
                 Thread.sleep(100);
             }
             throw new AssertionError("Application did not start: "
-                    + new String(Files.readAllBytes(log.toPath()), StandardCharsets.UTF_8));
-        } catch (Throwable failure) {
-            after();
-            throw failure;
-        }
+                    + new String(Files.readAllBytes(applicationLog.toPath()), StandardCharsets.UTF_8));
     }
 
     private String user(String username, String role) {

@@ -1,6 +1,6 @@
 zkui - Zookeeper UI Dashboard
 
-Maintenance compatibility: **Java17+**; optional MySQL history storage requires **MySQL8.4+** with Connector/J26.7.0. Earlier MySQL is an offline migration source. See [MySQL validation and scope](docs/maintenance/MYSQL_VALIDATION.md). H2/Flyway runtime upgrade and final release audit remain pending. Large parents are browsed in100-node pages, and whole-tree operations have explicit work limits; see [large-tree scope](docs/maintenance/LARGE_TREE_VALIDATION.md).
+Maintenance compatibility: **Java17+**, H2 **2.5.252** with Flyway **13.10.3**; optional MySQL history storage requires **MySQL8.4+** with Connector/J26.7.0. Earlier database versions are offline migration sources, not in-place upgrade targets. Read [modern H2 runtime and mandatory migration boundaries](docs/maintenance/MODERN_H2_RUNTIME.md) and [MySQL scope](docs/maintenance/MYSQL_VALIDATION.md). MySQL still uses the legacy Flyway engine; final release/security audit remains pending. Large parents are browsed in100-node pages, and whole-tree operations have explicit work limits; see [large-tree scope](docs/maintenance/LARGE_TREE_VALIDATION.md).
 
 ====================
 A UI dashboard that allows CRUD operations on Zookeeper.
@@ -10,8 +10,11 @@ Requirements
 The maintenance build requires JDK 17 (including `javac`). Maven 3.9.9 is
 provided by the included Maven Wrapper. Jetty 12 EE8 retains the `javax.servlet`
 application API. History storage uses parameterized JDBC and no longer needs
-ActiveJDBC bytecode instrumentation. H2/Flyway versions and V1 remain unchanged;
-this is not a historical-database format upgrade. Java 8 is no longer supported.
+ActiveJDBC bytecode instrumentation. The original applied V1 remains immutable.
+Old H2 files are refused before any connection: never point the new application at
+the unique old database or rename an old file to bypass the guard. Offline old-driver
+export, metadata bridge on a disposable copy, fresh-target import and application
+validation are mandatory. Java 8 is no longer supported.
 
 Setup
 ====================
@@ -35,9 +38,10 @@ loopback ZooKeeper servers and use temporary H2 databases; no external ZooKeeper
 Docker, database or production configuration is needed. First use requires
 network access to download Maven and dependencies.
 
-Historical-database rehearsal tests download a separate candidate H2 driver and
-run it only in isolated subprocesses with synthetic database copies. The application
-still packages H2 1.3.174; see the [rehearsal scope and blockers](docs/maintenance/H2_MIGRATION_REHEARSAL.md).
+Historical-database tests download genuine H2 1.3.174/Flyway2 and the offline Flyway4
+bridge only for isolated subprocesses with synthetic copies. They are not substitutes
+for the shipped H2 2.5.252 driver. A real packaged Main/HTTP bridge/restart test and
+negative startup checks accompany the [modern runtime scope](docs/maintenance/MODERN_H2_RUNTIME.md).
 
 The Java 17 GitHub Actions workflow runs the same command on Linux, Windows and
 macOS and uploads test reports; Chrome and a non-root Java 17 Docker smoke are also checked.
@@ -288,7 +292,7 @@ Use the Name/Value headings on the home table or Path/Name/Value on search resul
 
 History configuration
 ---------------------
-`historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Never set `env=dev` against a database you want to preserve: that explicit legacy mode cleans it before migration. History connections now close even after database errors. Property values retain their original whitespace.
+`historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Modern H2 never automatically cleans history, even with `env=dev`; the legacy MySQL path still retains its destructive dev-clean behavior, so use `prod` for retained data. H2 connections explicitly use LEGACY compatibility mode for identity continuity; keep the source/target/application timezone consistent during migration. History connections close even after database errors. Property values retain their original whitespace.
 
 Reverse proxy and context path
 ------------------------------

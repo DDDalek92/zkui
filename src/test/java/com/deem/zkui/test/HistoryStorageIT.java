@@ -48,7 +48,8 @@ public class HistoryStorageIT {
         Properties props = new Properties();
         props.setProperty("env", "prod");
         props.setProperty("jdbcClass", "org.h2.Driver");
-        props.setProperty("jdbcUrl", "jdbc:h2:" + temporary.newFolder().getAbsolutePath() + "/history");
+        // Direct fixture JDBC connections use the same per-connection legacy ID contract as the application.
+        props.setProperty("jdbcUrl", "jdbc:h2:" + temporary.newFolder().getAbsolutePath() + "/history;MODE=LEGACY");
         props.setProperty("jdbcUser", "sa");
         props.setProperty("jdbcPwd", "");
         return props;
@@ -119,7 +120,7 @@ public class HistoryStorageIT {
         return snapshot;
     }
 
-    @Test public void existingV1RowsRemainDetachedAndIdsContinueWithoutChangingMetadata() throws Exception {
+    @Test public void freshSchemaRowsRemainDetachedAndIdsContinueWithoutChangingMetadata() throws Exception {
         Properties props = config();
         TrackingDao dao = new TrackingDao(props);
         dao.checkNCreate();
@@ -128,7 +129,7 @@ public class HistoryStorageIT {
         long highId = 9007199254740993L;
         String summary = "  中文😀\nquote' slash\\  ";
         Timestamp date = new Timestamp(1700000000123L);
-        // Seed through JDBC, not the replacement DAO, using the unchanged original V1 schema.
+        // Seed through JDBC, not the DAO. Genuine original V1 comes from isolated old-driver bridge tests.
         try (Connection connection = connect(props); PreparedStatement statement = connection.prepareStatement(
                 "INSERT INTO histories (ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP) VALUES (?, ?, ?, ?, ?)")) {
             statement.setLong(1, 41L);
