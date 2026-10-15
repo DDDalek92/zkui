@@ -54,6 +54,8 @@ public enum ServletUtil {
                 }
                 templateParam.put("authName", session.getAttribute("authName"));
                 templateParam.put("authRole", session.getAttribute("authRole"));
+                templateParam.put("csrfToken", CsrfUtil.token(session));
+                response.setHeader("Cache-Control", "no-store");
 
                 response.setContentType("text/html;charset=UTF-8");
                 

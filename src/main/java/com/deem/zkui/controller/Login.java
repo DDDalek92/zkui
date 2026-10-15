@@ -106,6 +106,7 @@ public class Login extends HttpServlet {
             }
             if (authenticated) {
                 request.changeSessionId();
+                com.deem.zkui.utils.CsrfUtil.rotate(session);
                 logger.info("Login successful: " + username);
                 session.setAttribute("authName", username);
                 session.setAttribute("authRole", role);

@@ -53,7 +53,10 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <span class="glyphicon glyphicon-user"></span>&nbsp;${authName}&nbsp;<b class="caret"></b>&nbsp;</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/logout">Logout</a></li>
+                        <li><form method="post" action="/logout">
+                            <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
+                            <button type="submit" class="btn btn-link">Logout</button>
+                        </form></li>
                     </ul>
                 </li>
                 <#else>

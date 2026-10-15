@@ -43,3 +43,9 @@
 在 `c5e186c` 基线上新增 3 项真实 JAR 测试，修复前 2 失败、1 通过：成功登录沿用旧标识，Cookie 也没有 HttpOnly。修复后成功登录调用 Servlet 3.1 `changeSessionId()`，旧 Cookie 无法访问 home；Cookie 标记 HttpOnly，仅启用 COOKIE 跟踪，URL `jsessionid` 不能代替 Cookie。退出只使现有 Session 失效，由 null 安全的监听器关闭已有 ZK 连接，不再为退出创建连接/重复关闭。
 
 JDK 8 完整验证共 27 项通过。GET 退出暂时保留，下一项 CSRF 修复会改为带 token 的 POST；会话 Cookie 的 Secure 依赖实际 HTTPS 部署。
+
+## SEC-07：CSRF
+
+基线新增 5 个 HTTP 复现用例全部失败：无 token/错误 token 可写入、登录未校验预登录 token、GET 退出会销毁 Session、无 token POST 可退出、管理员无 token multipart 可导入。修复在 AuthFilter 校验所有非 GET/HEAD/OPTIONS 请求；multipart 由 Import 在解析字段后、创建 Dao/获取 URL/写 ZK 前校验。Token 使用独立 SecureRandom 32 字节、绑定 Session、恒定时间比较；登录同时轮换 Session 和 token。
+
+表单（登录、主页、导入、历史查询、退出）均带隐藏字段；脚本可用 X-CSRF-Token。退出仅支持 POST，GET 405 且保留登录。7 个 CSRF 集成测试含跨 Session 拒绝、登录轮换 token、header 成功写入；原有 CRUD/导入测试已适配真实 token。完整 JDK 8 verify 共 34 项通过。README 更新脚本迁移示例。尚未验证真实浏览器，上传边界及 XSS 仍独立排队。

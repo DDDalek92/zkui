@@ -67,7 +67,7 @@ public class Import extends HttpServlet {
         logger.debug("Importing Action!");
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
-            Dao dao = new Dao(globalProps);
+
             String zkServer = globalProps.getProperty("zkServer");
             String[] zkServerLst = zkServer.split(",");
 
@@ -77,6 +77,7 @@ public class Import extends HttpServlet {
             String scmFilePath = "";
             String scmFileRevision = "";
             String uploadFileName = "";
+            String csrfToken = request.getHeader("X-CSRF-Token");
 
             DiskFileItemFactory factory = new DiskFileItemFactory();
             factory.setSizeThreshold(1034);
@@ -87,6 +88,9 @@ public class Import extends HttpServlet {
             while (iter.hasNext()) {
                 FileItem item = (FileItem) iter.next();
                 if (item.isFormField()) {
+                    if (item.getFieldName().equals("csrfToken") && csrfToken == null) {
+                        csrfToken = item.getString("UTF-8");
+                    }
                     if (item.getFieldName().equals("scmOverwrite")) {
                         scmOverwrite = item.getString();
                     }
@@ -106,6 +110,11 @@ public class Import extends HttpServlet {
                 }
             }
 
+            if (!com.deem.zkui.utils.CsrfUtil.valid(session, csrfToken)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF token");
+                return;
+            }
+            Dao dao = new Dao(globalProps);
             InputStream inpStream;
 
             if (sbFile.toString().length() == 0) {

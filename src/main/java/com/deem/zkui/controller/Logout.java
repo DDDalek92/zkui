@@ -33,7 +33,7 @@ public class Logout extends HttpServlet {
     private final static Logger logger = LoggerFactory.getLogger(Logout.class);
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.debug("Logout Action!");
         javax.servlet.http.HttpSession session = request.getSession(false);
         if (session != null) session.invalidate();

@@ -28,7 +28,7 @@ public class SessionSecurityIT {
 
     @Test public void logoutInvalidatesAnUnusedSession() throws Exception {
         String cookie = app.login("test-user");
-        assertEquals(302, app.get("/logout", cookie).status);
+        assertEquals(302, app.post("/logout", "", cookie).status);
         assertEquals(302, app.get("/home", cookie).status);
     }
 }
