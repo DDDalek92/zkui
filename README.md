@@ -1,4 +1,7 @@
 zkui - Zookeeper UI Dashboard
+
+Maintenance compatibility: **Java17+**; optional MySQL history storage requires **MySQL8.4+** with Connector/J26.7.0. Earlier MySQL is an offline migration source. See [MySQL validation and scope](docs/maintenance/MYSQL_VALIDATION.md). H2/Flyway runtime upgrade and final release audit remain pending. Large parents are browsed in100-node pages, and whole-tree operations have explicit work limits; see [large-tree scope](docs/maintenance/LARGE_TREE_VALIDATION.md).
+
 ====================
 A UI dashboard that allows CRUD operations on Zookeeper.
 
