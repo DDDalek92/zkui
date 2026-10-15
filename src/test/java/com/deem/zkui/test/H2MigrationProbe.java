@@ -26,6 +26,7 @@ public final class H2MigrationProbe {
             case "modern": modern(root); break;
             case "tamper": tamper(root); break;
             case "assert-tampered": assertTampered(root); break;
+            case "schema-drift": schemaDrift(root); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
@@ -60,6 +61,8 @@ public final class H2MigrationProbe {
             insert.setLong(1, HIGH_ID + 10); insert.setString(4, "x".repeat(500)); insert.executeUpdate();
             Files.writeString(root.resolve("expected-rows"), snapshot(connection));
             Files.writeString(root.resolve("expected-stable"), stableSnapshot(connection));
+            Files.writeString(root.resolve("expected-schema"), historySchema(connection));
+            assertSchemaAndConstraints(root, connection);
         }
         copyClosedDatabase(root.resolve("old-work"), root.resolve("sealed-source"));
         try (Connection connection = connect(url + ";IFEXISTS=TRUE", "1.3.174"); Statement statement = connection.createStatement()) {
@@ -99,10 +102,12 @@ public final class H2MigrationProbe {
         try (Connection connection = connect(url, "2.5.252"); Statement statement = connection.createStatement()) {
             statement.execute("RUNSCRIPT FROM " + literal(root.resolve("export.sql")) + " CHARSET 'UTF-8' FROM_1X");
             assertSnapshot(root, connection);
+            assertSchemaAndConstraints(root, connection);
         }
         // Reopen a separate connection, check imported rows/metadata, then exercise the identity sequence.
         try (Connection connection = connect(url + ";IFEXISTS=TRUE", "2.5.252")) {
             assertSnapshot(root, connection);
+            assertSchemaAndConstraints(root, connection);
             appendAndCheck(connection, "synthetic-candidate-row");
         }
         try (Connection connection = connect(url + ";IFEXISTS=TRUE", "2.5.252"); Statement statement = connection.createStatement();
@@ -134,6 +139,7 @@ public final class H2MigrationProbe {
         copyClosedDatabase(root.resolve("sealed-source"), root.resolve("rollback-work"));
         try (Connection connection = connect(url(root, "rollback-work") + ";IFEXISTS=TRUE", "1.3.174")) {
             assertSnapshot(root, connection);
+            assertSchemaAndConstraints(root, connection);
             appendAndCheck(connection, "synthetic-rollback-row");
         }
         System.out.println("OLD_DRIVER_ROLLBACK_COPY_OK");
@@ -158,6 +164,7 @@ public final class H2MigrationProbe {
         type.getMethod("migrate").invoke(flyway);
         try (Connection connection = connect(jdbc, "1.3.174"); Statement statement = connection.createStatement()) {
             assertStable(root, connection);
+            assertSchemaAndConstraints(root, connection);
             assertConvertedChecksum(connection);
             Files.writeString(root.resolve("expected-bridge-metadata"), snapshotRows(connection, "SELECT * FROM \"schema_version\""));
             try (ResultSet columns = connection.getMetaData().getColumns(null, "PUBLIC", "schema_version", "version_rank")) {
@@ -174,6 +181,7 @@ public final class H2MigrationProbe {
         try (Connection connection = connect(jdbc, "2.5.252"); Statement statement = connection.createStatement()) {
             statement.execute("RUNSCRIPT FROM " + literal(root.resolve("export-bridged.sql")) + " CHARSET 'UTF-8' FROM_1X");
             assertStable(root, connection);
+            assertSchemaAndConstraints(root, connection);
             assertConvertedChecksum(connection);
         }
         for (int i = 0; i < 2; i++) {
@@ -190,6 +198,7 @@ public final class H2MigrationProbe {
             type.getMethod("validate").invoke(flyway);
             try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) {
                 assertStable(root, connection);
+                assertSchemaAndConstraints(root, connection);
                 assertConvertedChecksum(connection);
                 if (!Files.readString(root.resolve("expected-bridge-metadata")).equals(snapshotRows(connection, "SELECT * FROM \"schema_version\"")))
                     throw new AssertionError("Modern Flyway changed bridged metadata");
@@ -199,6 +208,112 @@ public final class H2MigrationProbe {
             appendAndCheck(connection, "synthetic-modern-row");
         }
         System.out.println("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK");
+    }
+
+    /** Compare semantic JDBC metadata, not driver-specific sizes or generated constraint names. */
+    private static String historySchema(Connection connection) throws Exception {
+        DatabaseMetaData metadata = connection.getMetaData();
+        Map<Integer, String> columns = new TreeMap<>();
+        try (ResultSet rows = metadata.getColumns(null, "PUBLIC", "HISTORIES", null)) {
+            while (rows.next()) {
+                int type = rows.getInt("DATA_TYPE");
+                String width = type == Types.VARCHAR ? ":" + rows.getInt("COLUMN_SIZE") : "";
+                String value = rows.getString("COLUMN_NAME") + ":" + type + width + ":"
+                        + rows.getInt("NULLABLE") + ":" + rows.getString("IS_AUTOINCREMENT");
+                if (columns.put(rows.getInt("ORDINAL_POSITION"), value) != null)
+                    throw new AssertionError("Duplicate column position");
+            }
+        }
+        Map<Integer, String> primary = new TreeMap<>();
+        try (ResultSet rows = metadata.getPrimaryKeys(null, "PUBLIC", "HISTORIES")) {
+            while (rows.next()) {
+                if (primary.put(rows.getInt("KEY_SEQ"), rows.getString("COLUMN_NAME")) != null)
+                    throw new AssertionError("Duplicate primary key position");
+            }
+        }
+        Map<String, SortedMap<Integer, String>> grouped = new HashMap<>();
+        Map<String, Boolean> unique = new HashMap<>();
+        try (ResultSet rows = metadata.getIndexInfo(null, "PUBLIC", "HISTORIES", false, false)) {
+            while (rows.next()) {
+                if (rows.getShort("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
+                String name = rows.getString("INDEX_NAME");
+                boolean isUnique = !rows.getBoolean("NON_UNIQUE");
+                Boolean previous = unique.put(name, isUnique);
+                if (previous != null && previous != isUnique) throw new AssertionError("Inconsistent index uniqueness");
+                String filter = rows.getString("FILTER_CONDITION");
+                // Old H2 reports no predicate as empty text; new H2 reports SQL NULL.
+                String value = rows.getString("COLUMN_NAME") + ":" + rows.getString("ASC_OR_DESC")
+                        + ":" + (filter == null || filter.isEmpty() ? "none" : filter);
+                if (grouped.computeIfAbsent(name, ignored -> new TreeMap<>())
+                        .put(rows.getInt("ORDINAL_POSITION"), value) != null)
+                    throw new AssertionError("Duplicate index position");
+            }
+        }
+        List<String> indexes = new ArrayList<>();
+        grouped.forEach((name, fields) -> indexes.add(unique.get(name) + ":" + fields));
+        Collections.sort(indexes);
+        String shape = columns + "|" + primary + "|" + indexes;
+        String expected = "{1=ID:-5:0:YES, 2=CHANGE_USER:12:100:1:NO, 3=CHANGE_DATE:93:1:NO, "
+                + "4=CHANGE_SUMMARY:12:500:1:NO, 5=CHANGE_IP:12:500:1:NO}|{1=ID}|[true:{1=ID:A:none}]";
+        if (!expected.equals(shape)) throw new AssertionError("History schema drift: " + shape);
+        return shape;
+    }
+
+    private static void assertSchemaAndConstraints(Path root, Connection connection) throws Exception {
+        if (!Files.readString(root.resolve("expected-schema")).equals(historySchema(connection)))
+            throw new AssertionError("History schema differs from original engine");
+        String before = snapshot(connection);
+        connection.setAutoCommit(false);
+        try {
+            expectInsertRefusal(connection, "23505", 41, null, null, null);
+            expectInsertRefusal(connection, "22001", 42, "u".repeat(101), null, null);
+            expectInsertRefusal(connection, "22001", 42, null, "s".repeat(501), null);
+            expectInsertRefusal(connection, "22001", 42, null, null, "i".repeat(501));
+            try (PreparedStatement insert = connection.prepareStatement(
+                    "INSERT INTO histories (ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP) VALUES (42, NULL, NULL, NULL, NULL)")) {
+                if (insert.executeUpdate() != 1) throw new AssertionError("Nullable history columns refused");
+            }
+            connection.rollback();
+            try (PreparedStatement insert = connection.prepareStatement(
+                    "INSERT INTO histories (ID, CHANGE_USER, CHANGE_SUMMARY, CHANGE_IP) VALUES (42, ?, ?, ?)")) {
+                insert.setString(1, "u".repeat(100)); insert.setString(2, "s".repeat(500)); insert.setString(3, "i".repeat(500));
+                if (insert.executeUpdate() != 1) throw new AssertionError("Exact VARCHAR limits refused");
+            }
+            connection.rollback();
+        } finally {
+            connection.rollback();
+            connection.setAutoCommit(true);
+        }
+        if (!before.equals(snapshot(connection))) throw new AssertionError("Constraint probes changed rows or migration records");
+        System.out.println("HISTORY_SCHEMA_PK_INDEX_NULLABILITY_WIDTH_AND_CONSTRAINTS_OK");
+    }
+
+    private static void expectInsertRefusal(Connection connection, String state, long id,
+            String user, String summary, String ip) throws Exception {
+        try (PreparedStatement insert = connection.prepareStatement(
+                "INSERT INTO histories (ID, CHANGE_USER, CHANGE_SUMMARY, CHANGE_IP) VALUES (?, ?, ?, ?)")) {
+            insert.setLong(1, id); insert.setString(2, user); insert.setString(3, summary); insert.setString(4, ip);
+            try {
+                insert.executeUpdate();
+                throw new AssertionError("Constraint did not reject synthetic insert: " + state);
+            } catch (SQLException expected) {
+                if (!state.equals(expected.getSQLState())) throw expected;
+            } finally {
+                connection.rollback();
+            }
+        }
+    }
+
+    private static void schemaDrift(Path root) throws Exception {
+        try (Connection connection = connect(url(root, "new-legacy") + ";MODE=LEGACY;IFEXISTS=TRUE", "2.5.252");
+                Statement statement = connection.createStatement()) {
+            // Only the disposable imported target: prove row equality alone cannot detect widened DDL.
+            String before = snapshot(connection);
+            statement.execute("ALTER TABLE histories ALTER COLUMN change_summary VARCHAR(501)");
+            if (!before.equals(snapshot(connection))) throw new AssertionError("Drift fixture unexpectedly changed data");
+            assertSchemaAndConstraints(root, connection);
+        }
+        throw new AssertionError("Drifted target was accepted");
     }
 
 

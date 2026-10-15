@@ -18,7 +18,8 @@ public class H2MigrationRehearsalIT {
     private Path fixture() throws Exception {
         Path root = temporary.newFolder().toPath();
         Files.writeString(root.resolve("owned-fixture"), nonce);
-        assertEquals(0, run(root, "seed", false).status);
+        Reply seed = run(root, "seed", false);
+        assertEquals(seed.output, 0, seed.status);
         return root;
     }
 
@@ -96,6 +97,8 @@ public class H2MigrationRehearsalIT {
         Reply modern = run(root, "modern", true);
         assertEquals(modern.output, 0, modern.status);
         assertTrue(modern.output.contains("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK"));
+        assertEquals("Import and both Flyway restarts must check schema/constraints", 3,
+                modern.output.split("HISTORY_SCHEMA_PK_INDEX_NULLABILITY_WIDTH_AND_CONSTRAINTS_OK", -1).length - 1);
         assertArrayEquals(originalExport, Files.readAllBytes(root.resolve("export.sql")));
         assertEquals(before, sealedManifest(root));
         Reply rollback = run(root, "rollback", false);
@@ -139,6 +142,22 @@ public class H2MigrationRehearsalIT {
         Reply failure = run(root, "truncated", true);
         assertEquals(failure.output, 0, failure.status);
         assertTrue(failure.output.contains("EXPECTED_TRUNCATED_SQL_SYNTAX_FAILURE"));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+        assertEquals(before, sealedManifest(root));
+    }
+
+    @Test public void rowPreservingSchemaDriftIsRejectedWithoutChangingSealedSourceOrExport() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Reply imported = run(root, "legacy", true);
+        assertEquals(imported.output, 0, imported.status);
+        Reply drift = run(root, "schema-drift", true);
+        assertNotEquals("Widened schema must not pass migration acceptance", 0, drift.status);
+        assertTrue(drift.output, drift.output.contains("History schema drift:"));
         assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
         assertEquals(before, sealedManifest(root));
         Reply rollback = run(root, "rollback", false);
