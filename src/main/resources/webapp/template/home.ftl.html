@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 -->
-<#import "layouts/main-layout.ftl.html" as main> 
+<#import "layouts/main-layout.ftl.html" as main>
 <@main.page>
 
 <div class="container">
@@ -25,21 +25,21 @@
         <div class="row-fluid">
             <div class="col-md-12">
                 <#if flashMsg??>
-                <p class="text-success text-center">${flashMsg}</p>
+                <p class="text-success text-center">${flashMsg?html}</p>
                 <#else>
                 &nbsp;
-                </#if> 
+                </#if>
 
                 <ul class="breadcrumb">
-                    <#assign breadCrumbPath = ""> 
+                    <#assign breadCrumbPath = "">
                     <#if breadCrumbLst?has_content>
                     <#list breadCrumbLst as breadCrumb>
 
                     <#if breadCrumb != "">
-                    <#assign breadCrumbPath = breadCrumbPath + "/" +  breadCrumb> 
+                    <#assign breadCrumbPath = breadCrumbPath + "/" +  breadCrumb>
                     </#if>
 
-                    <li><a href="/home?zkPath=${breadCrumbPath}" class="breadcrumb-select">${breadCrumb}</a></li>
+                    <li><a href="/home?zkPath=${breadCrumbPath?html}" class="breadcrumb-select">${breadCrumb?html}</a></li>
                     </#list>
                     <#else>
                     <li>/</li>
@@ -52,12 +52,12 @@
         <div class="row-fluid">
             <div class="col-md-3 well pre-scrollable scroll-pane" >
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${parentPath}"><..></a>
+                <a href="/home?zkPath=${parentPath?html}"><..></a>
                 <br/>
                 <#list nodeLst as node>
-                <input type="checkbox" name="nodeChkGroup" value="${currentPath}${node}"/>
+                <input type="checkbox" name="nodeChkGroup" value="${currentPath?html}${node?html}"/>
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${currentPath}${node}">${node}</a>
+                <a href="/home?zkPath=${currentPath?html}${node?html}">${node?html}</a>
                 <br/>
                 </#list>
 
@@ -75,25 +75,25 @@
                         <#list leafLst as leaf>
                         <tr>
                             <td>
-                                <input type="checkbox" name="propChkGroup" value="${currentPath}${leaf.name?html}"/>
+                                <input type="checkbox" name="propChkGroup" value="${currentPath?html}${leaf.name?html}"/>
                             </td>
                             <td>
                                 <#if authRole?? && authRole == 'ADMIN' >
                                 <#if leaf.value??>
-                                <a href="#" data-toggle="modal" class="href-select" data-target="#addPropertyModal" itemprop="${leaf.strValue?html}" >${leaf.name}</a> 
+                                <a href="#" data-toggle="modal" class="href-select" data-target="#addPropertyModal" itemprop="${leaf.strValue?html}" >${leaf.name?html}</a>
                                 <#else>
-                                <a href="#" data-toggle="modal" class="href-select" data-target="#addPropertyModal" itemprop="" >${leaf.name}</a> 
+                                <a href="#" data-toggle="modal" class="href-select" data-target="#addPropertyModal" itemprop="" >${leaf.name?html}</a>
                                 </#if>
                                 <#else>
-                                ${leaf.name}
+                                ${leaf.name?html}
                                 </#if>
                             </td>
                             <#if navigate?? && navigate == 'true'>
-                            <td><a href="/home?zkPath=${leaf.strValue}">${leaf.strValue}</a></td>
+                            <td><a href="/home?zkPath=${leaf.strValue?html}">${leaf.strValue?html}</a></td>
                             <#else>
                             <td>
                                 <#if leaf.value??>
-                                ${leaf.strValue?html}
+                                <span class="mono-pre-wrap">${leaf.strValue?html}</span>
                                 </#if>
                             </td>
                             </#if>
@@ -108,8 +108,8 @@
         <!--Modal Dialog-->
         <div class="row-fluid">
             <div class="col-md-12">
-                <input type="hidden" name="currentPath" value="${currentPath}"/>
-                <input type="hidden" name="displayPath" value="${displayPath}"/>
+                <input type="hidden" name="currentPath" value="${currentPath?html}"/>
+                <input type="hidden" name="displayPath" value="${displayPath?html}"/>
                 <input type="hidden" id="delNodeLst"  name="delNodeLst"/>
                 <input type="hidden" id="delPropLst" name="delPropLst"/>
 
@@ -154,9 +154,9 @@
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                 <input type="submit" name="action" value="Save Node" class="btn btn-primary"/>
                             </div>
-                        </div> 
+                        </div>
                     </div>
-                </div> 
+                </div>
 
                 <!-- Add Property Modal -->
                 <div class="modal fade" id="addPropertyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -205,7 +205,7 @@
                     </div>
                 </div>
 
-            </div>        
+            </div>
 
 
         </div>
@@ -243,8 +243,8 @@
 
                                     <div class="input-group input-group-lg">
                                         <span class="input-group-addon">File Path</span>
-                                        <input type="hidden" id="scmServer" name="scmServer" value="${scmRepo}"/>
-                                        <input type="text" id="scmFilePath"  name="scmFilePath" class="form-control" placeholder="${scmRepoPath}">
+                                        <input type="hidden" id="scmServer" name="scmServer" value="${scmRepo?html}"/>
+                                        <input type="text" id="scmFilePath"  name="scmFilePath" class="form-control" placeholder="${scmRepoPath?html}">
                                     </div>
                                     <br/>
                                     <div class="input-group input-group-lg">
@@ -278,4 +278,4 @@
     </div>
 </div>
 
-</@main.page> 
+</@main.page>

@@ -38,7 +38,7 @@ public enum CmdUtil {
             sb = new StringBuilder();
             while (line != null) {
                 sb.append(line);
-                sb.append("<br/>");
+                sb.append("\n");
                 line = reader.readLine();
             }
         }

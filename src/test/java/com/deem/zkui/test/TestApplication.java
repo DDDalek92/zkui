@@ -125,6 +125,10 @@ final class TestApplication extends ExternalResource {
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
     }
 
+    String logContents() throws IOException {
+        return new String(Files.readAllBytes(new File("target/failsafe-reports/" + name + ".log").toPath()), StandardCharsets.UTF_8);
+    }
+
     static String token(String html) {
         java.util.regex.Matcher match = java.util.regex.Pattern.compile("name=\"csrfToken\" value=\"([A-Za-z0-9_-]+)\"").matcher(html);
         if (!match.find()) throw new AssertionError("CSRF form token missing");

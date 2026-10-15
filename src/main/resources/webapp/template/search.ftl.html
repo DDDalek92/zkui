@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 -->
-<#import "layouts/main-layout.ftl.html" as main> 
+<#import "layouts/main-layout.ftl.html" as main>
 <@main.page>
 <div class="container">
     <div class="row-fluid">
@@ -39,10 +39,10 @@
                     <#list searchResult as leaf>
                     <tr>
                         <td>
-                            <a href="/home?zkPath=${leaf.path}">${leaf.path}</a> 
+                            <a href="/home?zkPath=${leaf.path?html}">${leaf.path?html}</a>
                         </td>
-                        <td>${leaf.name}</td>
-                        <td>${leaf.strValue}</td>
+                        <td>${leaf.name?html}</td>
+                        <td><span class="mono-pre-wrap">${leaf.strValue?html}</span></td>
                     </tr>
                     </#list>
                 </tbody>
@@ -51,4 +51,4 @@
         </div>
     </div>
 </div>
-</@main.page> 
+</@main.page>

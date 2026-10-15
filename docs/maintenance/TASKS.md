@@ -21,7 +21,7 @@
 | S03 | 登录轮换 Session、旧 Session 失效、HttpOnly、退出不创建 ZK 连接 | 已完成，Fork PR #5；27 项测试 |
 | S04 | 登录及所有状态修改入口 CSRF；表单和 multipart/脚本兼容；缺失/错误/跨 Session token 拒绝 | 已完成，Fork PR #6；34 项测试 |
 | S05 | URL 导入默认关闭、显式目的主机限制、协议/重定向/超时及上传大小限制 | 已完成，Fork PR #7；完整 URL 白名单，42 项测试 |
-| S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 待处理 |
+| S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 已完成本轮修复，Fork PR #8；45 项测试 |
 | R01 | ZK 连接就绪等待、超时失败、重连与资源释放、多地址/监控 | 待处理；关联 #64/#86 等 |
 | P01 | 整合低风险上游 #87、#109 | 待处理 |
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 待处理；关联 #88/#54/#110 等 |
@@ -39,7 +39,7 @@
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | table sorting | 待处理 |
-| [#109](https://github.com/DeemOpen/zkui/pull/109) | correctly display value with new lines | 待处理 |
+| [#109](https://github.com/DeemOpen/zkui/pull/109) | correctly display value with new lines | adopted，gouzhuang 原贡献；Fork PR #8，OutputSafetyIT |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | Add ldap auth | 待处理 |
 | [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | 待处理 |
 | [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | 待处理 |

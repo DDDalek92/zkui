@@ -168,7 +168,7 @@ public enum ZooKeeperUtil {
     public void importData(List<String> importFile, Boolean overwrite, ZooKeeper zk) throws IOException, InterruptedException, KeeperException {
 
         for (String line : importFile) {
-            logger.debug("Importing line " + line);
+            logger.debug("Applying import record");
             // Delete Operation
             if (line.startsWith("-")) {
                 String nodeToDelete = line.substring(1);
@@ -366,14 +366,14 @@ public enum ZooKeeperUtil {
 
     public void createNode(String path, String name, String value, ZooKeeper zk) throws KeeperException, InterruptedException {
         String nodePath = path + name;
-        logger.debug("Creating node " + nodePath + " with value " + value);
+        logger.debug("Creating node " + nodePath);
         zk.create(nodePath, value == null ? null : value.getBytes(), defaultAcl(), CreateMode.PERSISTENT);
 
     }
 
     public void createFolder(String folderPath, String propertyName, String propertyValue, ZooKeeper zk) throws KeeperException, InterruptedException {
 
-        logger.debug("Creating folder " + folderPath + " with property " + propertyName + " and value " + propertyValue);
+        logger.debug("Creating folder " + folderPath);
         zk.create(folderPath, "".getBytes(), defaultAcl(), CreateMode.PERSISTENT);
         zk.create(folderPath + "/" + propertyName, propertyValue == null ? null : propertyValue.getBytes(), defaultAcl(), CreateMode.PERSISTENT);
 
@@ -381,7 +381,7 @@ public enum ZooKeeperUtil {
 
     public void setPropertyValue(String path, String name, String value, ZooKeeper zk) throws KeeperException, InterruptedException {
         String nodePath = path + name;
-        logger.debug("Setting property " + nodePath + " to " + value);
+        logger.debug("Setting property " + nodePath);
         zk.setData(nodePath, value.getBytes(), -1);
 
     }

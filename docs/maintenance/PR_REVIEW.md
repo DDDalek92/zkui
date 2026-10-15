@@ -5,7 +5,7 @@
 | PR | 标题 / 目标 | 初步决策 | 关键检查和依赖 |
 | --- | --- | --- | --- |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | 修正 defaultAcl 示例注释 | 拆开处理，不原样合并 | JSON 引号/括号修正可采用；新增 Digest ACL 示例把认证口令与 ACL 标识混用，须重写，关联 Issue #99 |
-| [#109](https://github.com/DeemOpen/zkui/pull/109) | 保留多行节点文本空格和换行 | 优先测试后整合 | HTML 转义、长文本换行、搜索/导出行为、#43/#62 |
+| [#109](https://github.com/DeemOpen/zkui/pull/109) | 保留多行节点文本空格和换行 | 已采纳并扩展，Fork PR #8 | OutputSafetyIT；HTML 转义及搜索结果同步处理，真实浏览器待验证 |
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | 配置根路径、子树搜索 | 修改后整合候选 | 根路径安全边界、搜索性能、空路径与路径遍历 |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | 表格排序 | 修改后整合候选 | 外部 CDN 供应链和离线部署、前端版本适配 |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | 修复中文乱码 | 修改后整合候选 | 确保 UTF-8 端到端一致；新增日志可能泄露原始节点值，需删除/脱敏 |
@@ -18,6 +18,10 @@
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | H2 1.3 到 2.1 | 独立数据库迁移任务 | 备份/恢复、Flyway、SQL、历史数据不可直接无验证升级 |
 | [#104](https://github.com/DeemOpen/zkui/pull/104) | Jetty Server 9 到 10 | 归入 Jetty 迁移设计 | 对齐所有 Jetty 模块、Servlet API 和运行环境 |
 | [#93](https://github.com/DeemOpen/zkui/pull/93) | Jetty 9 到 11 | 不能按原样直接合并 | 现有 `javax.servlet` 与 Jetty 11 `jakarta.servlet` 不兼容；需整体迁移 |
+
+## 已完成的整合
+
+- **#109 → Fork PR #8，adopted**。作者 `gouzhuang`，提交 `4fcdc0a893445836840158ebcd7549f08a432162`；完整差异及讨论已审（无评论）。采纳 `.mono-pre-wrap` 和主页 span；扩展至搜索值且补齐 HTML 转义。`OutputSafetyIT` 验证多行中文/空格输出与本地 CSS、恶意标记转义。未运行真实浏览器计算样式；上游 PR 不会被自动关闭。
 
 ## 已关闭历史 PR 的复查
 
@@ -49,4 +53,4 @@
 
 ## 审核清单字段
 
-最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。当前上述字段统一 **待完成**。
+最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109 已完成记录外，其余项目上述字段仍 **待完成**。

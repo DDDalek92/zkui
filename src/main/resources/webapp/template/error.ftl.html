@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 -->
-<#import "layouts/main-layout.ftl.html" as main> 
+<#import "layouts/main-layout.ftl.html" as main>
 <@main.page>
 <div class="container">
     <div class="row-fluid">
@@ -25,8 +25,8 @@
     </div>
     <div class="row-fluid">
         <div class="col-md-12 text-left">
-            ${error}
+            ${error?html}
         </div>
     </div>
 </div>
-</@main.page> 
+</@main.page>

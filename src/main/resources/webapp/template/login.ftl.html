@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 -->
-<#import "layouts/login-layout.ftl.html" as main> 
+<#import "layouts/login-layout.ftl.html" as main>
 <@main.page>
 
 <div class="container">
@@ -35,20 +35,20 @@
                 <input type="submit" name="action" value="Sign In" class="btn btn-lg btn-primary btn-block"/>
                 <br/>
                 <#if loginMessage??>
-                <p class="text-success text-center">${loginMessage}</p>
+                <p class="text-success text-center">${loginMessage?html}</p>
                 <br/>
-                </#if> 
-                
+                </#if>
+
                 <#if flashMsg??>
-                <p class="text-danger text-center">${flashMsg}</p>
-                </#if> 
+                <p class="text-danger text-center">${flashMsg?html}</p>
+                </#if>
             </div>
             <div class="col-md-4">
                 &nbsp;
             </div>
-        </div> 
+        </div>
 
     </form>
 
 </div> <!-- /container -->
-</@main.page> 
+</@main.page>
