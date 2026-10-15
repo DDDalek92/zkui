@@ -27,12 +27,27 @@ public class H2MigrationRehearsalIT {
         String output;
     }
     private Reply run(Path root, String mode, boolean candidate) throws Exception {
+        return runWithClasspath(root, mode, candidate, false);
+    }
+    private Reply runWithClasspath(Path root, String mode, boolean candidate, boolean bridge) throws Exception {
         String classes = new File(H2MigrationProbe.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
         String driver = new File(System.getProperty(candidate ? "zkui.migration.h2.jar" : "zkui.test.jar")).getAbsolutePath();
         assertTrue("Required isolated driver/app artifact missing", new File(driver).isFile());
+        String classpath = classes + File.pathSeparator + driver;
+        if (bridge) classpath += File.pathSeparator + new File(System.getProperty("zkui.migration.bridge.jar")).getAbsolutePath();
+        if ("modern".equals(mode)) {
+            // Use test dependencies, excluding the old H2; never include the assembled application JAR.
+            String source = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+            java.util.List<String> entries = new java.util.ArrayList<>();
+            for (String entry : source.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+                if (!new File(entry).getName().startsWith("h2-") && !entry.endsWith("jar-with-dependencies.jar")) entries.add(entry);
+            }
+            entries.add(driver);
+            classpath = String.join(File.pathSeparator, entries);
+        }
         File log = root.resolve(mode + ".log").toFile();
         Process process = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
-                "-Duser.timezone=UTC", "-Dfile.encoding=UTF-8", "-cp", classes + File.pathSeparator + driver,
+                "-Duser.timezone=UTC", "-Dfile.encoding=UTF-8", "-cp", classpath,
                 H2MigrationProbe.class.getName(), mode, root.toString(), nonce)
                 .redirectErrorStream(true).redirectOutput(log).start();
         if (!process.waitFor(30, TimeUnit.SECONDS)) {
@@ -56,6 +71,23 @@ public class H2MigrationRehearsalIT {
         }
         assertFalse("Sealed source must contain the old database", result.isEmpty());
         return result;
+    }
+
+    @Test public void supportedFlywayBridgePreservesMetadataAndModernValidationDoesNotRepair() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] originalExport = Files.readAllBytes(root.resolve("export.sql"));
+        Reply bridge = runWithClasspath(root, "bridge", false, true);
+        assertEquals(bridge.output, 0, bridge.status);
+        assertTrue(bridge.output.contains("FLYWAY4_SUPPORTED_METADATA_UPGRADE_OK"));
+        Reply modern = run(root, "modern", true);
+        assertEquals(modern.output, 0, modern.status);
+        assertTrue(modern.output.contains("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK"));
+        assertArrayEquals(originalExport, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+        assertEquals(before, sealedManifest(root));
     }
 
     @Test public void regularModeFailureDoesNotTouchSealedSourceAndOldCopyStillWorks() throws Exception {

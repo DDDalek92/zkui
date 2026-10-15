@@ -22,6 +22,8 @@ public final class H2MigrationProbe {
             case "legacy": importLegacy(root); break;
             case "truncated": importTruncated(root); break;
             case "rollback": rollback(root); break;
+            case "bridge": bridge(root); break;
+            case "modern": modern(root); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
@@ -55,6 +57,7 @@ public final class H2MigrationProbe {
             insert.setString(4, "  中文😀\nquote' slash\\  "); insert.setString(5, "127.0.0.1"); insert.executeUpdate();
             insert.setLong(1, HIGH_ID + 10); insert.setString(4, "x".repeat(500)); insert.executeUpdate();
             Files.writeString(root.resolve("expected-rows"), snapshot(connection));
+            Files.writeString(root.resolve("expected-stable"), stableSnapshot(connection));
         }
         copyClosedDatabase(root.resolve("old-work"), root.resolve("sealed-source"));
         try (Connection connection = connect(url + ";IFEXISTS=TRUE", "1.3.174"); Statement statement = connection.createStatement()) {
@@ -132,6 +135,81 @@ public final class H2MigrationProbe {
             appendAndCheck(connection, "synthetic-rollback-row");
         }
         System.out.println("OLD_DRIVER_ROLLBACK_COPY_OK");
+    }
+
+
+    // Flyway 4.2 contains its own version_rank -> installed_rank metadata upgrade.
+    // It runs only on old-work; the original sealed database and export remain untouched.
+    private static void bridge(Path root) throws Exception {
+        String jdbc = url(root, "old-work") + ";IFEXISTS=TRUE";
+        Class<?> type = Class.forName("org.flywaydb.core.Flyway");
+        Object flyway = type.getConstructor().newInstance();
+        type.getMethod("setDataSource", String.class, String.class, String.class).invoke(flyway, jdbc, "sa", "");
+        type.getMethod("setValidateOnMigrate", boolean.class).invoke(flyway, true);
+        type.getMethod("migrate").invoke(flyway);
+        try (Connection connection = connect(jdbc, "1.3.174"); Statement statement = connection.createStatement()) {
+            assertStable(root, connection);
+            try (ResultSet columns = connection.getMetaData().getColumns(null, "PUBLIC", "schema_version", "version_rank")) {
+                if (columns.next()) throw new AssertionError("Bridge did not upgrade metadata");
+            }
+            statement.execute("SCRIPT TO " + literal(root.resolve("export-bridged.sql")) + " CHARSET 'UTF-8'");
+        }
+        System.out.println("FLYWAY4_SUPPORTED_METADATA_UPGRADE_OK");
+    }
+
+    private static void modern(Path root) throws Exception {
+        Files.createDirectory(root.resolve("new-modern"));
+        String jdbc = url(root, "new-modern") + ";MODE=LEGACY";
+        try (Connection connection = connect(jdbc, "2.5.252"); Statement statement = connection.createStatement()) {
+            statement.execute("RUNSCRIPT FROM " + literal(root.resolve("export-bridged.sql")) + " CHARSET 'UTF-8' FROM_1X");
+            assertStable(root, connection);
+        }
+        for (int i = 0; i < 2; i++) {
+            Class<?> type = Class.forName("org.flywaydb.core.Flyway");
+            Object configuration = type.getMethod("configure").invoke(null);
+            Class<?> fluent = configuration.getClass();
+            fluent.getMethod("dataSource", String.class, String.class, String.class).invoke(configuration, jdbc + ";IFEXISTS=TRUE", "sa", "");
+            fluent.getMethod("table", String.class).invoke(configuration, "schema_version");
+            fluent.getMethod("locations", String[].class).invoke(configuration, (Object) new String[]{"classpath:db/migration"});
+            fluent.getMethod("validateOnMigrate", boolean.class).invoke(configuration, true);
+            fluent.getMethod("cleanDisabled", boolean.class).invoke(configuration, true);
+            Object flyway = fluent.getMethod("load").invoke(configuration);
+            type.getMethod("migrate").invoke(flyway);
+            type.getMethod("validate").invoke(flyway);
+            try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) { assertStable(root, connection); }
+        }
+        try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) {
+            appendAndCheck(connection, "synthetic-modern-row");
+        }
+        System.out.println("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK");
+    }
+
+    private static void assertStable(Path root, Connection connection) throws Exception {
+        if (!Files.readString(root.resolve("expected-stable")).equals(stableSnapshot(connection)))
+            throw new AssertionError("History or retained metadata fields differ across Flyway bridge");
+    }
+
+    private static String stableSnapshot(Connection connection) throws Exception {
+        String history = snapshotRows(connection, "SELECT * FROM histories ORDER BY ID");
+        String metadata = snapshotRows(connection, "SELECT \"installed_rank\", \"version\", \"description\", \"type\", \"script\", \"checksum\", \"installed_by\", \"installed_on\", \"execution_time\", \"success\" FROM \"schema_version\"");
+        return history + metadata;
+    }
+
+    private static String snapshotRows(Connection connection, String sql) throws Exception {
+        List<String> values = new ArrayList<>();
+        try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {
+            while (rows.next()) {
+                StringBuilder row = new StringBuilder();
+                for (int i = 1; i <= rows.getMetaData().getColumnCount(); i++) {
+                    Object value = rows.getObject(i);
+                    String text = value instanceof Timestamp ? ((Timestamp) value).toInstant().toString() : value == null ? null : value.toString();
+                    row.append('|').append(rows.getMetaData().getColumnName(i)).append(text == null ? "null:" : text.length() + ":" + text);
+                }
+                values.add(row.toString());
+            }
+        }
+        Collections.sort(values);
+        return values.toString();
     }
 
     private static void appendAndCheck(Connection connection, String marker) throws Exception {
