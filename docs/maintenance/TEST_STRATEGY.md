@@ -1,6 +1,18 @@
 # 自动化测试与 CI 规划
 
-> 这是执行方案，**尚未运行任何 Maven、Docker、ZooKeeper、浏览器、LDAP 测试**。首先保留现有业务行为，建立可验证基线；安全越权行为应定义为不允许并进行修复，而非固化为“正确的旧行为”。
+> 当前已执行 JDK 8/Maven 构建、单元测试、隔离 ZooKeeper 操作及打包 JAR 的 HTTP 冒烟。Docker、真实浏览器、LDAP 和完整安全回归仍未执行。安全越权行为应定义为不允许并进行修复，而非固化为“正确的旧行为”。验证记录见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)。
+
+## 已实现的第一批测试
+
+- `NodeValueTest`：3 项断言用例，覆盖 UTF-8 读取、空格/换行保留、导出换行以及 null 值。
+- `ZooKeeperOperationsIT`：4 项集成用例，覆盖 CRUD、导出/搜索脱敏、导入覆盖策略和 ZooKeeper 只读 ACL 拒绝写入。
+- `PackagedApplicationIT`：1 项完整 HTTP 冒烟，启动真正的胖 JAR，验证匿名跳转、登录、首页树、节点创建/修改/删除、导出、历史落库及退出后的会话访问。
+- `mvnw` / `mvnw.cmd` 固定 Maven 3.9.9，并校验发行包 SHA-256；JUnit 4.13.2 与 Surefire/Failsafe 3.2.5 只负责测试。
+- CI 使用 JDK 8，执行 `./mvnw -B -ntp clean verify`，保留报告；测试数量为零将失败。CI 的远程运行状态应查看 PR 检查，不能以本地通过代替远程通过。
+
+运行：Linux/macOS `./mvnw clean verify`；Windows PowerShell `.\mvnw.cmd clean verify`。JDK 8 须自行安装，Wrapper 只负责 Maven。
+
+隔离：测试不接受外部 ZooKeeper 地址；嵌入式服务只绑定 `127.0.0.1`、随机端口，数据库和配置位于临时目录。测试进程在 finally 中退出。HTTP 用例使用模拟随机密码。当前没有 MySQL、Digest/LDAP、CSRF 或 USER 导入越权测试，不能据此宣称权限安全已验收。
 
 ## 0. 基线采集
 
@@ -38,9 +50,9 @@
 - 对 `env=dev` 的 `flyway.clean()` 做明确隔离：任何有历史数据的 H2/MySQL 数据库禁止作为测试目标。
 - 将测试配置与生产配置拆离，不提交真实密钥或数据库文件。
 
-## 4. GitHub Actions CI 目标设计（本轮未创建）
+## 4. GitHub Actions CI
 
-`push` + `pull_request` 触发：JDK 8 baseline 编译 → 单元测试 → 集成测试 → 静态检查/依赖安全扫描 → 保存报告。之后再加入其他 JDK 兼容矩阵、容器构建和 UI 冒烟。
+已创建 `.github/workflows/ci.yml`，支持 `push`、`pull_request` 和手动触发：JDK 8 → 固定 Maven → 编译 → 单元测试 → 打包 → 集成测试 → 保存报告。工作流使用只读权限，Actions 固定提交 SHA，不自动合并或部署。后续仍需静态检查/依赖安全扫描、其他 JDK 兼容矩阵、容器构建和真实浏览器冒烟。
 
 CI 要求：所有变更通过测试、日志不得泄漏模拟密钥、安全测试失败阻止合并；如果基础依赖无法解析，标记为基线失败，不把“跳过测试”视为成功。
 

@@ -4,11 +4,13 @@ A UI dashboard that allows CRUD operations on Zookeeper.
 
 Requirements
 ====================
-Requires Java 7 to run.
+The maintenance build is verified with JDK 8 (including `javac`). Maven 3.9.9 is
+provided by the included Maven Wrapper. JDK 17 builds currently fail in the legacy
+ActiveJDBC instrumentation plugin; newer JDK support remains a separate task.
 
 Setup
 ====================
-1. mvn clean install
+1. `./mvnw clean verify` (Windows PowerShell: `.\mvnw.cmd clean verify`).
 2. Copy the config.cfg to the folder with the jar file. Modify it to point to the zookeeper instance. Multiple zk instances are coma separated.  eg: server1:2181,server2:2181. First server should always be the leader.
 3. Run the jar. ( nohup java -jar zkui-2.0-SNAPSHOT-jar-with-dependencies.jar & )
 4. <a href="http://localhost:9090">http://localhost:9090</a> 
@@ -19,6 +21,19 @@ username: admin, pwd: manager (Admin privileges, CRUD operations supported)
 username: appconfig, pwd: appconfig (Readonly privileges, Read operations supported)
 
 You can change this in the config.cfg
+
+Development checks
+====================
+`./mvnw test` runs unit tests. `./mvnw clean verify` also packages the application
+and runs isolated ZooKeeper and HTTP integration tests. Tests start their own
+loopback ZooKeeper servers and use temporary H2 databases; no external ZooKeeper,
+Docker, database or production configuration is needed. First use requires
+network access to download Maven and dependencies.
+
+The Java 8 GitHub Actions workflow runs the same command and uploads test reports.
+See [test strategy](docs/maintenance/TEST_STRATEGY.md) and
+[build validation](docs/maintenance/BUILD_VALIDATION.md) for verified scope and
+remaining security, compatibility and deployment work.
 
 Technology Stack
 ====================
