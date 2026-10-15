@@ -12,7 +12,7 @@
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | 多 ZooKeeper 地址与监控 | 已重做并验证，Fork PR #9 | 完整 ensemble、chroot、监控失败隔离及超时；#64/#48 有直接回归 |
 | [#50](https://github.com/DeemOpen/zkui/pull/50) | ZooKeeper 客户端认证 | 已重做，Fork PR #10 | 独立客户端凭据、正确/错误身份、只读 ZK 权限及创建者 ACL 测试 |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | LDAP 登录调整 | 已重做，Fork PR #11 | DN 模板与原域登录兼容、空密码/超时/角色回归；真实 AD/LDAPS 待验证 |
-| [#41](https://github.com/DeemOpen/zkui/pull/41) | 输入修剪及其他功能 | 拆分后评估 | 涉及 15 文件、数据库迁移/描述能力，不能视为单一 trim 补丁 |
+| [#41](https://github.com/DeemOpen/zkui/pull/41) | 输入修剪及其他功能 | 已拆分处置，Fork PR #15 | 历史限额/默认值/连接关闭重写；值trim和拼接SQL拒绝；描述功能延期 |
 | [#105](https://github.com/DeemOpen/zkui/pull/105) | Jetty/日志/MySQL 依赖升级 | 吸收升级意图，重新制定版本 | 2022 年版本已过时；需完整依赖树与兼容性测试 |
 | [#103](https://github.com/DeemOpen/zkui/pull/103) | MySQL Connector/J 版本更新 | 归入统一依赖迁移 | 驱动坐标和 JDBC URL、ActiveJDBC 兼容 |
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | H2 1.3 到 2.1 | 独立数据库迁移任务 | 备份/恢复、Flyway、SQL、历史数据不可直接无验证升级 |
@@ -67,3 +67,20 @@
 - **#54 → Fork PR #13，rewritten**。作者 `clevertension`，提交 `bc047739818b587a430f8a4a7966485421a00aa5`；通过公开git ref核对完整4文件差异，讨论已查（无评论）。采纳可配置根和当前子树搜索，扩展为Home/Export/Import/REST一致的应用命名空间限制；路径使用原生PathUtils校验，拒绝越界/相似前缀/保留根删除，批量目标预检，导航停在根。REST新增可配置根内hosts位置且禁止向根外祖先回退。RootNamespaceIT验证真实JAR；原PR仅默认页面/搜索起点变化，不直接提供完整隔离，故重写。
 
 - **#110 → Fork PR #14，rewritten**。作者 `chenws1012`，提交 `07c47b3373a3d76a45cb0cd9bd625e74e55854cd`；全量差异和讨论已审（无评论）。采纳主页Name/Value及搜索Path/Name/Value排序，使用本地原生JS而非新增unpkg上的Bootstrap Table。稳定文本排序移动原有行，保留选中/编辑事件；type=button避免提交表单，键盘与aria-sort支持。BrowserPagesIT从真实JAR生成合成数据页面，Node/Playwright在CI中的Chrome校验；本机浏览器下载得到空/损坏压缩包，不能声称本地浏览器已通过。
+
+## #41 的拆分决定
+
+作者 `kerwin612`，提交 `2843e7c28f7d41968a890a2dfe0beafae6f9a2bf`；15文件完整差异及讨论已审（无评论）。**rewritten，Fork PR #15**，不按原补丁整体合并。
+
+| 部分 | 处置 | 证据/替代实现 |
+| --- | --- | --- |
+| 表单/导入值一律trim | 拒绝 | 配置值的前后空格/换行可能有业务意义；#12 TextAndNodeValuesIT验证保留，#13服务端校验路径和单段名称而不修剪值 |
+| pathFormat折叠分隔符、update自动upsert | 拒绝 | 不静默重写节点标识或改变Update语义；PathUtils拒绝非规范路径 |
+| https/代理标记缺失容错 | 重写采纳 | 缺失默认为false；ConfigDefaultsIT真实JAR验证；env缺失采用prod并验证旧历史不被清空 |
+| historyLimit | 重写采纳 | 默认50，1–1000整数，错误配置启动失败且不回显值；所有/筛选查询均限额，标题同步；原补丁空白条件反向且静默吞错 |
+| Dao异常时close | 重写采纳 | fetch/insert用finally并检查连接；真实H2缺表异常后无线程连接泄漏，可恢复新连接 |
+| Description模型/表/CRUD | deferred | 原V1迁移不可改写；必须新迁移、历史库副本/回滚测试、参数化SQL、文本输出转义和ADMIN/CSRF约束，纳入D01之后功能队列 |
+| Description路径拼接SQL及未转义输出 | 拒绝 | 原IN/DELETE/LIKE拼接节点路径，描述直接输出HTML；不引入这些查询/模板 |
+| Import/Export重排imports和局部变量、树行外观 | 不采纳原补丁 | 无独立必要行为；连接/编码/模板已在#9/#12/#13更新，外观留后续实际需求 |
+
+验证：独立旧代码工作区HistoryStorageIT 2失败+1错误（限额无效、读异常泄漏、缺env初始化失败）；修复后完整Java8 verify84项（14单元+70集成）通过，含隔离H2历史保留/失败恢复、参数化筛选和缺标记HTTP启动。未更改V1、未创建描述表，未访问真实数据库。

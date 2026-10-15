@@ -28,20 +28,29 @@ import org.slf4j.LoggerFactory;
 
 public class Dao {
     
-    private final static Integer FETCH_LIMIT = 50;
     private final static org.slf4j.Logger logger = LoggerFactory.getLogger(Dao.class);
     private final Properties globalProps;
+    private final int historyLimit;
     
     public Dao(Properties globalProps) {
         this.globalProps = globalProps;
+        String configured = globalProps.getProperty("historyLimit", "50").trim();
+        try {
+            historyLimit = Integer.parseInt(configured);
+            if (historyLimit < 1 || historyLimit > 1000) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("historyLimit must be between 1 and 1000");
+        }
     }
     
+    public int getHistoryLimit() { return historyLimit; }
+
     public void open() {
         Base.open(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
     }
     
     public void close() {
-        Base.close();
+        if (Base.hasConnection()) Base.close();
     }
     
     public void checkNCreate() {
@@ -49,7 +58,7 @@ public class Dao {
             Flyway flyway = new Flyway();
             flyway.setDataSource(globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
             //Will wipe db each time. Avoid this in prod.
-            if (globalProps.getProperty("env").equals("dev")) {
+            if ("dev".equals(globalProps.getProperty("env", "prod"))) {
                 flyway.clean();
             }
             //Remove the above line if deploying to prod.
@@ -61,22 +70,27 @@ public class Dao {
     }
     
     public List<History> fetchHistoryRecords() {
-        this.open();
-        List<History> history = History.findAll().orderBy("ID desc").limit(FETCH_LIMIT);
-        history.size();
-        this.close();
-        return history;
-        
+        try {
+            this.open();
+            List<History> history = History.findAll().orderBy("ID desc").limit(historyLimit);
+            history.size();
+            return history;
+        } finally {
+            this.close();
+        }
     }
-    
+
     public List<History> fetchHistoryRecordsByNode(String historyNode) {
-        this.open();
-        List<History> history = History.where("CHANGE_SUMMARY like ?", historyNode).orderBy("ID desc").limit(FETCH_LIMIT);
-        history.size();
-        this.close();
-        return history;
+        try {
+            this.open();
+            List<History> history = History.where("CHANGE_SUMMARY like ?", historyNode).orderBy("ID desc").limit(historyLimit);
+            history.size();
+            return history;
+        } finally {
+            this.close();
+        }
     }
-    
+
     public void insertHistory(String user, String ipAddress, String summary) {
         try {
             this.open();
@@ -90,9 +104,10 @@ public class Dao {
             history.setChangeSummary(summary);
             history.setChangeDate(new Date());
             history.save();
-            this.close();
         } catch (Exception ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
+        } finally {
+            this.close();
         }
         
     }

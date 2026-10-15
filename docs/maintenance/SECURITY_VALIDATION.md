@@ -103,3 +103,7 @@ zkRootPath默认/，是应用数据入口的命名空间边界，相对于zkServ
 ## 离线排序（上游 #110）
 
 表格增加本地table-sort.js，稳定、大小写不敏感的文本升/降序，移动原行而不生成innerHTML，不改变复选框/模态框事件。按钮不提交表单，支持原生键盘和aria-sort。未新增生产前端依赖或外部网络资源。Java完整verify79项（13单元+66集成）通过，其中BrowserPagesIT从隔离真实JAR生成ADMIN主页、搜索、USER主页。3组Playwright检查覆盖键盘/升降/稳定排序、选择/编辑事件、样式、HTML不执行和密码遮蔽；CI结果为最终依据。本机Chromium及headless-shell下载失败（空/损坏压缩包），仅JS语法校验成功。
+
+## 历史限额、缺失配置与数据库连接（#41部分重写）
+
+historyLimit默认50且校验1–1000，所有/筛选查询同限额，标题显示实际限额。https与X-Forwarded-For缺失时false，env缺失时prod；不会因缺配置清空历史。Dao读写成功/失败都在finally释放线程连接。HistoryStorageIT使用一次性H2验证限额、参数化筛选、故意删除测试表后的读写失败无连接泄漏、另一测试库恢复及重复启动保留历史；ConfigDefaultsIT验证缺失标记启动和历史标题，配置单元测试覆盖越界/非法值。旧代码独立工作区2失败+1错误；完整verify84项（14单元+70集成）通过。不引入#41的值trim、描述SQL或旧V1改写；描述功能延期条件见PR_REVIEW.md。

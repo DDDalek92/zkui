@@ -26,7 +26,7 @@
 | P01 | 整合低风险上游 #87、#109 | 已完成，Fork PR #8/#10；LDAP/ACL 继续按 P03 |
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
-| P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 待处理 |
+| P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 待处理；#93/#102/#103/#104/#105 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 待处理 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | 待处理，不能用 Linux/JDK8 结果替代 |
@@ -34,7 +34,7 @@
 
 ## 上游 PR 逐项清单
 
-14 项中 #109/#86/#50/#87/#107/#88/#54/#110 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14 项中9项已采纳或重写（#41为部分重写、描述功能延期），5项依赖升级继续处理；其他条目见逐项状态，预审见 PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
@@ -51,7 +51,7 @@
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | add zkRootPath configuration and Search in sub node | rewritten，clevertension 原贡献；Fork PR #13，RootNamespaceIT |
 | [#50](https://github.com/DeemOpen/zkui/pull/50) | add auth to the zk client. | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
-| [#41](https://github.com/DeemOpen/zkui/pull/41) | trim input or textarea | 待处理 |
+| [#41](https://github.com/DeemOpen/zkui/pull/41) | trim input or textarea | rewritten（默认值/历史条数/关闭连接）；拒绝值trim和不安全SQL，描述功能deferred，Fork PR #15 |
 
 ## 上游 Issue 逐项清单
 

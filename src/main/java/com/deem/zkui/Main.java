@@ -94,7 +94,7 @@ public class Main {
         http_config.setSecureScheme("https");
         http_config.setSecurePort(Integer.parseInt(globalProps.getProperty("serverPort")));
         
-        if (globalProps.getProperty("https").equals("true")) {
+        if ("true".equalsIgnoreCase(globalProps.getProperty("https", "false"))) {
             File keystoreFile = new File(globalProps.getProperty("keystoreFile"));
             SslContextFactory sslContextFactory = new SslContextFactory();
             sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
@@ -107,7 +107,7 @@ public class Main {
             https.setPort(Integer.parseInt(globalProps.getProperty("serverPort")));
             server.setConnectors(new Connector[]{https});
         } else {
-            if(globalProps.getProperty("X-Forwarded-For").equals("true")) {
+            if("true".equalsIgnoreCase(globalProps.getProperty("X-Forwarded-For", "false"))) {
                 http_config.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
             }
             ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(http_config));

@@ -275,3 +275,7 @@ Root namespace and subtree search
 Offline table sorting
 ---------------------
 Use the Name/Value headings on the home table or Path/Name/Value on search results to toggle ascending/descending text order. Sorting is case-insensitive and stable for equal text; it preserves selected rows and edit actions. Buttons also work with Enter/Space. Assets are bundled locally; sorting adds no CDN or production JavaScript dependency. Browser regression checks use synthetic pages rendered by the packaged application: after `./mvnw clean verify`, run `npm ci --ignore-scripts` and `ZKUI_BROWSER_CHANNEL=chrome npm test` with Chrome installed (or install Playwright Chromium and omit the channel setting). Node 20+ and Playwright are development/test tools only.
+
+History configuration
+---------------------
+`historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Never set `env=dev` against a database you want to preserve: that explicit legacy mode cleans it before migration. History connections now close even after database errors. Property values retain their original whitespace.
