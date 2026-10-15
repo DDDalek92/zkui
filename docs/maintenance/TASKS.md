@@ -27,18 +27,16 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1、#21的Java17/Jetty12 EE8/JDBC完成；D01-C首批隔离驱动/封存副本/数据元数据/ID/重开/恢复预演已实现，见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现；#23已完成启动失败即停止、显式校验checksum及运行时审计失败503策略（三平台各105项通过），见DATABASE_READINESS.md；Flyway桥接副本预演见FLYWAY_BRIDGE_REHEARSAL.md；完整H2应用/驱动升级及其余失败矩阵仍未完成；MySQL方言/26.7驱动和实际服务迁移验证正在独立PR，见MYSQL_VALIDATION.md；依赖审计仍未完成 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1、#21的Java17/Jetty12 EE8/JDBC完成；D01-C首批隔离驱动/封存副本/数据元数据/ID/重开/恢复预演已实现，见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现；#23已完成启动失败即停止、显式校验checksum及运行时审计失败503策略（三平台各105项通过），见DATABASE_READINESS.md；Flyway桥接副本预演见FLYWAY_BRIDGE_REHEARSAL.md；完整H2应用/驱动升级及其余失败矩阵仍未完成；MySQL方言/26.7驱动及5.6逻辑导出到8.4/TLS/应用验证已由#28通过；ZK3.9.6/Netty4.1.137/FreeMarker2.3.35/CommonsIO2.22已由#29六job通过；见MYSQL_VALIDATION.md及CLIENT_TEMPLATE_UPGRADE.md；依赖审计仍未完成 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
-| E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | 增强队列，见ISSUE_TRIAGE.md；尚未实现 |
+| E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | hosts显式初始化/幂等/单独覆盖开关已由#31准确head六job验证并合并，默认关闭，见HOSTS_BOOTSTRAP.md；其他增强尚未实现 |
 | V02 | 验收维护版、已知限制和发布说明 | 维护预览说明和验证报告已准备，Fork PR #19；正式发行仍受D01/历史DB与部署验证阻塞，未发布 |
 
 ## 上游 PR 逐项清单
 
-D01-C本轮增量：修复原V1合法NULL历史行使ADMIN页面中断（HTTP可能仍200）的问题，保留HTML转义、Long ID和USER拒绝访问，见[NULL_HISTORY_VALIDATION.md](NULL_HISTORY_VALIDATION.md)。没有修改数据库、V1或驱动；完整跨版本应用切换与约束/索引/失败注入/差量恢复仍未完成。承接检查的#29已合并，六项准确head CI通过；上游仍14个开放PR/46个开放Issue、编号集合无新增，原分类不等于全部修好。
-
-14项全部完成本轮差异/讨论审查并给出处置：8项整合，#41部分重写，#105日志/Jetty部分重写；#93/#104由Java17/Jetty12 EE8整体方案替代，#103/#102仍延期。替代/部分采纳/延期不等于全部功能修复，数据库与其余依赖工作仍在D01；见PR_REVIEW.md。
+14项全部完成本轮差异/讨论审查并给出处置：8项整合，#41部分重写，#105日志/Jetty部分重写；#93/#104由Java17/Jetty12 EE8整体方案替代，#103由#28的Connector26.7/MySQL8.4方案替代，#102仍延期。替代/部分采纳/延期不等于全部功能修复，数据库与其余依赖工作仍在D01；见PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
@@ -47,7 +45,7 @@ D01-C本轮增量：修复原V1合法NULL历史行使ADMIN页面中断（HTTP可
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | Add ldap auth | rewritten，zhangdong1015 原贡献；Fork PR #11 |
 | [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | rewritten（日志/Jetty部分），MySQL迁移仍deferred；#16及JAVA17_VALIDATION.md |
 | [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | superseded：Java17/Jetty12.1.14全部Core/EE8模块迁移，不采用已EOL的10.0.10；JAVA17_VALIDATION.md |
-| [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | deferred，待新驱动及真实MySQL/历史库验证，D01/V01 |
+| [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | superseded，#28的Connector26.7/MySQL8.4方案及真实5.6逻辑迁移/TLS验证；不采用旧8.0.28 |
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | deferred，不直接打开旧库；导出/新建/导入和回滚验证，D01/V01 |
 | [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | superseded：Java17/Jetty12 EE8保留javax，整体迁移代替已EOL的Jetty11；JAVA17_VALIDATION.md |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | rewritten，vzardlloo 原贡献；Fork PR #12，US-ASCII JVM 端到端测试 |
@@ -109,3 +107,9 @@ D01-C本轮增量：修复原V1合法NULL历史行使ADMIN页面中断（HTTP可
 | [#18](https://github.com/DeemOpen/zkui/issues/18) | Kerberos implementation | enhancement；#13根命名空间可隔离HA路径；Kerberos/JAAS/SASL及每用户ZK身份仍未实现/未验。 |
 | [#14](https://github.com/DeemOpen/zkui/issues/14) | How do I run this behind an nginx proxy? | fixed；#17应用上下文完整支持；nginx保留前缀示例，未运行真实nginx/TLS。 |
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | deferred；312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
+
+## 本轮接续与优先队列（2026-10-15）
+
+- 承接已有Fork #30，不重复建PR：旧head187dc3d六项CI通过，但与已合并#31的TASKS说明冲突；保留最新master全部工作，只整理说明并保持#30既有源码字节不变。NULL历史200页面中断的复现/修复见[NULL_HISTORY_VALIDATION.md](NULL_HISTORY_VALIDATION.md)，合并后准确head需重新完整验收。
+- 上游重新查询仍14个开放PR、46个开放Issue，编号集合无新增。#49已有默认关闭的hosts可选实现，#6已有312763子节点的有限边界验证，#63已有MySQL8.4+独立方言/逻辑迁移路径；均不应混称全部旧版本/全部Issue已修复。
+- 当前本地执行环境不可用；本轮不新增代码实现，不声称组合版本本地构建成功。先完成已有#30新head六job核验，再推进D01-C完整应用/驱动切换、约束/索引、锁/中断/不可写和差量恢复；依赖审计、其余部署/增强/发行门槛继续保留。I02现有边界不代表原Windows9s:1s故障根因已复现。

@@ -72,7 +72,11 @@ public class Main {
         com.deem.zkui.utils.ZkClientAuth.validate(globalProps);
         com.deem.zkui.utils.ZooKeeperUtil.INSTANCE.setDefaultAcl(globalProps.getProperty("defaultAcl"));
         globalProps.setProperty("uptime", new Date().toString());
-        new Dao(globalProps).checkNCreate();
+        Dao history = new Dao(globalProps);
+        history.checkNCreate();
+        com.deem.zkui.utils.HostsBootstrap.Result bootstrap = com.deem.zkui.utils.HostsBootstrap.initialize(globalProps);
+        if (bootstrap.changed()) history.insertHistory("startup", "local",
+                "Hosts bootstrap created=" + bootstrap.created() + "; updated=" + bootstrap.updated());
 
         String webFolder = "webapp";
         Server server = new Server();
