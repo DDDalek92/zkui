@@ -4,7 +4,7 @@
 
 | PR | 标题 / 目标 | 初步决策 | 关键检查和依赖 |
 | --- | --- | --- | --- |
-| [#87](https://github.com/DeemOpen/zkui/pull/87) | 修正 defaultAcl 示例注释 | 适合早期独立整合 | 仅文档性质；检查 JSON 示例有效性，关联 Issue #99 |
+| [#87](https://github.com/DeemOpen/zkui/pull/87) | 修正 defaultAcl 示例注释 | 拆开处理，不原样合并 | JSON 引号/括号修正可采用；新增 Digest ACL 示例把认证口令与 ACL 标识混用，须重写，关联 Issue #99 |
 | [#109](https://github.com/DeemOpen/zkui/pull/109) | 保留多行节点文本空格和换行 | 优先测试后整合 | HTML 转义、长文本换行、搜索/导出行为、#43/#62 |
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | 配置根路径、子树搜索 | 修改后整合候选 | 根路径安全边界、搜索性能、空路径与路径遍历 |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | 表格排序 | 修改后整合候选 | 外部 CDN 供应链和离线部署、前端版本适配 |
@@ -22,6 +22,22 @@
 ## 已关闭历史 PR 的复查
 
 上游搜索另外显示 27 个已关闭 PR（**包括合并与未合并的 PR**），不能将它们全部当成待合并。复查优先对象：[#97](https://github.com/DeemOpen/zkui/pull/97) JSON 验证、[#83](https://github.com/DeemOpen/zkui/pull/83) 字符串值、[#73](https://github.com/DeemOpen/zkui/pull/73) JS 安全、[#78](https://github.com/DeemOpen/zkui/pull/78) Docker、[#27](https://github.com/DeemOpen/zkui/pull/27) 与 [#16](https://github.com/DeemOpen/zkui/pull/16) 涉及相互撤销的认证修改。须查询 `merged` 状态、上游当前代码是否已经包含效果，禁止重复应用已合并内容。
+
+## 第二轮差异检查补充（2026-10-15）
+
+已重新取得全部 14 个开放 PR 的文件补丁，以下是本轮静态检查发现；PR 讨论、作者身份/署名和对应动态回归仍需继续审核，本轮没有合入上游补丁。
+
+| PR | 具体证据 | 整合要求 |
+| --- | --- | --- |
+| #41 | `home.js` 对所有文本输入及 textarea 执行 trim；`Dao` 新增路径 SQL 字符串拼接；直接修改 `V1__Core.sql`；historyLimit 判断条件也可疑 | 避免静默改变配置值；描述功能与输入校验拆开；参数化 SQL；新迁移脚本和历史数据库测试 |
+| #50 | 从 ACL 的 scheme/id 向 `addAuthInfo` 逐项传参，把节点授权与客户端身份混在同一配置中 | 分离认证凭据和新节点 ACL；验证 Digest、IP、auth 等方案，不把原始口令作为持久化 ACL 标识 |
+| #87 | 新增 `digest` ACL 使用 `auth_username:auth_password` | ZooKeeper Digest 认证发送用户名/口令，ACL 标识使用用户名及摘要；两者应分别说明，参考[官方 ACL 文档](https://zookeeper.apache.org/doc/r3.8.5/zookeeperProgrammers.html#sc_ZooKeeperAccessControl) |
+| #88 | UTF-8 修改之外在 `LeafBean.getStrValue()` 增加 INFO 日志，包含原始节点值且使用 `%v` 格式 | 只采纳端到端编码改进；删除值日志，覆盖中文、换行、二进制和导入导出往返 |
+| #107 | 域登录拼接被固定替换为 `uid=...,ou=...`，移除 LDAP 角色通配符；错误消息解析假定一定包含 `reason` | 保留 AD/LDAP 配置兼容；可配置 DN；稳健解析错误；分别验证角色映射、空口令与失败流程 |
+| #110 | 从 unpkg 引入额外 JS/CSS | 明确离线部署与前端依赖管理方案后实现排序 |
+| #93/#104/#105/#103/#102 | 多份 POM 补丁修改同一 Jetty/MySQL 属性，且目标均是历史版本；H2 跨大版本 | 按统一依赖方案替代，不能按 PR 编号顺序累加。H2 升级必须包含导出/导入与旧库副本验证 |
+
+本轮新增测试基线详见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)，没有将这些待整合 PR 标成测试通过。
 
 ## 整合流程
 

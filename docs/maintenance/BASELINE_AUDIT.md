@@ -1,5 +1,7 @@
 # ZKUI 接管审计：代码基线（初稿）
 
+> 后续进度：现已补充 JDK 8 真实构建、3 个单元测试、5 个隔离集成测试及 CI 配置，详见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)。下文保留首次静态审计时的状态，不代表这些验证仍未运行。JDK 17 构建已实测在旧 ActiveJDBC 插件处失败。
+
 > 审计日期：2026-10-15。目标仓库：[DDDalek92/zkui](https://github.com/DDDalek92/zkui)；上游：[DeemOpen/zkui](https://github.com/DeemOpen/zkui)。
 >
 > 基线提交：`1b3e7c133ab76a26c9c5b3653679d77d0cd6358d`（双方 `master` 相同）。本文件是**静态审计初稿**，尚未运行 Maven、Docker、ZooKeeper、浏览器或真实 LDAP 测试；任何运行兼容性与漏洞可利用性结论均待验证。

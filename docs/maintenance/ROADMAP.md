@@ -1,6 +1,6 @@
 # ZKUI 长期维护路线图
 
-> 2026-10-15。基于 Fork `DDDalek92/zkui` 对齐上游 `master` 基线 `1b3e7c1`。本次只创建文档与维护分支，不自动合并历史 PR、关闭上游 Issue 或更改业务代码。
+> 2026-10-15 更新。基于 Fork `DDDalek92/zkui` 和上游基线 `1b3e7c1`。首次文档 PR 为 #1；后续测试/CI 工作使用独立分支。当前没有批量整合历史 PR 或修改应用业务源码。
 
 ## 阶段 M0：审计和隔离（当前）
 
@@ -8,15 +8,18 @@
 - [x] 完成上游 14 个开放 PR / 46 个开放 Issue 的初步编号清单与分组。
 - [x] 完成初步源码、安全、测试和维护计划文档。
 - [ ] 补齐 PR 全量逐行审阅与全部讨论、Issue 正文/评论分析，消除“待验证”项。
-- [ ] 在本地或 Work 云开发环境完成真实 Maven 构建、容器和最小登录/CRUD 冒烟。
+- [x] 完成 JDK 8 真实 Maven 构建和隔离 HTTP 登录/CRUD 冒烟，详见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)。
+- [ ] 完成 Docker 构建与部署验证。
 
 交付文档：[BASELINE_AUDIT.md](BASELINE_AUDIT.md)、[SECURITY_AUDIT.md](SECURITY_AUDIT.md)、[TEST_STRATEGY.md](TEST_STRATEGY.md)、[PR_REVIEW.md](PR_REVIEW.md)、[ISSUE_TRIAGE.md](ISSUE_TRIAGE.md)。
 
 ## 阶段 M1：建立测试和 CI
 
-- 修正测试占位现状，建立 JUnit 单元测试及 ZooKeeper 隔离集成测试。
-- 建立 GitHub Actions CI，记录基线失败；保存构建/安全/测试报告。
-- 固定可运行的最低 JDK + Maven + Docker 组合；建立数据备份和回滚规范。
+- [x] 替换测试占位类，建立 3 个 JUnit 单元测试和 5 个隔离集成测试。
+- [x] 创建 GitHub Actions CI，保存测试与构建报告；远程运行结果以 PR 检查为准。
+- [x] 验证 JDK 8 + Maven 3.9.9，添加 Maven Wrapper 和发行包校验。
+- [ ] 加入依赖安全扫描、Digest/LDAP 和核心安全边界回归。
+- [ ] 验证 Docker，建立历史数据备份和回滚演练。
 
 **阻塞条件**：没有可运行验证体系时，不开始高风险 PR 的批量整合。
 
