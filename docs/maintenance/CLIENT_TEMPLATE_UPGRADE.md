@@ -20,3 +20,5 @@ Official version/API basis:
 - https://github.com/xerial/snappy-java/releases/tag/v1.1.10.12
 
 Not a clean vulnerability-scan, license-clearance, H2/Flyway upgrade or final release claim. Exact-head CI must pass and the observed legacy image digest must be pinned before merge.
+
+First legacy check reached the3.5.7 server but the test used List.of for an ACL; ZooKeeper3.9 validateACL calls contains(null), which that JDK immutable list rejects. Use a normal mutable ACL list, matching production ACL construction, and pin observed legacy image digest sha256:883b014b6535574503bda8fc6a7430ba009c0273242f86d401095689652e5731. A successful new exact-head rerun is still required.

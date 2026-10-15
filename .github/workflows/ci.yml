@@ -152,8 +152,8 @@ jobs:
         run: |
           set -euo pipefail
           trap 'docker logs zkui-legacy-zk || true; docker rm -fv zkui-legacy-zk || true' EXIT
-          docker run -d --name zkui-legacy-zk -p 127.0.0.1:12181:2181 zookeeper:3.5.7
-          docker image inspect -f '{{index .RepoDigests 0}}' zookeeper:3.5.7 | tee target/zk-legacy-digest.txt
+          docker run -d --name zkui-legacy-zk -p 127.0.0.1:12181:2181 zookeeper:3.5.7@sha256:883b014b6535574503bda8fc6a7430ba009c0273242f86d401095689652e5731
+          docker image inspect -f '{{index .RepoDigests 0}}' zookeeper:3.5.7@sha256:883b014b6535574503bda8fc6a7430ba009c0273242f86d401095689652e5731 | tee target/zk-legacy-digest.txt
           java -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.ZkCompatibilitySmoke
           ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/updated-runtime-dependencies.txt
           cat target/updated-runtime-dependencies.txt

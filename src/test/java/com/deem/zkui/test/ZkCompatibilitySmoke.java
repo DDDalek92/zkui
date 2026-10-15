@@ -28,7 +28,8 @@ public final class ZkCompatibilitySmoke {
             ZkClientAuth.apply(client, auth);
             client.create(root, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             String key = root + "/private";
-            List<ACL> acl = List.of(new ACL(ZooDefs.Perms.ALL, new Id("auth", "")));
+            List<ACL> acl = new java.util.ArrayList<>();
+            acl.add(new ACL(ZooDefs.Perms.ALL, new Id("auth", "")));
             client.create(key, "  中文😀\nvalue  ".getBytes(StandardCharsets.UTF_8), acl, CreateMode.PERSISTENT);
             Stat stat = new Stat();
             if (!"  中文😀\nvalue  ".equals(new String(client.getData(key, false, stat), StandardCharsets.UTF_8))) throw new AssertionError("Text changed");
