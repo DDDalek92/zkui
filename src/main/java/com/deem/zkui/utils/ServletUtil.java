@@ -38,6 +38,20 @@ public enum ServletUtil {
 
     INSTANCE;
     private final static Logger logger = LoggerFactory.getLogger(ServletUtil.class);
+    private final Configuration templates = templateConfiguration();
+
+    private static Configuration templateConfiguration() {
+        Configuration configuration = new Configuration(Configuration.VERSION_2_3_35);
+        configuration.setClassForTemplateLoading(ServletUtil.class, "/");
+        configuration.setDefaultEncoding("UTF-8");
+        // Existing templates explicitly escape every dynamic HTML field with ?html.
+        configuration.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
+        configuration.setTemplateExceptionHandler(freemarker.template.TemplateExceptionHandler.RETHROW_HANDLER);
+        configuration.setLogTemplateExceptions(false);
+        configuration.setAPIBuiltinEnabled(false);
+        configuration.setNewBuiltinClassResolver(freemarker.core.TemplateClassResolver.ALLOWS_NOTHING_RESOLVER);
+        return configuration;
+    }
 
     public void renderHtml(HttpServletRequest request, HttpServletResponse response, Map<String, Object> templateParam, String view) throws IOException, TemplateException {
 
@@ -64,9 +78,7 @@ public enum ServletUtil {
                 
                 Template template = null;
                 long startTime = System.currentTimeMillis();
-                Configuration config = new Configuration();
-                config.setClassForTemplateLoading(request.getServletContext().getClass(), "/");
-                template = config.getTemplate("/webapp/template/" + view);
+                template = templates.getTemplate("webapp/template/" + view);
                 template.process(templateParam, response.getWriter());
                 long estimatedTime = System.currentTimeMillis() - startTime;
                 logger.trace("Elapsed Time in Secs for Rendering: " + estimatedTime / 1000);
@@ -82,9 +94,7 @@ public enum ServletUtil {
             Map<String, Object> templateParam = new HashMap<>();
             response.setContentType("text/html;charset=UTF-8");
             Template template = null;
-            Configuration config = new Configuration();
-            config.setClassForTemplateLoading(request.getServletContext().getClass(), "/");
-            template = config.getTemplate("/webapp/template/error.ftl.html");
+            template = templates.getTemplate("webapp/template/error.ftl.html");
             templateParam.put("contextPath", request.getContextPath());
             templateParam.put("error", error);
             template.process(templateParam, response.getWriter());

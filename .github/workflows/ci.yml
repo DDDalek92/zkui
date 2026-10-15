@@ -133,3 +133,36 @@ jobs:
             target/mysql-original-snapshot.txt
             target/mysql-runtime-dependencies.txt
           retention-days: 14
+
+  zk-legacy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build client compatibility helper
+        run: ./mvnw -B -ntp -DskipTests package
+      - name: Current client against owned legacy server
+        env:
+          ZKUI_OWNED_ZK_FIXTURE: 'true'
+        run: |
+          set -euo pipefail
+          trap 'docker logs zkui-legacy-zk || true; docker rm -fv zkui-legacy-zk || true' EXIT
+          docker run -d --name zkui-legacy-zk -p 127.0.0.1:12181:2181 zookeeper:3.5.7
+          docker image inspect -f '{{index .RepoDigests 0}}' zookeeper:3.5.7 | tee target/zk-legacy-digest.txt
+          java -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.ZkCompatibilitySmoke
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/updated-runtime-dependencies.txt
+          cat target/updated-runtime-dependencies.txt
+      - name: Save client compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zk-client-compatibility
+          path: |
+            target/zk-legacy-digest.txt
+            target/updated-runtime-dependencies.txt
+          retention-days: 14
