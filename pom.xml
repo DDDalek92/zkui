@@ -117,6 +117,29 @@
     </dependencies>
     <build>
         <plugins>
+            <!-- Test-only candidate driver: never enters the runtime dependency graph or assembled JAR. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-isolated-migration-driver</id>
+                        <phase>pre-integration-test</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <artifactItems><artifactItem>
+                                <groupId>com.h2database</groupId>
+                                <artifactId>h2</artifactId>
+                                <version>2.5.252</version>
+                                <type>jar</type>
+                                <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory>
+                                <destFileName>h2-candidate.jar</destFileName>
+                            </artifactItem></artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -132,6 +155,7 @@
                 <configuration>
                     <failIfNoTests>true</failIfNoTests>
                     <systemPropertyVariables>
+                        <zkui.migration.h2.jar>${project.build.directory}/migration-drivers/h2-candidate.jar</zkui.migration.h2.jar>
                         <zkui.test.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</zkui.test.jar>
                         <zkui.test.config>${project.basedir}/config.cfg</zkui.test.config>
                     </systemPropertyVariables>

@@ -32,6 +32,10 @@ loopback ZooKeeper servers and use temporary H2 databases; no external ZooKeeper
 Docker, database or production configuration is needed. First use requires
 network access to download Maven and dependencies.
 
+Historical-database rehearsal tests download a separate candidate H2 driver and
+run it only in isolated subprocesses with synthetic database copies. The application
+still packages H2 1.3.174; see the [rehearsal scope and blockers](docs/maintenance/H2_MIGRATION_REHEARSAL.md).
+
 The Java 17 GitHub Actions workflow runs the same command on Linux, Windows and
 macOS and uploads test reports; Chrome and a non-root Java 17 Docker smoke are also checked.
 See [test strategy](docs/maintenance/TEST_STRATEGY.md) and

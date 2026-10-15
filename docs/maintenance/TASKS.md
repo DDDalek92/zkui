@@ -27,7 +27,7 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1完成；D01-A/B已实现Java17/Jetty12 EE8及JDBC替换旧ORM，见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)和对应Fork PR的准确head CI；D01-C/D/E历史数据库跨版本迁移/实际MySQL/审计仍待执行 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1、#21的Java17/Jetty12 EE8/JDBC完成；D01-C首批隔离驱动/封存副本/数据元数据/ID/重开/恢复预演已实现，见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现，完整应用/Flyway升级/失败矩阵、实际MySQL和审计仍未完成 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 待处理，不能用普通CRUD替代 |
