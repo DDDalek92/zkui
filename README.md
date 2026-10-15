@@ -293,3 +293,7 @@ location /zkui/ {
 ```
 
 The `proxy_pass` here has no trailing URI slash, so nginx keeps `/zkui/` upstream. Visit `/zkui/`; do not strip the prefix upstream while configuring zkui with it. Only enable `X-Forwarded-For=true` when requests reach zkui exclusively through a trusted proxy. Direct application/context behavior is tested; deployment-specific nginx/TLS settings still require verification.
+
+Docker build and environment
+----------------------------
+Build from this repository root with `docker build -f docker/Dockerfile -t zkui:local .` (or `make build`); then set `ZK_SERVER` and your `USER_SET`, and run `sh run.sh`. This builds a local image and does not rely on a published `zkui:latest`. The runtime uses UID/GID10001, preserves history in `/var/app/data`, and accepts `ZK_SERVER`, `USER_SET`, `LOGIN_MESSAGE`, `ZKUI_BASEURL` directly in Java without rewriting config files. See [Docker instructions](docker/Docker.md) for volumes, read-only configuration, network names and complete examples. Other images’ `ZKUI_ADMIN_PW`/`ZKUI_ZK_SERVER` flags do not apply.

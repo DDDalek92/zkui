@@ -14,7 +14,11 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -33,6 +37,7 @@ jobs:
           set -o pipefail
           ./mvnw -B -ntp clean verify 2>&1 | tee "$RUNNER_TEMP/maven-build.log"
       - name: Browser sorting checks against rendered JAR pages
+        if: runner.os == 'Linux'
         env:
           ZKUI_BROWSER_CHANNEL: chrome
         run: |
@@ -42,9 +47,27 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: java8-baseline-reports
+          name: java8-baseline-reports-${{ runner.os }}
           path: |
             target/surefire-reports/
             target/failsafe-reports/
             ${{ runner.temp }}/maven-build.log
           retention-days: 14
+
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Build local image and check non-root runtime
+        run: |
+          docker build -f docker/Dockerfile -t zkui:ci .
+          test "$(docker image inspect -f '{{.Config.User}}' zkui:ci)" = '10001:10001'
+      - name: Check container login and context assets with synthetic credentials
+        run: |
+          trap 'docker logs zkui-ci; docker rm -fv zkui-ci' EXIT
+          docker run -d --name zkui-ci -p 127.0.0.1:19090:9090 \
+            -e ZK_SERVER=127.0.0.1:1 -e ZKUI_BASEURL=/container/ \
+            -e LOGIN_MESSAGE='Container smoke' \
+            -e USER_SET='{"users":[{"username":"container-test","password":"synthetic-container-only","role":"ADMIN"}]}' zkui:ci
+          python3 src/test/docker/smoke.py

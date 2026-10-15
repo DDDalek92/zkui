@@ -74,16 +74,31 @@ final class TestApplication extends ExternalResource {
             if ("true".equals(config.getProperty("testUseLdap")) && !config.getProperty("ldapUrl").startsWith("ldap://127.0.0.1:")) {
                 throw new AssertionError("LDAP tests must use their loopback fixture");
             }
+            java.util.Map<String, String> testEnvironment = new java.util.HashMap<>();
+            if (Boolean.parseBoolean(config.getProperty("testEnvironment", "false"))) {
+                testEnvironment.put("ZK_SERVER", config.getProperty("zkServer"));
+                testEnvironment.put("USER_SET", config.getProperty("userSet"));
+                testEnvironment.put("LOGIN_MESSAGE", "Environment 中文 & <banner>");
+                testEnvironment.put("ZKUI_BASEURL", config.getProperty("baseURL", "/"));
+                config.setProperty("zkServer", "127.0.0.1:1");
+                config.setProperty("userSet", "{\"users\":[]}");
+                config.setProperty("baseURL", "/ignored");
+            }
             try (OutputStream out = new FileOutputStream(new File(work, "config.cfg"))) {
                 config.store(out, "Isolated security regression configuration");
             }
             File log = new File("target/failsafe-reports/" + name + ".log");
             log.getParentFile().mkdirs();
-            process = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
+            ProcessBuilder builder = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
                     "-Dfile.encoding=" + config.getProperty("testFileEncoding", "UTF-8"),
                     "-Dlog4j.configuration=" + new File("target/test-classes/log4j.properties").toURI(),
                     "-jar", System.getProperty("zkui.test.jar"))
-                    .directory(work).redirectErrorStream(true).redirectOutput(log).start();
+                    .directory(work).redirectErrorStream(true).redirectOutput(log);
+            for (String name : new String[]{"ZK_SERVER", "USER_SET", "LOGIN_MESSAGE", "ZKUI_BASEURL"}) {
+                builder.environment().remove(name);
+            }
+            builder.environment().putAll(testEnvironment);
+            process = builder.start();
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
             while (process.isAlive() && System.nanoTime() < deadline) {
                 try {
