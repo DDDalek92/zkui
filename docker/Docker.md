@@ -12,7 +12,7 @@ sh run.sh
 
 `zkui:local` is built locally. No public `zkui:latest` image is assumed or published. `make` only builds. An operator may explicitly tag/push to a registry they control with `make publish PUBLISH_IMAGE=registry/namespace/zkui:tag`; maintenance CI never publishes images.
 
-The multi-stage Dockerfile uses a Temurin JDK8 builder and JRE8 runtime, builds the repository's Maven Wrapper, and runs as numeric user/group `10001:10001`. Base tags are mutable and are not a reproducible digest lock; the next release validation must lock reviewed digests. The image still contains the Java8-era application dependency limitations in `docs/maintenance/DEPENDENCIES.md`.
+The multi-stage Dockerfile uses a Temurin JDK8 builder and JRE8 runtime, builds the repository's Maven Wrapper, and runs as numeric user/group `10001:10001`. Both Temurin base images are pinned to the official registry digests resolved in CI. The builder installs unzip so the Maven Wrapper verifies the pinned ZIP rather than falling back to a tarball with a different checksum; checksum validation remains enabled. The image still contains the Java8-era application dependency limitations in `docs/maintenance/DEPENDENCIES.md`.
 
 The default container H2 URL is `jdbc:h2:/var/app/data/history`; run.sh uses a named `zkui-data` volume for this directory. Preserve that volume when replacing containers. Do not mount an old production H2 file into a newer database engine without the tested migration/rollback procedure. Other deployment settings may be supplied by mounting your config at `/var/app/config.cfg:ro`; its permissions must permit UID10001 to read it. Startup does not edit this file. A mounted config chooses its own JDBC URL; point it at `/var/app/data` if using the supplied volume.
 
