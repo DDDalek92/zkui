@@ -121,6 +121,17 @@ jobs:
           docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-synthetic-export.sql
           docker exec zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_fresh CHARACTER SET utf8mb4; CREATE DATABASE zkui_unknown CHARACTER SET utf8mb4'
           java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlMigrationSmoke verify
+          # Independent copies only: never bridge the sealed original fixture or application database.
+          docker exec zkui-mysql56 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_bridge CHARACTER SET utf8mb4; CREATE DATABASE zkui_bridge_bad CHARACTER SET utf8mb4'
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF zkui_fixture > target/mysql-bridge-copy.sql
+          for copy in zkui_bridge zkui_bridge_bad; do
+            docker exec -i zkui-mysql56 mysql -uroot -psynthetic-mysql-ci-only "$copy" < target/mysql-bridge-copy.sql
+          done
+          java -Duser.timezone=UTC -cp target/test-classes:target/classes:target/migration-drivers/mysql-old.jar:target/migration-drivers/flyway-old.jar:target/migration-drivers/flyway-bridge.jar com.deem.zkui.test.MySqlFlywayBridgeSmoke bridge
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_bridge > target/mysql-bridged-export.sql
+          docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-bridged-export.sql
+          docker exec zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_modern_fresh CHARACTER SET utf8mb4'
+          java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/classes:target/migration-drivers/flyway-mysql-candidate.jar:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlFlywayBridgeSmoke modern
           ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/mysql-runtime-dependencies.txt
           cat target/mysql-runtime-dependencies.txt
       - name: Save synthetic migration evidence
@@ -132,6 +143,7 @@ jobs:
             target/mysql-image-digests.txt
             target/mysql-original-snapshot.txt
             target/mysql-runtime-dependencies.txt
+            target/mysql-flyway-bridge-snapshot.txt
           retention-days: 14
 
   zk-legacy:

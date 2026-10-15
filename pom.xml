@@ -138,6 +138,9 @@
                         <goals><goal>copy</goal></goals>
                         <configuration>
                             <artifactItems><artifactItem>
+                                <groupId>org.flywaydb</groupId><artifactId>flyway-mysql</artifactId><version>13.10.3</version><type>jar</type>
+                                <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory><destFileName>flyway-mysql-candidate.jar</destFileName>
+                            </artifactItem><artifactItem>
                                 <groupId>com.h2database</groupId>
                                 <artifactId>h2</artifactId>
                                 <version>2.5.252</version>
