@@ -211,4 +211,64 @@ public class H2MigrationRehearsalIT {
         assertEquals(rollback.output, 0, rollback.status);
         assertEquals(before, sealedManifest(root));
     }
+
+    @Test public void killedNativeRunscriptLeavesReadablePartialTargetThatCannotPassRowAcceptance() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Process importer = startWithClasspath(root, "interrupt-import", true, false);
+        try {
+            Path ready = root.resolve("import-paused");
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+            while (importer.isAlive() && System.nanoTime() < deadline) {
+                if (Files.exists(ready) && nonce.equals(Files.readString(ready))) break;
+                Thread.sleep(50);
+            }
+            assertTrue(Files.readString(root.resolve("interrupt-import.log")), Files.exists(ready));
+            assertEquals(nonce, Files.readString(ready));
+            assertTrue("RUNSCRIPT must still be executing at the gate", importer.isAlive());
+            importer.destroyForcibly();
+            assertTrue("Owned importer must exit", importer.waitFor(5, TimeUnit.SECONDS));
+        } finally {
+            stopOwnedProcess(importer);
+        }
+        Reply partial = run(root, "check-partial-import", true);
+        assertEquals(partial.output, 0, partial.status);
+        assertTrue(partial.output.contains("INTERRUPTED_RUNSCRIPT_READABLE_BUT_HISTORY_MISSING_WITH_V1_PRESENT"));
+        Reply refused = run(root, "accept-partial-import", true);
+        assertNotEquals("Readable partial target must not pass data acceptance", 0, refused.status);
+        assertTrue(refused.output, refused.output.contains("History rows or Flyway metadata differ"));
+        Map<String, String> partialBefore = directoryManifest(root.resolve("new-interrupted"));
+        Reply repeated = run(root, "interrupt-import", true);
+        assertNotEquals("Partial target must not be overwritten or silently resumed", 0, repeated.status);
+        assertEquals(partialBefore, directoryManifest(root.resolve("new-interrupted")));
+        assertEquals(nonce, Files.readString(root.resolve("new-interrupted/incomplete.marker")));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply fresh = run(root, "legacy", true); // Separate new path, never resume the partial target.
+        assertEquals(fresh.output, 0, fresh.status);
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+        assertEquals(before, sealedManifest(root));
+    }
+
+    @Test public void readonlyCandidateRefusesNativeImportWithoutChangingTargetOrSourceFiles() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Reply created = run(root, "create-readonly-target", true);
+        assertEquals(created.output, 0, created.status);
+        Map<String, String> targetBefore = directoryManifest(root.resolve("new-readonly"));
+        Reply refused = run(root, "readonly-import", true);
+        assertEquals(refused.output, 0, refused.status);
+        assertTrue(refused.output, refused.output.contains("EXPECTED_READONLY_TARGET_RUNSCRIPT_REFUSAL_90097_NO_TABLES"));
+        assertEquals(targetBefore, directoryManifest(root.resolve("new-readonly")));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply fresh = run(root, "legacy", true);
+        assertEquals(fresh.output, 0, fresh.status);
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+        assertEquals(before, sealedManifest(root));
+    }
 }

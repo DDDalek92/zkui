@@ -14,6 +14,8 @@
 
 ## 证据与未覆盖边界
 
+Fork [#33](https://github.com/DDDalek92/zkui/pull/33)已在准确head `69d367fc832ad4679314a492df01d98c9ca48dbe` 的[运行38781568897](https://github.com/DDDalek92/zkui/actions/runs/38781568897)全部六job通过后审查合并。逐份完整日志：Ubuntu116582813918、macOS116582813547、Windows116582813897各16单元+105集成=121项、0失败/错误/跳过；迁移七项、Chrome3组、container116582813346、mysql116582813648及zk-legacy116582813413通过。同head push运行38781523517也全部成功；下文待CI为提交时记录。后续原生导入中断/只读目标增量见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。
+
 本地OpenJDK17.0.20/Linux定向七项迁移预演通过；最终代码clean verify返回0，Surefire八份XML合计16单元、Failsafe二十八份XML及汇总合计105集成，共121项，0失败/错误/跳过。文本日志尾部截断，计数依据XML/汇总而非完整Maven文本；本机未执行Chrome/Docker/MySQL/旧ZK容器。准确PR head六项远程CI/完整日志仍须独立核验，不能使用 #32 的120项/旧head结果代替本增量。
 
 这只验证**空闲持锁进程被终止后已提交快照恢复**，不是在RUNSCRIPT中途杀进程、未提交事务崩溃恢复、断电/存储掉盘/磁盘满、不可写、双进程共同写入或应用层锁失败就绪策略。候选文件格式仍不交给旧驱动，恢复原快照不包含切换后差量回迁。

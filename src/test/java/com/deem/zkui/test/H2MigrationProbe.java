@@ -8,11 +8,15 @@ import java.util.*;
 /** Child-process helper for synthetic fixtures only, deliberately independent of JUnit and the application. */
 public final class H2MigrationProbe {
     private static final long HIGH_ID = 9007199254740993L;
+    private static Path fixtureRoot;
+    private static String ownershipNonce;
 
     public static void main(String[] args) throws Exception {
         String mode = args[0];
         Path root = Path.of(args[1]).toRealPath();
         if (!Files.readString(root.resolve("owned-fixture")).equals(args[2])) throw new AssertionError("Not test-owned");
+        fixtureRoot = root;
+        ownershipNonce = args[2];
         if (Collections.list(H2MigrationProbe.class.getClassLoader().getResources("org/h2/Driver.class")).size() != 1)
             throw new AssertionError("Exactly one H2 driver must be visible");
         Class.forName("org.h2.Driver");
@@ -30,6 +34,11 @@ public final class H2MigrationProbe {
             case "hold-candidate-lock": holdCandidateLock(root); break;
             case "compete-candidate-lock": competeCandidateLock(root); break;
             case "recover-candidate-lock": recoverCandidateLock(root); break;
+            case "interrupt-import": interruptImport(root); break;
+            case "check-partial-import": checkPartialImport(root); break;
+            case "accept-partial-import": acceptPartialImport(root); break;
+            case "create-readonly-target": createReadonlyTarget(root); break;
+            case "readonly-import": readonlyImport(root); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
@@ -147,6 +156,95 @@ public final class H2MigrationProbe {
             appendAndCheck(connection, "synthetic-rollback-row");
         }
         System.out.println("OLD_DRIVER_ROLLBACK_COPY_OK");
+    }
+
+    private static void interruptImport(Path root) throws Exception {
+        Path target = Files.createDirectory(root.resolve("new-interrupted"));
+        Files.writeString(target.resolve("incomplete.marker"), ownershipNonce, java.nio.file.StandardOpenOption.CREATE_NEW);
+        String original = Files.readString(root.resolve("export.sql"));
+        String insertion = "INSERT INTO PUBLIC.HISTORIES(";
+        int offset = original.indexOf(insertion);
+        if (offset < 0 || original.indexOf(insertion, offset + insertion.length()) >= 0)
+            throw new AssertionError("Unexpected owned export shape");
+        // Separate fault fixture; never alter the original export, V1 or sealed source.
+        String gate = "CREATE ALIAS ZKUI_TEST_IMPORT_GATE FOR 'com.deem.zkui.test.H2MigrationProbe.pauseImport';\n"
+                + "CHECKPOINT SYNC;\nCALL ZKUI_TEST_IMPORT_GATE();\n";
+        Path script = root.resolve("export-interrupted.sql");
+        Files.writeString(script, original.substring(0, offset) + gate + original.substring(offset),
+                java.nio.file.StandardOpenOption.CREATE_NEW);
+        try (Connection connection = connect(url(root, "new-interrupted") + ";MODE=LEGACY", "2.5.252");
+                Statement statement = connection.createStatement()) {
+            statement.execute("RUNSCRIPT FROM " + literal(script) + " CHARSET 'UTF-8' FROM_1X");
+            throw new AssertionError("Paused fault import unexpectedly completed");
+        }
+    }
+
+    /** H2 test-only SQL alias: pause inside native RUNSCRIPT after durable DDL/metadata, before history rows. */
+    public static void pauseImport(Connection connection) throws Exception {
+        if (fixtureRoot == null || !ownershipNonce.equals(Files.readString(fixtureRoot.resolve("owned-fixture"))))
+            throw new AssertionError("Not test-owned");
+        assertPartialRows(connection);
+        Files.writeString(fixtureRoot.resolve("import-paused"), ownershipNonce, java.nio.file.StandardOpenOption.CREATE_NEW);
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(45);
+        while (System.nanoTime() < deadline) Thread.sleep(50);
+        throw new AssertionError("Owned import gate exceeded bounded lifetime");
+    }
+
+    private static void assertPartialRows(Connection connection) throws Exception {
+        try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery("SELECT COUNT(*) FROM histories")) {
+            if (!rows.next() || rows.getInt(1) != 0) throw new AssertionError("Expected incomplete history import");
+        }
+        try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(
+                "SELECT \"success\" FROM \"schema_version\" WHERE \"version\"='1'")) {
+            if (!rows.next() || !rows.getBoolean(1) || rows.next()) throw new AssertionError("Expected already imported V1 metadata");
+        }
+    }
+
+    private static void checkPartialImport(Path root) throws Exception {
+        if (!ownershipNonce.equals(Files.readString(root.resolve("new-interrupted/incomplete.marker"))))
+            throw new AssertionError("Partial target marker missing");
+        try (Connection connection = connect(url(root, "new-interrupted") + ";MODE=LEGACY;IFEXISTS=TRUE", "2.5.252")) {
+            assertPartialRows(connection);
+            historySchema(connection);
+        }
+        System.out.println("INTERRUPTED_RUNSCRIPT_READABLE_BUT_HISTORY_MISSING_WITH_V1_PRESENT");
+    }
+
+    private static void acceptPartialImport(Path root) throws Exception {
+        try (Connection connection = connect(url(root, "new-interrupted") + ";MODE=LEGACY;IFEXISTS=TRUE", "2.5.252")) {
+            assertSnapshot(root, connection); // Must fail: metadata/table existence alone is insufficient.
+        }
+        throw new AssertionError("Incomplete target was accepted");
+    }
+
+    private static void createReadonlyTarget(Path root) throws Exception {
+        Files.createDirectory(root.resolve("new-readonly"));
+        try (Connection connection = connect(url(root, "new-readonly") + ";MODE=LEGACY;TRACE_LEVEL_FILE=0", "2.5.252")) {
+            assertNoPublicTables(connection);
+        }
+    }
+
+    private static void assertNoPublicTables(Connection connection) throws Exception {
+        try (ResultSet tables = connection.getMetaData().getTables(null, "PUBLIC", "%", new String[]{"TABLE", "BASE TABLE"})) {
+            if (tables.next()) throw new AssertionError("Read-only import unexpectedly created a table");
+        }
+    }
+
+    private static void readonlyImport(Path root) throws Exception {
+        try (Connection connection = connect(url(root, "new-readonly")
+                + ";MODE=LEGACY;IFEXISTS=TRUE;ACCESS_MODE_DATA=r;TRACE_LEVEL_FILE=0", "2.5.252");
+                Statement statement = connection.createStatement()) {
+            if (!connection.getMetaData().isReadOnly()) throw new AssertionError("Read-only fixture was not read-only");
+            assertNoPublicTables(connection);
+            try {
+                statement.execute("RUNSCRIPT FROM " + literal(root.resolve("export.sql")) + " CHARSET 'UTF-8' FROM_1X");
+                throw new AssertionError("Read-only target accepted import");
+            } catch (SQLException expected) {
+                if (expected.getErrorCode() != 90097 || !"90097".equals(expected.getSQLState())) throw expected;
+            }
+            assertNoPublicTables(connection);
+        }
+        System.out.println("EXPECTED_READONLY_TARGET_RUNSCRIPT_REFUSAL_90097_NO_TABLES");
     }
 
 
