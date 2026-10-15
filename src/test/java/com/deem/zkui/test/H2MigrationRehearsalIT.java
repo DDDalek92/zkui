@@ -31,6 +31,22 @@ public class H2MigrationRehearsalIT {
         return runWithClasspath(root, mode, candidate, false);
     }
     private Reply runWithClasspath(Path root, String mode, boolean candidate, boolean bridge) throws Exception {
+        Process process = startWithClasspath(root, mode, candidate, bridge);
+        try {
+            if (!process.waitFor(30, TimeUnit.SECONDS)) throw new AssertionError("Owned migration subprocess timed out");
+            Reply reply = new Reply(); reply.status = process.exitValue(); reply.output = Files.readString(root.resolve(mode + ".log"));
+            return reply;
+        } finally {
+            stopOwnedProcess(process);
+        }
+    }
+    private void stopOwnedProcess(Process process) throws Exception {
+        if (process.isAlive()) {
+            process.destroyForcibly();
+            assertTrue("Owned subprocess must terminate", process.waitFor(5, TimeUnit.SECONDS));
+        }
+    }
+    private Process startWithClasspath(Path root, String mode, boolean candidate, boolean bridge) throws Exception {
         String classes = new File(H2MigrationProbe.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
         String driver = new File(System.getProperty(candidate ? "zkui.migration.h2.jar" : "zkui.test.jar")).getAbsolutePath();
         assertTrue("Required isolated driver/app artifact missing", new File(driver).isFile());
@@ -47,16 +63,10 @@ public class H2MigrationRehearsalIT {
             classpath = String.join(File.pathSeparator, entries);
         }
         File log = root.resolve(mode + ".log").toFile();
-        Process process = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
+        return new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
                 "-Duser.timezone=UTC", "-Dfile.encoding=UTF-8", "-cp", classpath,
                 H2MigrationProbe.class.getName(), mode, root.toString(), nonce)
                 .redirectErrorStream(true).redirectOutput(log).start();
-        if (!process.waitFor(30, TimeUnit.SECONDS)) {
-            process.destroyForcibly(); process.waitFor(5, TimeUnit.SECONDS);
-            throw new AssertionError("Owned migration subprocess timed out");
-        }
-        Reply reply = new Reply(); reply.status = process.exitValue(); reply.output = Files.readString(log.toPath());
-        return reply;
     }
     private Map<String, String> sealedManifest(Path root) throws Exception {
         return directoryManifest(root.resolve("sealed-source"));
@@ -158,6 +168,43 @@ public class H2MigrationRehearsalIT {
         Reply drift = run(root, "schema-drift", true);
         assertNotEquals("Widened schema must not pass migration acceptance", 0, drift.status);
         assertTrue(drift.output, drift.output.contains("History schema drift:"));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+        assertEquals(before, sealedManifest(root));
+    }
+
+    @Test public void secondProcessRefusesFileLockAndKilledIdleHolderDoesNotLoseCommittedCandidateRows() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Reply imported = run(root, "legacy", true);
+        assertEquals(imported.output, 0, imported.status);
+        Process holder = startWithClasspath(root, "hold-candidate-lock", true, false);
+        try {
+            Path ready = root.resolve("candidate-lock-ready");
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+            while (holder.isAlive() && System.nanoTime() < deadline) {
+                if (Files.exists(ready) && nonce.equals(Files.readString(ready))) break;
+                Thread.sleep(50);
+            }
+            assertTrue(Files.readString(root.resolve("hold-candidate-lock.log")), Files.exists(ready));
+            assertEquals(nonce, Files.readString(ready));
+            assertTrue("Holder must still own the candidate", holder.isAlive());
+            Reply competitor = run(root, "compete-candidate-lock", true);
+            assertEquals(competitor.output, 0, competitor.status);
+            assertTrue(competitor.output, competitor.output.contains("EXPECTED_CANDIDATE_FILE_LOCK_REFUSAL_90020"));
+            assertTrue("Refusal must happen while holder is still alive", holder.isAlive());
+            // Kill only this test-created idle process, never another application's database owner.
+            holder.destroyForcibly();
+            assertTrue("Killed holder must release process resources", holder.waitFor(5, TimeUnit.SECONDS));
+        } finally {
+            stopOwnedProcess(holder);
+        }
+        Reply recovered = run(root, "recover-candidate-lock", true);
+        assertEquals(recovered.output, 0, recovered.status);
+        assertTrue(recovered.output, recovered.output.contains("KILLED_IDLE_HOLDER_COMMITTED_ROWS_METADATA_SCHEMA_ID_AND_REOPEN_OK"));
         assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
         assertEquals(before, sealedManifest(root));
         Reply rollback = run(root, "rollback", false);

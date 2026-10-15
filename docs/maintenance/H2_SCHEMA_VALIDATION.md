@@ -20,6 +20,8 @@
 
 ## 验证与限制
 
+Fork [#32](https://github.com/DDDalek92/zkui/pull/32)已审查合并：准确head `4aa07b1886a50723b6f4922f1b6b4bf9f43b4c7c` 的[运行38780428584](https://github.com/DDDalek92/zkui/actions/runs/38780428584)六job全成功。逐份完整日志核对Ubuntu116578892285/macOS116578891758/Windows116578892143各16单元+104集成=120项、0失败/错误/跳过；迁移六项通过；Linux Chrome3/3。container116578892459非root/登录资产、mysql116578892553逻辑迁移/TLS、zk-legacy116578892154兼容标记均通过。下文待CI为提交时记录，以本准确head证据为准。
+
 本地 OpenJDK17.0.20/Linux 定向六项预演通过；初次探测发现无谓词的空串/NULL报告差异后按上述语义修正。最终代码的 clean verify 返回0，Surefire八份报告合计16单元、Failsafe二十八份报告及汇总合计104集成，共120项，0失败/错误/跳过。文本日志再次止于DatabaseReadinessIT阶段，计数明确依据完整JUnit XML/Failsafe汇总，不冒充已保存完整Maven文本日志；准确 PR head 的全部六项远程 CI/完整日志仍须独立核验，结果以对应 PR Checks/审查证据为准，不采用旧head绿灯。本机未执行Chrome/Docker/MySQL容器/旧ZK容器。
 
 应用仍 H2 1.3.174/Flyway2.2.1，V1 blob仍为 `fadfd7e9462b348131965f855949529ac6ceaa39`。现代阶段仍只是隔离 JDBC/Flyway 辅助进程，不是打包应用 Main/HTTP 的新版驱动验收。
