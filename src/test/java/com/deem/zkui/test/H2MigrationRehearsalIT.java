@@ -271,4 +271,70 @@ public class H2MigrationRehearsalIT {
         assertEquals(rollback.output, 0, rollback.status);
         assertEquals(before, sealedManifest(root));
     }
+
+    @Test public void appendOnlyCandidateDeltaCanBePreservedOnAnOldCopyWithoutChangingSealedSource() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Reply imported = run(root, "legacy", true);
+        assertEquals(imported.output, 0, imported.status);
+        Reply delta = run(root, "delta-prepare", true);
+        assertEquals(delta.output, 0, delta.status);
+        Map<String, String> candidateBefore = directoryManifest(root.resolve("new-legacy"));
+        Reply restored = run(root, "delta-restore", false);
+        assertEquals(restored.output, 0, restored.status);
+        assertTrue(restored.output, restored.output.contains("AUDIT_DELTA_OLD_COPY_EXACT_REPLAY_IDEMPOTENCE_ID_AND_RESTART_OK"));
+        assertEquals(candidateBefore, directoryManifest(root.resolve("new-legacy")));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+    }
+
+    @Test public void conflictingDeltaRollsBackEarlierInsertInsteadOfOverwritingOrPartiallyRestoring() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        Reply imported = run(root, "legacy", true);
+        assertEquals(imported.output, 0, imported.status);
+        Reply delta = run(root, "delta-prepare", true);
+        assertEquals(delta.output, 0, delta.status);
+        Reply refused = run(root, "delta-conflict", false);
+        assertEquals(refused.output, 0, refused.status);
+        assertTrue(refused.output, refused.output.contains("AUDIT_DELTA_CONFLICT_REFUSED_ENTIRE_TRANSACTION_ROLLED_BACK"));
+        assertEquals(before, sealedManifest(root));
+    }
+
+    @Test public void modifiedOrDeletedBaselineIsNotMisrepresentedAsAnAppendOnlyDelta() throws Exception {
+        for (String mode : List.of("delta-change-base", "delta-delete-base")) {
+            Path root = fixture();
+            Map<String, String> before = sealedManifest(root);
+            Reply imported = run(root, "legacy", true);
+            assertEquals(imported.output, 0, imported.status);
+            Reply changed = run(root, mode, true);
+            assertEquals(changed.output, 0, changed.status);
+            Reply refused = run(root, "delta-export", true);
+            assertNotEquals("Changed/deleted original records require a separate recovery policy", 0, refused.status);
+            assertTrue(refused.output, refused.output.contains("Append-only audit baseline changed or deleted"));
+            assertFalse("Refusal must happen before emitting a delta", Files.exists(root.resolve("delta.bin")));
+            assertEquals(before, sealedManifest(root));
+            Reply rollback = run(root, "rollback", false);
+            assertEquals(rollback.output, 0, rollback.status);
+        }
+    }
+
+    @Test public void alteredDeltaPayloadIsRejectedBeforeCreatingOrOpeningAnOldRecoveryCopy() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        Reply imported = run(root, "legacy", true);
+        assertEquals(imported.output, 0, imported.status);
+        Reply prepared = run(root, "delta-prepare", true);
+        assertEquals(prepared.output, 0, prepared.status);
+        Path payload = root.resolve("delta.bin");
+        byte[] changed = Files.readAllBytes(payload);
+        changed[changed.length - 1] ^= 1; // Only this test-created transfer payload, not migration metadata.
+        Files.write(payload, changed);
+        Reply refused = run(root, "delta-restore", false);
+        assertNotEquals("Changed payload must not be replayed", 0, refused.status);
+        assertTrue(refused.output, refused.output.contains("Owned delta payload integrity failure"));
+        assertFalse(Files.exists(root.resolve("delta-rollback")));
+        assertEquals(before, sealedManifest(root));
+    }
 }
