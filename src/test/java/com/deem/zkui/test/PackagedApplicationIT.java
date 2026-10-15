@@ -56,7 +56,9 @@ public class PackagedApplicationIT {
                 Reply anonymous = request(base + "/home", null, null);
                 assertEquals(302, anonymous.status);
                 assertEquals("/login", new URL(base + "/home").toURI().resolve(anonymous.location).getPath());
-                Reply login = request(base + "/login", "username=test-admin&password=" + password, null);
+                Reply loginPage = request(base + "/login", null, null);
+                Reply login = request(base + "/login", "username=test-admin&password=" + password
+                        + "&csrfToken=" + TestApplication.token(loginPage.body), loginPage.cookie.split(";", 2)[0]);
                 assertEquals(302, login.status);
                 assertNotNull("Login must create a session cookie", login.cookie);
                 String cookie = login.cookie.split(";", 2)[0];
@@ -65,7 +67,7 @@ public class PackagedApplicationIT {
                 assertTrue("Home must render the ZooKeeper tree", home.body.contains("/home?zkPath=/appconfig"));
 
                 String create = "action=Save+Property&searchStr=&currentPath=%2Fappconfig%2F&displayPath=%2Fappconfig"
-                        + "&newProperty=smoke-key&newValue=smoke-value";
+                        + "&newProperty=smoke-key&newValue=smoke-value&csrfToken=" + TestApplication.token(home.body);
                 assertEquals(302, request(base + "/home", create, cookie).status);
                 assertEquals("smoke-value", new String(observer.getData("/appconfig/smoke-key", false, null), StandardCharsets.UTF_8));
                 String update = create.replace("Save+Property", "Update+Property").replace("smoke-value", "updated-value");
@@ -78,10 +80,10 @@ public class PackagedApplicationIT {
                 assertEquals(200, history.status);
                 assertTrue("History must persist through instrumented ActiveJDBC model", history.body.contains("smoke-key"));
                 String delete = "action=Delete&searchStr=&currentPath=%2Fappconfig%2F&displayPath=%2Fappconfig"
-                        + "&propChkGroup=%2Fappconfig%2Fsmoke-key";
+                        + "&propChkGroup=%2Fappconfig%2Fsmoke-key&csrfToken=" + TestApplication.token(home.body);
                 assertEquals(302, request(base + "/home", delete, cookie).status);
                 assertNull(observer.exists("/appconfig/smoke-key", false));
-                assertEquals(302, request(base + "/logout", null, cookie).status);
+                assertEquals(302, request(base + "/logout", "csrfToken=" + TestApplication.token(home.body), cookie).status);
                 assertEquals(302, request(base + "/home", null, cookie).status);
             } finally {
                 app.destroy();

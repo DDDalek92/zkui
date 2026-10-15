@@ -21,6 +21,7 @@
 <div class="container">
 
     <form method="post" action="/login">
+        <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
         <div class="row">
             <div class="col-md-4">
                 &nbsp;

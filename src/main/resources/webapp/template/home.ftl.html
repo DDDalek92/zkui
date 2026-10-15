@@ -20,6 +20,7 @@
 
 <div class="container">
     <form method="post" action="/home">
+        <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
         <!--Bread crumb-->
         <div class="row-fluid">
             <div class="col-md-12">
@@ -213,6 +214,7 @@
         <div class="col-md-12">
             <!-- Import Modal -->
             <form id="importForm" method="post" action="/import" enctype="multipart/form-data">
+        <input type="hidden" name="csrfToken" value="${csrfToken?html}"/>
                 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">

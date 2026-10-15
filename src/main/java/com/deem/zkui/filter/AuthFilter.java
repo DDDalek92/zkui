@@ -18,6 +18,7 @@
 package com.deem.zkui.filter;
 
 import java.io.IOException;
+import com.deem.zkui.utils.CsrfUtil;
 import java.util.Properties;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -62,6 +63,16 @@ public class AuthFilter implements Filter {
             }
         }
 
+        String method = request.getMethod();
+        if (!"GET".equals(method) && !"HEAD".equals(method) && !"OPTIONS".equals(method)
+                && !"/import".equals(path)) {
+            String token = request.getHeader("X-CSRF-Token");
+            if (token == null) token = request.getParameter("csrfToken");
+            if (!CsrfUtil.valid(request.getSession(false), token)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF token");
+                return;
+            }
+        }
         fc.doFilter(req, res);
     }
 

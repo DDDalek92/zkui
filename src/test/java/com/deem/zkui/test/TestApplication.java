@@ -102,7 +102,10 @@ final class TestApplication extends ExternalResource {
     }
 
     Reply authenticate(String username, String cookie) throws IOException {
-        return request("/login", "username=" + username + "&password=" + password, cookie,
+        Reply page = get("/login", cookie);
+        String sessionCookie = cookie == null ? page.cookie.split(";", 2)[0] : cookie;
+        return request("/login", "username=" + username + "&password=" + password
+                + "&csrfToken=" + token(page.body), sessionCookie,
                 "application/x-www-form-urlencoded; charset=UTF-8");
     }
 
@@ -117,15 +120,33 @@ final class TestApplication extends ExternalResource {
     }
 
     Reply multipart(String body, String cookie) throws IOException {
+        if (cookie != null) body = "--zkui-test\r\nContent-Disposition: form-data; name=\"csrfToken\"\r\n\r\n"
+                + token(get("/login", cookie).body) + "\r\n" + body;
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
     }
 
+    static String token(String html) {
+        java.util.regex.Matcher match = java.util.regex.Pattern.compile("name=\"csrfToken\" value=\"([A-Za-z0-9_-]+)\"").matcher(html);
+        if (!match.find()) throw new AssertionError("CSRF form token missing");
+        return match.group(1);
+    }
+
+    Reply post(String path, String body, String cookie) throws IOException {
+        return request(path, body + "&csrfToken=" + token(get("/login", cookie).body), cookie,
+                "application/x-www-form-urlencoded; charset=UTF-8");
+    }
+
     Reply request(String path, String body, String cookie, String contentType) throws IOException {
+        return requestWithToken(path, body, cookie, contentType, null);
+    }
+
+    Reply requestWithToken(String path, String body, String cookie, String contentType, String token) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(base + path).openConnection();
         connection.setConnectTimeout(1000);
         connection.setReadTimeout(5000);
         connection.setInstanceFollowRedirects(false);
         if (cookie != null) connection.setRequestProperty("Cookie", cookie);
+        if (token != null) connection.setRequestProperty("X-CSRF-Token", token);
         try {
             if (body != null) {
                 connection.setRequestMethod("POST");

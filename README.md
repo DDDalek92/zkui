@@ -122,9 +122,12 @@ A shell script can log in with a dedicated USER account and reuse its cookie:
 
 ```sh
 # Set ZKUI_URL, ZKUI_USER and ZKUI_PASSWORD in your environment.
-curl --fail --silent --show-error --cookie-jar zkui-cookies.txt \
-  --data-urlencode "username=$ZKUI_USER" \
-  --data-urlencode "password=$ZKUI_PASSWORD" "$ZKUI_URL/login"
+umask 077
+CSRF_TOKEN="$(curl --fail --silent --show-error --cookie-jar zkui-cookies.txt \
+  "$ZKUI_URL/login" | sed -n 's/.*name="csrfToken" value="\([^" ]*\)".*/\1/p' | head -n 1)"
+curl --fail --silent --show-error --cookie zkui-cookies.txt --cookie-jar zkui-cookies.txt \
+  --data-urlencode "username=$ZKUI_USER" --data-urlencode "password=$ZKUI_PASSWORD" \
+  --data-urlencode "csrfToken=$CSRF_TOKEN" "$ZKUI_URL/login"
 MY_PROPERTY="$(curl --fail --silent --show-error --cookie zkui-cookies.txt \
   --get --data-urlencode 'propNames=foo' --data-urlencode "host=$(hostname -f)" \
   "$ZKUI_URL/acd/appconfig" | cut -d '=' -f 2-)"
@@ -203,3 +206,8 @@ ZKUI is released under the Apache 2.0 license. Comments, bugs, pull requests, an
 
 Thanks to Jozef Krajčovič for creating the logo which has been used in the project.
 https://www.iconfinder.com/iconsets/origami-birds
+
+Session and CSRF protection
+---------------------------
+
+Successful login rotates both the session ID and the CSRF token. Session cookies are HttpOnly and URL-only session IDs are disabled. Every POST (including login, history search and logout) requires the current session's `csrfToken` form field or `X-CSRF-Token` header. Multipart imports also accept a `csrfToken` multipart field. Fetch `/login` before login to obtain the initial cookie and token; fetch `/home` or `/login` with the new cookie after login to obtain the rotated token for later POSTs. Do not put tokens into URLs. GET `/logout` returns 405; use the rendered logout form or a token-protected POST. REST GET requests need no CSRF token.
