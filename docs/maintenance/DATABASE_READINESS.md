@@ -16,6 +16,11 @@ Regression coverage:
 - Home and import mutations with a dropped history table return 503, preserve the actual ZK result, and show no success flash.
 - JDBC connections are released after a failed write; recovery on a healthy separate database still works.
 
-Validation pending: local dependency resolution is unavailable on this host (GitHub DNS fails).
-The exact PR head must pass all required remote CI jobs and source review before merge.
+Validated and merged in Fork PR #23, exact head `748ad0c86bf3b2721ffdd32414afe90400aea1ab`.
+[CI run 38736989054](https://github.com/DDDalek92/zkui/actions/runs/38736989054): all four required jobs passed; Linux, macOS and Windows each ran 16 unit + 89 integration = 105 tests, zero failures/errors/skips. Linux Chrome passed 3/3 with no skips; the container build/non-root/login/environment/prefixed-assets smoke passed.
+An independent detached checkout of this exact head also passed local OpenJDK17 `clean verify` with 105 tests. The initial host DNS limitation is historical, not the final verification state. No local browser/container success is claimed.
+
+Source review confirmed all production `insertHistory` callers are covered by Home/Import's sanitized failure handling; redirects follow successful history writes, and failure clears success flashes. Startup initialization occurs before constructing/binding Jetty. V1 blob remains `fadfd7e9462b348131965f855949529ac6ceaa39`; no driver/runtime dependency update or automatic metadata repair was introduced.
+
+Separate PR #24 was closed unmerged after the concurrent overlap was detected; its branch was retained and its local 104 tests do not stand in for this head's 105 tests.
 This closes part of D01-C's failure-policy gap; cross-version application/Flyway migration, the remaining failure matrix and real MySQL remain pending.
