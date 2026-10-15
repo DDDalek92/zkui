@@ -116,4 +116,4 @@ FileUpload1.6.0（Java8兼容）配置512字节part头上限。新增真实HTTP�
 
 baseURL配置规范化为本地路径前缀（默认/，支持尾斜杠）；拒绝完整URL、双斜杠、点段、转义及换行。Servlet和静态资源共享上下文；入口/旧index路由、所有控制器重定向、模板链接/表单/JS/CSS/图片均保留前缀。Session Cookie使用上下文路径，AuthFilter仍按Servlet相对路径做精确认证/CSRF检查。
 
-独立旧代码baseURL=/zkui/时/zkui/login返回404；修复后ContextPathIT验证登录/入口/静态资源、Cookie Path+HttpOnly、上下文外/home为404、CRUD/中文导入/导出/历史/REST、CSRF拒绝及退出POST。新增配置单元测试拒绝非法前缀。完整Java8 verify90项（15单元+75集成）通过。既有3组Chrome排序检查的真实JAR页面改为/zkui前缀，并要求每个资源请求都保留前缀；最终浏览器结果以CI为准。nginx示例保留相同前缀，未运行真实nginx。
+独立旧代码baseURL=/zkui/时/zkui/login返回302并跳到根/login，未在配置前缀提供登录页；修复后ContextPathIT验证登录/入口/静态资源、Cookie Path+HttpOnly、上下文外/home为404、CRUD/中文导入/导出/历史/REST、CSRF拒绝及退出POST。新增配置单元测试拒绝非法前缀。完整Java8 verify90项（15单元+75集成）通过。既有3组Chrome排序检查的真实JAR页面改为/zkui前缀，并要求每个资源请求都保留前缀；最终浏览器结果以CI为准。nginx示例保留相同前缀，未运行真实nginx。
