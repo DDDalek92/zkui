@@ -11,7 +11,7 @@ ActiveJDBC instrumentation plugin; newer JDK support remains a separate task.
 Setup
 ====================
 1. `./mvnw clean verify` (Windows PowerShell: `.\mvnw.cmd clean verify`).
-2. Copy the config.cfg to the folder with the jar file. Modify it to point to the zookeeper instance. Multiple zk instances are coma separated.  eg: server1:2181,server2:2181. First server should always be the leader.
+2. Copy the config.cfg to the folder with the jar file. Modify it to point to the zookeeper instance. Multiple addresses are comma separated, e.g. server1:2181,server2:2181; the first address need not be the leader.
 3. Run the jar. ( nohup java -jar zkui-2.0-SNAPSHOT-jar-with-dependencies.jar & )
 4. <a href="http://localhost:9090">http://localhost:9090</a> 
 
@@ -297,3 +297,5 @@ The `proxy_pass` here has no trailing URI slash, so nginx keeps `/zkui/` upstrea
 Docker build and environment
 ----------------------------
 Build from this repository root with `docker build -f docker/Dockerfile -t zkui:local .` (or `make build`); then set `ZK_SERVER` and your `USER_SET`, and run `sh run.sh`. This builds a local image and does not rely on a published `zkui:latest`. The runtime uses UID/GID10001, preserves history in `/var/app/data`, and accepts `ZK_SERVER`, `USER_SET`, `LOGIN_MESSAGE`, `ZKUI_BASEURL` directly in Java without rewriting config files. See [Docker instructions](docker/Docker.md) for volumes, read-only configuration, network names and complete examples. Other images’ `ZKUI_ADMIN_PW`/`ZKUI_ZK_SERVER` flags do not apply.
+
+For build, missing hosts metadata, NoAuth/ConnectionLoss, history SQL, port conflicts and supported feature limits, see the [operations notes](docs/maintenance/OPERATIONS.md). The [issue dispositions](docs/maintenance/ISSUE_TRIAGE.md) distinguish verified fixes from documentation, requests and unresolved environments.

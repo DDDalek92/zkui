@@ -1,34 +1,56 @@
-# 上游 Issue 初步分诊（46 项）
+# 上游 Issue 逐项处置（46项）
 
-> 2026-10-15；来源：[DeemOpen/zkui/issues](https://github.com/DeemOpen/zkui/issues)。这是**全量开放 Issue 编号清单和初步分组**，不是已证实 Bug 列表。不同 Issue 可能重复、只是询问或需求。上游 Issue 不能直接在 Fork 关闭；后续用 Fork 内的追踪任务链接回原始 Issue。
+2026-10-15重新查询：上游仍有46个开放Issue、14个开放PR。46项正文及全部分页评论均已读取；空正文使用标题/评论，图片不足时不臆造日志。没有向上游发评论、关闭Issue或改状态。`fixed`仅表示下述受测范围；原部署复验、增强/延期均明确保留，不能把本表称为46个问题全部修好。
 
-| 工作组 | 上游 Issue 编号 | 对应处理方式 |
-| --- | --- | --- |
-| ZK 认证、ACL、凭据 | [#112](https://github.com/DeemOpen/zkui/issues/112), #99, #80, #69, #59, #42, #36 | 优先验证 Digest、NoAuth、全局 ACL、会话凭据，关联 PR #50/#87 |
-| LDAP 身份与登录 | #106, #52, #28 | 测试 AD/LDAP 配置、DN 拼装、密码为空时行为，关联 PR #107 |
-| 连接、会话、速度、监控 | #108, #98, #92, #85, #84, #77, #64, #61, #57, #53, #49, #48, #33, #6 | 分类复现连接丢失、等待连接就绪、多地址、Windows 延迟、超大节点 |
-| 构建、环境、部署 | #111, #95, #76, #72, #71, #70, #66, #63, #60, #56, #51, #14 | 优先厘清 JDK/JRE、Maven、数据库初始化、Docker、代理、端口；部分可文档解决 |
-| Web、数据呈现、国际化、交互 | #100, #94, #90, #79, #62, #43, #29 | 排查浏览器登录、乱码、层级节点值显示、UI 与使用文档；关联 PR #88/#109 |
-| 需求与功能策略 | #74, #55, #18 | 关闭登录（安全策略需评估）、REST 导入、Kerberos；不默认属于 Bug |
+本轮分类：fixed 15，documentation 14，not-reproducible 8，duplicate 2，enhancement 5，deferred 2。#59的fixed只覆盖客户端认证，其ACL编辑需求仍是增强。证据入口：[动态验证](SECURITY_VALIDATION.md)、[操作说明](OPERATIONS.md)、[依赖迁移](DEPENDENCIES.md)、[任务队列](TASKS.md)。Fork PR #18在CI运行38698340364完成：三平台各92项Java、Chrome3组、容器构建/非root/登录资源均通过；具体初次失败与修正见CURRENT_VALIDATION.md。
 
-**核对**：以上分组包含 46 个不重复的 Issue 编号，按当前搜索状态分配；每个编号都须继续看全文、评论和历史上下文才能给出最终结论。
+| 上游 | 评论数 | 结论 | 证据、范围和剩余工作 |
+| --- | ---: | --- | --- |
+| [#112](https://github.com/DeemOpen/zkui/issues/112) | 0 | fixed | Digest客户端身份/ACL分离，#10 DigestAuthenticationIT。 |
+| [#111](https://github.com/DeemOpen/zkui/issues/111) | 0 | documentation | #18提供仓库根本地镜像构建及运行；不假定公共zkui:latest存在。 |
+| [#108](https://github.com/DeemOpen/zkui/issues/108) | 0 | documentation | #9原生IPv4/IPv6/chroot解析回归；真实IPv6网络未验，保留V01。 |
+| [#106](https://github.com/DeemOpen/zkui/issues/106) | 0 | not-reproducible | 原帖无正文/环境/评论；#11通用LDAP改进不是原故障复现。 |
+| [#100](https://github.com/DeemOpen/zkui/issues/100) | 0 | fixed | #17完整baseURL、重定向/资源/cookie/表单；ContextPathIT及前缀Chrome。 |
+| [#99](https://github.com/DeemOpen/zkui/issues/99) | 1 | fixed | #10修正ACL示例、Digest凭据与摘要区分；配置/真实JAR验证。 |
+| [#98](https://github.com/DeemOpen/zkui/issues/98) | 0 | not-reproducible | Win10截图/ConnectionLoss缺少配置、服务端及网络证据；#9回归不代替原环境。 |
+| [#95](https://github.com/DeemOpen/zkui/issues/95) | 0 | documentation | 初始化SQL实际位于src/main/resources/db/migration/V1__Core.sql；OPERATIONS.md。 |
+| [#94](https://github.com/DeemOpen/zkui/issues/94) | 0 | not-reproducible | Ubuntu18.04.5、浏览器具体版本/网络/Cookie证据缺失；当前Chrome检查不代表Firefox登录。 |
+| [#92](https://github.com/DeemOpen/zkui/issues/92) | 0 | documentation | /mpush NoAuth需核对实际ACL及后端身份；Web登录不授予ZK权限。原ACL未知，不声称已复现。 |
+| [#90](https://github.com/DeemOpen/zkui/issues/90) | 1 | documentation | 第三方镜像变量与本项目不一致；#18列明USER_SET及sample admin/manager。 |
+| [#85](https://github.com/DeemOpen/zkui/issues/85) | 0 | not-reproducible | Windows约9s/Linux约1s缺少版本/拓扑/原始计时；基础Windows CI不能证明该性能根因。 |
+| [#84](https://github.com/DeemOpen/zkui/issues/84) | 0 | duplicate | 与#85同一getChildren慢现象的中文描述；继续由#85跟踪，根因未确认。 |
+| [#80](https://github.com/DeemOpen/zkui/issues/80) | 1 | fixed | Digest访问场景由#10正确添加客户端身份；后端NoAuth仍返回403。 |
+| [#79](https://github.com/DeemOpen/zkui/issues/79) | 0 | documentation | 节点数据/子节点并存及foo/bar占位说明见OPERATIONS；#12显示父节点值，未删除旧占位。 |
+| [#77](https://github.com/DeemOpen/zkui/issues/77) | 1 | not-reproducible | 缺原docker-compose网络/版本证据；#18解释容器localhost，未采用评论的盲目降级。 |
+| [#76](https://github.com/DeemOpen/zkui/issues/76) | 0 | documentation | ActiveJDBC需构建插桩；#2真实JAR历史读写通过；原MySQL/IDE组合未复验，现代JDK迁移仍待做。 |
+| [#74](https://github.com/DeemOpen/zkui/issues/74) | 0 | enhancement | 不采纳删除AuthFilter；匿名UI需独立角色/CSRF设计，当前仅显式匿名只读REST兼容。 |
+| [#72](https://github.com/DeemOpen/zkui/issues/72) | 6 | not-reproducible | 旧macOS/JDK/Jetty组合不完整，评论存在不同JDK经验；#18仅验证当前macOS14/JDK8组合。 |
+| [#71](https://github.com/DeemOpen/zkui/issues/71) | 1 | documentation | #18本地构建/非root/卷/运行说明；公共镜像发布未授权且未实施。 |
+| [#70](https://github.com/DeemOpen/zkui/issues/70) | 0 | fixed | *.sh LF规则及#18简化exec启动脚本/容器构建验证，消除CRLF解释器问题。 |
+| [#69](https://github.com/DeemOpen/zkui/issues/69) | 2 | fixed | #10增加独立zkAuthScheme/zkAuthCredentials；真实Digest UI/REST验证。 |
+| [#66](https://github.com/DeemOpen/zkui/issues/66) | 0 | documentation | Java10不是当前基线；使用完整JDK8，Java17迁移见DEPENDENCIES；不把旧404视为已复现。 |
+| [#64](https://github.com/DeemOpen/zkui/issues/64) | 0 | fixed | #9 SyncConnected有界等待/会话复用；ConnectionReliabilityIT覆盖延迟及失败释放。 |
+| [#63](https://github.com/DeemOpen/zkui/issues/63) | 0 | deferred | MySQL5.7默认NULL主键DDL问题已确认；须独立方言/历史库迁移，不改已应用V1或删除元数据。 |
+| [#62](https://github.com/DeemOpen/zkui/issues/62) | 2 | fixed | #12显示有子节点的当前节点自身值，保留转义/角色遮蔽，TextAndNodeValuesIT。 |
+| [#61](https://github.com/DeemOpen/zkui/issues/61) | 2 | documentation | 缺/appconfig/hosts需明确初始化；OPERATIONS含示例和chroot/根说明，启动不自动补写。 |
+| [#60](https://github.com/DeemOpen/zkui/issues/60) | 3 | documentation | Java9不是当前基线；历史Jetty升级评论不能替代组合验证，JDK17任务仍未完成。 |
+| [#59](https://github.com/DeemOpen/zkui/issues/59) | 0 | fixed | 仅客户端认证部分：#10测试Digest访问；逐节点ACL编辑器尚未实现，作为增强留后续。 |
+| [#57](https://github.com/DeemOpen/zkui/issues/57) | 0 | not-reproducible | 原帖仅图片，缺可复制堆栈/具体配置与版本；记录端口/超时配置排查，不臆断具体值。 |
+| [#56](https://github.com/DeemOpen/zkui/issues/56) | 1 | documentation | BindException端口/进程/实际配置排查见OPERATIONS；不自动停止其他进程，原环境未访问。 |
+| [#55](https://github.com/DeemOpen/zkui/issues/55) | 0 | enhancement | 无正文/评论；现有认证+CSRF multipart /import可脚本调用，JSON/纯文本新API协议未实现。 |
+| [#53](https://github.com/DeemOpen/zkui/issues/53) | 1 | duplicate | 同#61的/appconfig/hosts缺失；沿用明确初始化说明，不声称自动创建已完成。 |
+| [#52](https://github.com/DeemOpen/zkui/issues/52) | 0 | documentation | #11补充域/UPN、DN模板及角色；原Win2008 AD/证书链未访问。 |
+| [#51](https://github.com/DeemOpen/zkui/issues/51) | 1 | documentation | 原JAVA_HOME指向JRE且缺编译器；完整JDK8/javac/Wrapper说明与可执行构建基线。 |
+| [#49](https://github.com/DeemOpen/zkui/issues/49) | 0 | enhancement | 启动自动创建/更新业务hosts元数据未实现；当前要求显式初始化，避免覆盖用户配置。 |
+| [#48](https://github.com/DeemOpen/zkui/issues/48) | 0 | fixed | #9原生地址解析器处理chroot/IPv6/端口，坏端点隔离及超时HTTP回归。 |
+| [#43](https://github.com/DeemOpen/zkui/issues/43) | 0 | fixed | #12在US-ASCII应用JVM真实上传原例中文文本，导入/写入/导出UTF-8。 |
+| [#42](https://github.com/DeemOpen/zkui/issues/42) | 7 | fixed | #10内建Digest客户端认证，无需修改源码；未采用讨论中的外部预编译包。 |
+| [#36](https://github.com/DeemOpen/zkui/issues/36) | 5 | fixed | #10配置与真实Digest回归；defaultAcl不再被误当客户端登录凭据。 |
+| [#33](https://github.com/DeemOpen/zkui/issues/33) | 3 | not-reproducible | 评论增大超时后仍有人失败；缺同一服务端/网络环境，#9只修已复现的就绪/复用问题。 |
+| [#29](https://github.com/DeemOpen/zkui/issues/29) | 1 | enhancement | 左栏属性显示是UI增强，尚未实现；#12父节点值显示不能冒充该需求完成。 |
+| [#28](https://github.com/DeemOpen/zkui/issues/28) | 0 | fixed | #11可配置转义DN模板及userDNPattern别名，真实隔离LDAP绑定/角色测试。 |
+| [#18](https://github.com/DeemOpen/zkui/issues/18) | 0 | enhancement | #13根命名空间可隔离HA路径；Kerberos/JAAS/SASL及每用户ZK身份仍未实现/未验。 |
+| [#14](https://github.com/DeemOpen/zkui/issues/14) | 7 | fixed | #17应用上下文完整支持；nginx保留前缀示例，未运行真实nginx/TLS。 |
+| [#6](https://github.com/DeemOpen/zkui/issues/6) | 1 | deferred | 312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
 
-## 已知可能重复/关联
-
-- #84 与 #85 描述 Windows 下接近相同的 ZooKeeper 获取子节点响应慢现象；初步标记「疑似重复」，待复现。
-- #42、#69、#80、#99、#112 与带认证 ZooKeeper 的访问相关，但涉及客户端认证、ACL、配置等不同细节，不能一律视为同一缺陷。
-- #28、#52、#106 与 LDAP 配置/登录相关；先确定是否具有相同根因。
-- #33、#77、#98 均含 `ConnectionLoss`，并不能仅凭错误码断言根因相同。
-- #64 指出连接/等待问题；代码中 `ZooKeeperUtil.createZKConnection` **已有轮询等待**，应先验证真实代码的等待和会话复用行为，不应盲目增加 `sleep`。
-- #6 报告 30 万余子节点时访问失败；性能问题应独立压力测试，不要用普通 CRUD 测试代替。
-
-## 建议优先级
-
-- **P0**：经验证的越权读写、匿名敏感信息泄漏、数据破坏风险（不直接由 Issue 投诉数量决定）。
-- **P1**：连接可靠性、ACL/LDAP 基础功能、数据完整性、历史数据迁移、核心构建失败。
-- **P2**：交互问题、文档/部署障碍、性能优化、可稳定复现的浏览器兼容问题。
-- **P3 / 路线图**：Kerberos、无登录模式、新增导入接口等新功能（依赖安全设计）。
-
-## 每个 Issue 的处理规范
-
-记录：原始 URL、原文及评论、环境/JDK/zkui/ZooKeeper 版本、预期与实际、是否复现、关联 PR、测试、根因、修复 PR、处理结论。允许结果为 `fixed`、`duplicate`、`documentation`、`not-reproducible`、`enhancement`、`deferred`，但必须附证据，禁止批量自动关闭。
+具体后续：D01现代Java/Jetty与历史数据库迁移、I02超大树工作量边界/性能、E01可选hosts初始化、E02左栏属性、E03逐节点ACL编辑、E04新导入协议及E05Kerberos。维护版验收前逐一保留状态；没有真实环境的历史网络/浏览器问题保持not-reproducible，不用当前CI替代原根因。
