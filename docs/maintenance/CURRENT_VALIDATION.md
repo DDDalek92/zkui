@@ -1,5 +1,13 @@
 # 当前维护验证快照
 
+## 2026-10-15 接续说明
+
+Fork #31已由准确head `c93dcfffba4de65539fe8f634190ba3f81d1d4ac`、[运行38745592386](https://github.com/DDDalek92/zkui/actions/runs/38745592386)六job成功后合并，三平台各117项。hosts初始化默认关闭；显式覆盖采用观察到的ZK版本号，不具备ZK/JDBC共享事务。
+
+现承接已有#30合法NULL历史页面修复；原head `187dc3dc458ca38e4674faa53c3943485d3601c2`的[运行38746059947](https://github.com/DDDalek92/zkui/actions/runs/38746059947)六job成功、三平台各114项，但不能代表与最新master同步后的组合结果。只解决文档冲突并保持#30既有源码不变；准确新head全部六job/完整日志需重新核对后才可合并，见[NULL_HISTORY_VALIDATION.md](NULL_HISTORY_VALIDATION.md)及对应PR。当前本地执行环境不可用，未取得组合版本本地构建结果；不采用中断且未推送的执行结果。完整H2迁移/失败恢复矩阵和安全/部署/其余增强验收仍未完成。
+
+下方“当前增量”及待验证表述保留先前快照；当前状态以上述接续及准确head的Checks/PR审查记录为准，不以旧绿灯替代新head。
+
 ## 最新已合并增量
 
 - #25隔离Flyway桥接：head6750ff95f0f7ec8f819b376a00c124073b432b38，运行38738283086，三平台各107项及全部job通过。

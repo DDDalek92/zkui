@@ -1,5 +1,7 @@
 # 上游开放 PR 审核台账（初稿）
 
+> 当前处置补充（2026-10-15）：#103已由Fork #28的Connector/J26.7/MySQL8.4+方言、真实5.6逻辑迁移/TLS路径superseded；#105日志/Jetty/MySQL意图分别由#16/#21/#28重写，不采用其历史目标版本。#102完整H2应用/驱动迁移仍延期；#25仅证明有限合成副本桥接。下方#103/MySQL deferred及旧ORM描述是历史，不是当前全部状态。14项处置不等于全部功能修复，具体head证据见MYSQL_VALIDATION.md、CURRENT_VALIDATION.md和Fork PR。
+
 > D01后续更新（2026-10-15）：#93/#104的旧Jetty方案已由Java17/Jetty12.1.14 EE8整体实现superseded；#105日志/Jetty部分重写，MySQL仍deferred。ActiveJDBC改用参数化JDBC以保留旧H2，见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)及对应Fork PR准确head的CI。#103/#102仍延期。下方最初预审和#16决策保留为历史，不能将14项都叫做全部功能修复。
 
 > 2026-10-15；基线 `1b3e7c1`。上游：[DeemOpen/zkui/pulls](https://github.com/DeemOpen/zkui/pulls)。共 14 个开放 PR。分类是**静态预审建议**，不等于通过测试、批准合并或全部逐行审核。每项整合前须检查完整差异、讨论、许可证、构建与回归测试。任何上游 PR 均不能直接合并到本 Fork 的 `master`。

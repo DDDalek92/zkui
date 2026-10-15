@@ -31,7 +31,7 @@
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
-| E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | hosts显式初始化/幂等/单独覆盖开关已实现，等待本PR准确headCI，见HOSTS_BOOTSTRAP.md；其他增强尚未实现 |
+| E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | hosts显式初始化/幂等/单独覆盖开关已由#31准确head六job验证并合并，默认关闭，见HOSTS_BOOTSTRAP.md；其他增强尚未实现 |
 | V02 | 验收维护版、已知限制和发布说明 | 维护预览说明和验证报告已准备，Fork PR #19；正式发行仍受D01/历史DB与部署验证阻塞，未发布 |
 
 ## 上游 PR 逐项清单
@@ -107,3 +107,9 @@
 | [#18](https://github.com/DeemOpen/zkui/issues/18) | Kerberos implementation | enhancement；#13根命名空间可隔离HA路径；Kerberos/JAAS/SASL及每用户ZK身份仍未实现/未验。 |
 | [#14](https://github.com/DeemOpen/zkui/issues/14) | How do I run this behind an nginx proxy? | fixed；#17应用上下文完整支持；nginx保留前缀示例，未运行真实nginx/TLS。 |
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | deferred；312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
+
+## 本轮接续与优先队列（2026-10-15）
+
+- 承接已有Fork #30，不重复建PR：旧head187dc3d六项CI通过，但与已合并#31的TASKS说明冲突；保留最新master全部工作，只整理说明并保持#30既有源码字节不变。NULL历史200页面中断的复现/修复见[NULL_HISTORY_VALIDATION.md](NULL_HISTORY_VALIDATION.md)，合并后准确head需重新完整验收。
+- 上游重新查询仍14个开放PR、46个开放Issue，编号集合无新增。#49已有默认关闭的hosts可选实现，#6已有312763子节点的有限边界验证，#63已有MySQL8.4+独立方言/逻辑迁移路径；均不应混称全部旧版本/全部Issue已修复。
+- 当前本地执行环境不可用；本轮不新增代码实现，不声称组合版本本地构建成功。先完成已有#30新head六job核验，再推进D01-C完整应用/驱动切换、约束/索引、锁/中断/不可写和差量恢复；依赖审计、其余部署/增强/发行门槛继续保留。I02现有边界不代表原Windows9s:1s故障根因已复现。

@@ -1,5 +1,7 @@
 # 上游 Issue 逐项处置（46项）
 
+> 接续更新（2026-10-15）：本次查询仍46个开放Issue/14个开放PR，编号集合无新增。#49的可选hosts创建/版本化更新已由#31受测实现，默认关闭；#6的312763子节点案例已由#27验证有限分页/资源预算，任意宽度/名称长度和#85原环境仍未证明；#63已有#28的MySQL8.4+独立方言及真实5.6逻辑迁移路径，MySQL5.7并未变成受支持运行目标。下表保留原分类（15 fixed、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred）；增强类别不等于当前全未实现，受测范围/原环境限制也不能被改称46项全部修好。最新证据见HOSTS_BOOTSTRAP.md、LARGE_TREE_VALIDATION.md、MYSQL_VALIDATION.md及相应Fork PR。
+
 2026-10-15重新查询：上游仍有46个开放Issue、14个开放PR。46项正文及全部分页评论均已读取；空正文使用标题/评论，图片不足时不臆造日志。没有向上游发评论、关闭Issue或改状态。`fixed`仅表示下述受测范围；原部署复验、增强/延期均明确保留，不能把本表称为46个问题全部修好。
 
 本轮分类：fixed 15，documentation 14，not-reproducible 8，duplicate 2，enhancement 5，deferred 2。#59的fixed只覆盖客户端认证，其ACL编辑需求仍是增强。证据入口：[动态验证](SECURITY_VALIDATION.md)、[操作说明](OPERATIONS.md)、[依赖迁移](DEPENDENCIES.md)、[任务队列](TASKS.md)。Fork PR #18在CI运行38698340364完成：三平台各92项Java、Chrome3组、容器构建/非root/登录资源均通过；具体初次失败与修正见CURRENT_VALIDATION.md。
