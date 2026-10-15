@@ -48,3 +48,4 @@ final class HistoryMigrations {
             return (int) checksum.getValue();
         }
     }
+}
