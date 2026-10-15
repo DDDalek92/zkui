@@ -45,20 +45,23 @@ public class Monitor extends HttpServlet {
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
             String zkServer = globalProps.getProperty("zkServer");
-            String[] zkServerLst = zkServer.split(",");
-
             Map<String, Object> templateParam = new HashMap<>();
-            StringBuffer stats = new StringBuffer();
-            for (String zkObj : zkServerLst) {
-                stats.append("\n--------------------\n").append("Server: ").append(zkObj).append("\n--------------------\n");
-                String[] monitorZKServer = zkObj.split(":");
-                stats.append(CmdUtil.INSTANCE.executeCmd("stat", monitorZKServer[0], monitorZKServer[1]));
-                stats.append(CmdUtil.INSTANCE.executeCmd("envi", monitorZKServer[0], monitorZKServer[1]));
+            StringBuilder stats = new StringBuilder();
+            for (java.net.InetSocketAddress endpoint : new org.apache.zookeeper.client.ConnectStringParser(zkServer).getServerAddresses()) {
+                stats.append("\n--------------------\nServer: ").append(endpoint.getHostString())
+                        .append(":").append(endpoint.getPort()).append("\n--------------------\n");
+                for (String command : new String[]{"stat", "envi"}) {
+                    try {
+                        stats.append(CmdUtil.INSTANCE.executeCmd(command, endpoint.getHostString(), Integer.toString(endpoint.getPort())));
+                    } catch (IOException ex) {
+                        stats.append(command).append(": unavailable or timed out\n");
+                    }
+                }
             }
             templateParam.put("stats", stats);
             ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "monitor.ftl.html");
 
-        } catch (IOException | TemplateException ex) {
+        } catch (TemplateException | IllegalArgumentException ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
         }

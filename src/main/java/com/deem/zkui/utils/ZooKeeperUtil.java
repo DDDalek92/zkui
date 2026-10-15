@@ -56,23 +56,27 @@ public enum ZooKeeperUtil {
     private final static org.slf4j.Logger logger = LoggerFactory.getLogger(ZooKeeperUtil.class);
 
     public ZooKeeper createZKConnection(String url, Integer zkSessionTimeout) throws IOException, InterruptedException {
-        Integer connectAttempt = 0;
-        ZooKeeper zk = new ZooKeeper(url, zkSessionTimeout, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-                logger.trace("Connecting to ZK.");
-            }
-        });
-        //Wait till connection is established.
-        while (zk.getState() != ZooKeeper.States.CONNECTED) {
-            Thread.sleep(30);
-            connectAttempt++;
-            if (connectAttempt == MAX_CONNECT_ATTEMPT) {
-                break;
-            }
-        }
-        return zk;
+        return createZKConnection(url, zkSessionTimeout, zkSessionTimeout);
+    }
 
+    public ZooKeeper createZKConnection(String url, int sessionTimeout, int connectTimeout) throws IOException, InterruptedException {
+        if (sessionTimeout < 1 || connectTimeout < 1 || connectTimeout > 60000) {
+            throw new IOException("Invalid ZooKeeper timeout configuration");
+        }
+        java.util.concurrent.CountDownLatch connected = new java.util.concurrent.CountDownLatch(1);
+        ZooKeeper zk = new ZooKeeper(url, sessionTimeout, event -> {
+            if (event.getState() == Watcher.Event.KeeperState.SyncConnected
+                    || event.getState() == Watcher.Event.KeeperState.AuthFailed) connected.countDown();
+        });
+        boolean ready = false;
+        try {
+            ready = connected.await(connectTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    && zk.getState().isConnected();
+            if (!ready) throw new IOException("ZooKeeper connection did not become ready within the configured timeout");
+            return zk;
+        } finally {
+            if (!ready) zk.close();
+        }
     }
 
     private ArrayList<ACL> defaultAcl = ZooDefs.Ids.OPEN_ACL_UNSAFE;

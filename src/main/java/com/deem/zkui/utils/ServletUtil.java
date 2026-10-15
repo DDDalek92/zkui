@@ -90,36 +90,46 @@ public enum ServletUtil {
 
     }
 
-    public ZooKeeper getZookeeper(HttpServletRequest request, HttpServletResponse response, String zkServer, Properties globalProps) {
+    public static final class ZooKeeperUnavailableException extends IOException {
+        public ZooKeeperUnavailableException(Throwable cause) { super("ZooKeeper is unavailable", cause); }
+    }
+
+    public ZooKeeper newZookeeper(Properties props) throws ZooKeeperUnavailableException {
         try {
+            int sessionTimeout = Math.multiplyExact(Integer.parseInt(props.getProperty("zkSessionTimeout", "5")), 1000);
+            int connectTimeout = Math.multiplyExact(Integer.parseInt(props.getProperty("zkConnectTimeout", "5")), 1000);
+            ZooKeeperUtil.INSTANCE.setDefaultAcl(props.getProperty("defaultAcl"));
+            return ZooKeeperUtil.INSTANCE.createZKConnection(props.getProperty("zkServer"), sessionTimeout, connectTimeout);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new ZooKeeperUnavailableException(ex);
+        } catch (IOException | IllegalArgumentException | ArithmeticException ex) {
+            throw new ZooKeeperUnavailableException(ex);
+        }
+    }
 
-            HttpSession session = request.getSession();
+    public ZooKeeper getZookeeper(HttpServletRequest request, Properties props)
+            throws ZooKeeperUnavailableException {
+        HttpSession session = request.getSession();
+        synchronized (session) {
             ZooKeeper zk = (ZooKeeper) session.getAttribute("zk");
-            if (zk == null || zk.getState() != ZooKeeper.States.CONNECTED) {
-                Integer zkSessionTimeout = Integer.parseInt(globalProps.getProperty("zkSessionTimeout"));
-                //Converting seconds to ms.
-                zkSessionTimeout = zkSessionTimeout * 1000;
-                zk = ZooKeeperUtil.INSTANCE.createZKConnection(zkServer, zkSessionTimeout);
-                ZooKeeperUtil.INSTANCE.setDefaultAcl(globalProps.getProperty("defaultAcl"));
-                if (zk.getState() != ZooKeeper.States.CONNECTED) {
-                    session.setAttribute("zk", null);
-                } else {
-                    session.setAttribute("zk", zk);
-                }
-
+            if (zk == null || !zk.getState().isConnected()) {
+                if (zk != null) closeZookeeper(zk);
+                session.removeAttribute("zk");
+                zk = newZookeeper(props);
+                session.setAttribute("zk", zk);
             }
             return zk;
-        } catch (IOException | InterruptedException ex) {
-            logger.error(Arrays.toString(ex.getStackTrace()));
         }
-        return null;
     }
 
     public void closeZookeeper(ZooKeeper zk) {
         try {
             zk.close();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } catch (Exception ex) {
-            logger.error("Error in closing zk,will cause problem in zk! " + ex.getMessage());
+            logger.error("Unable to close ZooKeeper connection");
         }
 
     }

@@ -52,6 +52,13 @@ final class TestApplication extends ExternalResource {
             }
             config.setProperty("serverPort", Integer.toString(port));
             config.setProperty("zkServer", server.address());
+            if (Boolean.parseBoolean(config.getProperty("testEnsemble", "false"))
+                    || Boolean.parseBoolean(config.getProperty("testNoZooKeeper", "false"))) {
+                try (ServerSocket unused = new ServerSocket(0, 0, InetAddress.getByName("127.0.0.1"))) {
+                    config.setProperty("zkServer", "127.0.0.1:" + unused.getLocalPort()
+                            + (Boolean.parseBoolean(config.getProperty("testNoZooKeeper", "false")) ? "" : "," + server.address() + "/appconfig"));
+                }
+            }
             config.setProperty("env", "prod");
             config.setProperty("jdbcUrl", "jdbc:h2:" + new File(work, "history").getAbsolutePath());
             config.setProperty("userSet", "{\"users\":[" + user("test-admin", "ADMIN") + ","
@@ -124,6 +131,8 @@ final class TestApplication extends ExternalResource {
                 + token(get("/login", cookie).body) + "\r\n" + body;
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
     }
+
+    java.util.Set<Long> sessions() { return server.sessions(); }
 
     String logContents() throws IOException {
         return new String(Files.readAllBytes(new File("target/failsafe-reports/" + name + ".log").toPath()), StandardCharsets.UTF_8);

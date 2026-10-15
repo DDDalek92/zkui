@@ -9,7 +9,7 @@
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | 配置根路径、子树搜索 | 修改后整合候选 | 根路径安全边界、搜索性能、空路径与路径遍历 |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | 表格排序 | 修改后整合候选 | 外部 CDN 供应链和离线部署、前端版本适配 |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | 修复中文乱码 | 修改后整合候选 | 确保 UTF-8 端到端一致；新增日志可能泄露原始节点值，需删除/脱敏 |
-| [#86](https://github.com/DeemOpen/zkui/pull/86) | 多 ZooKeeper 地址与监控 | 需重测/可能重写 | 客户端 ensemble 连接语义、故障转移、配置无效与 #64/#98 |
+| [#86](https://github.com/DeemOpen/zkui/pull/86) | 多 ZooKeeper 地址与监控 | 已重做并验证，Fork PR #9 | 完整 ensemble、chroot、监控失败隔离及超时；#64/#48 有直接回归 |
 | [#50](https://github.com/DeemOpen/zkui/pull/50) | ZooKeeper 客户端认证 | 需安全审计后整合或重写 | `addAuthInfo`、Digest 凭据格式、ACL/用户隔离；关联 #42/#59/#80/#99/#112 |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | LDAP 登录调整 | 需安全审计后整合或重写 | 域/OU、空口令、TLS、超时、角色映射、回归 #28/#52/#106 |
 | [#41](https://github.com/DeemOpen/zkui/pull/41) | 输入修剪及其他功能 | 拆分后评估 | 涉及 15 文件、数据库迁移/描述能力，不能视为单一 trim 补丁 |
@@ -22,6 +22,8 @@
 ## 已完成的整合
 
 - **#109 → Fork PR #8，adopted**。作者 `gouzhuang`，提交 `4fcdc0a893445836840158ebcd7549f08a432162`；完整差异及讨论已审（无评论）。采纳 `.mono-pre-wrap` 和主页 span；扩展至搜索值且补齐 HTML 转义。`OutputSafetyIT` 验证多行中文/空格输出与本地 CSS、恶意标记转义。未运行真实浏览器计算样式；上游 PR 不会被自动关闭。
+
+- **#86 → Fork PR #9，rewritten**。作者 `wupeixuan`，提交 `eb55fda5f5f5311a6d29a8969fbec6df67fc6e3e`；全量差异/讨论已审（无评论）。采纳完整 ensemble 传递和监控失败隔离的意图；使用 ZK 原生 ConnectStringParser，支持 chroot/IPv6，监控有超时及容量边界；同时修复连接就绪等待和 REST 关闭 UI 连接。ConnectionReliabilityIT、MonitorEndpointTest 验证；不把所有 ConnectionLoss 问题一律视为解决。
 
 ## 已关闭历史 PR 的复查
 
@@ -53,4 +55,4 @@
 
 ## 审核清单字段
 
-最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109 已完成记录外，其余项目上述字段仍 **待完成**。
+最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109/#86 已完成记录外，其余项目上述字段仍 **待完成**。

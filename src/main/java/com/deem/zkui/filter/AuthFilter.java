@@ -73,7 +73,12 @@ public class AuthFilter implements Filter {
                 return;
             }
         }
-        fc.doFilter(req, res);
+        try {
+            fc.doFilter(req, res);
+        } catch (com.deem.zkui.utils.ServletUtil.ZooKeeperUnavailableException ex) {
+            if (response.isCommitted()) throw ex;
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "ZooKeeper is unavailable");
+        }
     }
 
     @Override

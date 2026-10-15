@@ -223,3 +223,8 @@ History and displayed values
 ----------------------------
 
 New create/update history contains paths, and import history contains only counts and overwrite intent. Raw values are no longer written to application DEBUG logs/history. History access requires ADMIN because older database records may contain secrets; upgrades do not erase those records. Review existing backups/history retention separately. Node names, values and search output are HTML-escaped; multiline display preserves whitespace (upstream #109 by gouzhuang).
+
+ZooKeeper connection behavior
+-----------------------------
+
+`zkServer` is the complete native ensemble string, for example `host1:2181,host2:2181/appconfig` or bracketed IPv6 endpoints. zkui passes the whole string to ZooKeeper; it no longer selects only the first member. `zkSessionTimeout` controls the requested ZK session timeout; `zkConnectTimeout` independently bounds initial connection readiness (seconds, 1–60, default 5). Failure returns HTTP 503 rather than an unconnected/null client. UI sessions reuse their connection; REST owns and closes its separate short-lived connection. Monitor parses chroot/IPv6 and continues to other endpoints if one is down. This does not repair server-side ACL, DNS, firewall, packet-size or cluster health problems.

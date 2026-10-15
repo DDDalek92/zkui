@@ -31,15 +31,23 @@ public enum CmdUtil {
     private final static Logger logger = LoggerFactory.getLogger(CmdUtil.class);
 
     public String executeCmd(String cmd, String zkServer, String zkPort) throws IOException {
-        StringBuilder sb;
-        try (Socket s = new Socket(zkServer, Integer.parseInt(zkPort)); PrintWriter out = new PrintWriter(s.getOutputStream(), true); BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()))) {
-            out.println(cmd);
-            String line = reader.readLine();
-            sb = new StringBuilder();
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = reader.readLine();
+        StringBuilder sb = new StringBuilder();
+        try (Socket socket = new Socket()) {
+            socket.connect(new java.net.InetSocketAddress(zkServer, Integer.parseInt(zkPort)), 1000);
+            socket.setSoTimeout(1000);
+            try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                 InputStreamReader reader = new InputStreamReader(socket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                out.print(cmd);
+                out.flush();
+                long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+                char[] buffer = new char[4096];
+                int count;
+                while ((count = reader.read(buffer)) != -1) {
+                    if (sb.length() + count > 1024 * 1024 || System.nanoTime() > deadline) {
+                        throw new IOException("Monitor response exceeds limits");
+                    }
+                    sb.append(buffer, 0, count);
+                }
             }
         }
         return sb.toString();
