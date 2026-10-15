@@ -1,5 +1,13 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前入口：H2 文件格式启动前保护
+
+#35准确head `81aa63fcc21c39faa56a65d72eb0bcc6e18cca17` 的[PR运行38789692993](https://github.com/DDDalek92/zkui/actions/runs/38789692993)（attempt2）及push38789687026全部六job成功后已审查合并；三平台各16单元+111集成=127项，Chrome3组及容器/MySQL/旧ZK通过。容器首次为Maven依赖描述符解析失败；同head的push容器已通过，再仅重跑失败job后也成功，未改代码、POM、TLS或校验。master `2c9c68e3088d1b20d078992c161624a816f782bc` 的push38790758128已查询success。下方#35待CI为旧快照，不再是当前阻塞。
+
+本次从该最新基线隔离复现旧运行H2忽略 `.mv.db` 而旁路创建 `.h2.db`，先取得新增测试的预期失败，再加入连接/迁移/dev清库之前的格式保护。真实JAR在两个格式并存时非零退出且不监听HTTP，两库SHA256不变；候选驱动仅验收保护器，不声称完整新版Main/HTTP已通过，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)。最终完整本地与准确新head CI须分别记录；只有准确head全部所需CI通过才审查合并。POM和原V1均未改，上游仍14个开放PR/46个开放Issue，无新增；分类不是全部修复。
+
+本地中间完整clean verify为23单元+114集成=137项，零失败/错误/跳过；首轮完整文本BUILD SUCCESS，第二轮返回0、XML/Failsafe汇总一致但文本止于dependency阶段，不冒充完整日志。最终大小写后缀/Windows夹具修订后，定向23单元+10集成=33项BUILD SUCCESS。没有在本机执行Chrome、Docker或真实MySQL/旧ZK容器；准确新head完整跨平台和六job最终结果须以对应Fork PR Checks/审查证据为准，不以中间137项替代新head。
+
 ## 2026-10-15 当前入口：仅追加审计差量恢复
 
 #34准确head `8a3157d6fa8e84a22ee3baaceaceef4a4caa8c21` 的[PR运行38787905991](https://github.com/DDDalek92/zkui/actions/runs/38787905991)及push运行38787853716全部六job成功后审查合并，三平台各123项、Chrome3组与容器/MySQL/旧ZK通过，基线为498fe7f。下方#34待CI为提交时快照，不是当前阻塞。

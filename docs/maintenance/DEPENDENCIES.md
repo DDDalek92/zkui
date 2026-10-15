@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> D01-C新增实际应用本地文件格式保护，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)：复现旧驱动忽略新版文件而建立旁路空库，现于连接/迁移/dev清库前拒绝；不改变运行H2/Flyway或已应用V1，完整新版Main/HTTP仍未完成。
+
 > D01-C有限追加差量预演见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)：旧驱动只开封存副本，记录逐字段恢复/冲突拒绝，不改迁移元数据；不是在线/通用降级工具。完整新版H2/Flyway应用及MySQL旧API/checksum兼容仍需独立实现验收。
 
 > D01-C故障预演接续：受控原生RUNSCRIPT中断后的半成品拒绝、显式只读目标导入拒绝见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。运行H2/Flyway未升级，实际文件系统不可写/磁盘故障、完整应用及差量恢复仍未完成。

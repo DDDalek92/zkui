@@ -110,6 +110,9 @@
 
 ## 本轮接续与优先队列（2026-10-15）
 
+- #35已核对准确head81aa63fcc21c39faa56a65d72eb0bcc6e18cca17的PR运行38789692993（attempt2）及push38789687026全部六job成功后审查合并；三平台各127项、Chrome3组及容器/MySQL/旧ZK通过。容器首轮依赖解析失败后仅重跑失败job，同head通过，没有更改代码/依赖或关闭校验。master为2c9c68e，其push38790758128 success，无未完成Fork PR；上游仍14/46且无新增。
+- 在该最新基线隔离复现并修复实际应用的H2格式错配静默建空库风险：连接/Flyway/dev清库前拒绝不兼容同base文件，真实JAR拒绝启动并保留两库hash，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)。本增量不切换运行H2/Flyway，不是完整新版Main/HTTP验收；准确新head全部CI须通过后才合并。完成后继续完整新版新建/历史桥接应用及MySQL旧API/checksum兼容，不跳到发行。
+
 - 当前远程基线4eff9d8：#33准确head69d367f的PR运行38781568897及push运行38781523517全部六job/三平台各121项成功后已审查合并；基线push运行38782275556也success。本地Java17执行可用；没有未完成Fork PR，不复建已合并增量。
 - #32固定V1结构/PK/索引/约束漂移拒绝、#33候选锁竞争/空闲持锁进程终止恢复已完成有限夹具验收，见H2_SCHEMA_VALIDATION.md、H2_LOCK_RECOVERY.md；#30合法NULL历史页与#31默认关闭hosts初始化也已组合验收。均不表示完整H2应用升级完成。
 - 本次从当前远程基线隔离继续受控原生RUNSCRIPT中断半成品拒绝、H2显式只读目标90097导入拒绝，见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。定向9项及本地完整123项通过，完整日志/报告一致；准确新head六job仍待验收，本增量最终结果以对应Fork PR准确head Checks/审查记录为准。
