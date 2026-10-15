@@ -107,3 +107,7 @@ zkRootPath默认/，是应用数据入口的命名空间边界，相对于zkServ
 ## 历史限额、缺失配置与数据库连接（#41部分重写）
 
 historyLimit默认50且校验1–1000，所有/筛选查询同限额，标题显示实际限额。https与X-Forwarded-For缺失时false，env缺失时prod；不会因缺配置清空历史。Dao读写成功/失败都在finally释放线程连接。HistoryStorageIT使用一次性H2验证限额、参数化筛选、故意删除测试表后的读写失败无连接泄漏、另一测试库恢复及重复启动保留历史；ConfigDefaultsIT验证缺失标记启动和历史标题，配置单元测试覆盖越界/非法值。旧代码独立工作区2失败+1错误；完整verify84项（14单元+70集成）通过。不引入#41的值trim、描述SQL或旧V1改写；描述功能延期条件见PR_REVIEW.md。
+
+## 上传头边界与日志依赖（#105部分重写）
+
+FileUpload1.6.0（Java8兼容）配置512字节part头上限。新增真实HTTP回归在1.4上返回302并接受1024字节文件名头，修复后返回413且无节点写入；其余大小/parts/UTF-8/权限/CSRF回归保留。SLF4J1.7.36+reload4j1.2.27，排除ZooKeeper传递Log4j1和旧绑定，保留现有log4j.properties格式；组装JAR元数据验证仅选定绑定，既有敏感日志回归继续通过。完整Java8 verify86项（14单元+72集成）通过。依赖树用maven-dependency-plugin3.8.1实取，见DEPENDENCY_TREE.txt；这是依赖清单，不是漏洞扫描通过报告。Jetty/H2/MySQL/ZK等老组件仍需后续迁移，不宣称已完成安全发行验收。

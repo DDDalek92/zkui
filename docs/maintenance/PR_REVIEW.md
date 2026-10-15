@@ -84,3 +84,17 @@
 | Import/Export重排imports和局部变量、树行外观 | 不采纳原补丁 | 无独立必要行为；连接/编码/模板已在#9/#12/#13更新，外观留后续实际需求 |
 
 验证：独立旧代码工作区HistoryStorageIT 2失败+1错误（限额无效、读异常泄漏、缺env初始化失败）；修复后完整Java8 verify84项（14单元+70集成）通过，含隔离H2历史保留/失败恢复、参数化筛选和缺标记HTTP启动。未更改V1、未创建描述表，未访问真实数据库。
+
+## 依赖PR最终审查与迁移状态（Fork PR #16）
+
+以下完整差异及讨论均已审（均无评论）；#102连接器读取404，已通过公开git ref核对原提交和POM单行修改。原目标版本不作为当前维护目标。具体执行和残余依赖见DEPENDENCIES.md及DEPENDENCY_TREE.txt。
+
+| 上游 | 作者/提交 | 处置及原因 |
+| --- | --- | --- |
+| #105 | lyhu / e073cf0bb925f19115ccda450aaba9c4ee8e32ee | rewritten（日志部分）：SLF4J1.7.36，显式reload4j1.2.27替代Log4j1并排除ZK旧绑定；Jetty9.4.48/MySQL8.0.30不直接采纳，留迁移验证 |
+| #104 | dependabot[bot] / 3635c4474e11a406653ac0fdcef5682c36e0f48f | deferred：Jetty10需Java11且当前已EOL，不能只改属性作为支持声明；现代目标为Java17/Jetty12，EE8可保留javax |
+| #93 | dependabot[bot] / 822ac030ec183e585e8200722810dcedca0d803f | deferred：Jetty11需Java11/Jakarta5，与当前javax3.1不兼容且已EOL；采用当前Jetty12整体方案 |
+| #103 | dependabot[bot] / bb0c00f4933de6ddd392c7612551262429dea84a | deferred：8.0.28是历史版本；旧Flyway/MySQL5.7建表问题和现有历史库尚需独立新驱动验证，不能用H2测试替代 |
+| #102 | dependabot[bot] / 604f1de7b40a966a14c5785f4b95c0ff8c8a9f43 | deferred：H21.3到2跨文件/SQL兼容边界；须旧驱动SCRIPT导出、新驱动新建/RUNSCRIPT和备份恢复，不能直接替换旧库JAR或重写V1 |
+
+#16另将Commons FileUpload1.4升级到Java8兼容的1.6.0，显式512字节part-header上限；原1.4在新回归上错误接受超大头并写入（302），升级后413且无写入。日志包检查确保组装JAR不含旧Log4j/旧SLF4J绑定。全套86项Java回归通过。此阶段不是所有第三方漏洞已清零或现代Java迁移已完成的声明。

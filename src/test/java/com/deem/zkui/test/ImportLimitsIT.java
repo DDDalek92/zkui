@@ -91,6 +91,15 @@ public class ImportLimitsIT {
         assertEquals(400, app.upload("-/", cookie).status);
     }
 
+    @Test public void oversizedPartHeadersAreRejectedBeforeWrites() throws Exception {
+        char[] padding = new char[1024];
+        java.util.Arrays.fill(padding, 'x');
+        String body = "--zkui-test\r\nContent-Disposition: form-data; name=\"file\"; filename=\""
+                + new String(padding) + ".txt\"\r\n\r\n/appconfig=header-not-written=value\r\n--zkui-test--\r\n";
+        assertEquals(413, app.multipart(body, app.login("test-admin")).status);
+        assertNull(app.observer.exists("/appconfig/header-not-written", false));
+    }
+
     @Test public void rejectsExcessivePartsAndMultipleFiles() throws Exception {
         StringBuilder body = new StringBuilder();
         for (int i = 0; i < 33; i++) body.append("--zkui-test\r\nContent-Disposition: form-data; name=\"field")
