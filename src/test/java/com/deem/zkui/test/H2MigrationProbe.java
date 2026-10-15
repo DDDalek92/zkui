@@ -27,6 +27,9 @@ public final class H2MigrationProbe {
             case "tamper": tamper(root); break;
             case "assert-tampered": assertTampered(root); break;
             case "schema-drift": schemaDrift(root); break;
+            case "hold-candidate-lock": holdCandidateLock(root); break;
+            case "compete-candidate-lock": competeCandidateLock(root); break;
+            case "recover-candidate-lock": recoverCandidateLock(root); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
@@ -109,6 +112,7 @@ public final class H2MigrationProbe {
             assertSnapshot(root, connection);
             assertSchemaAndConstraints(root, connection);
             appendAndCheck(connection, "synthetic-candidate-row");
+            Files.writeString(root.resolve("expected-candidate-rows"), snapshot(connection));
         }
         try (Connection connection = connect(url + ";IFEXISTS=TRUE", "2.5.252"); Statement statement = connection.createStatement();
                 ResultSet rows = statement.executeQuery("SELECT COUNT(*) FROM histories")) {
@@ -314,6 +318,68 @@ public final class H2MigrationProbe {
             assertSchemaAndConstraints(root, connection);
         }
         throw new AssertionError("Drifted target was accepted");
+    }
+
+    private static String candidateUrl(Path root) {
+        return url(root, "new-legacy") + ";MODE=LEGACY;IFEXISTS=TRUE";
+    }
+
+    private static void assertCandidateRows(Path root, Connection connection) throws Exception {
+        if (!Files.readString(root.resolve("expected-candidate-rows")).equals(snapshot(connection)))
+            throw new AssertionError("Candidate committed rows or metadata changed");
+    }
+
+    private static void holdCandidateLock(Path root) throws Exception {
+        try (Connection connection = connect(candidateUrl(root), "2.5.252")) {
+            assertCandidateRows(root, connection);
+            // Signal only after the actual candidate file is opened and all committed rows checked.
+            Files.writeString(root.resolve("candidate-lock-ready"), Files.readString(root.resolve("owned-fixture")),
+                    java.nio.file.StandardOpenOption.CREATE_NEW);
+            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(45);
+            while (System.nanoTime() < deadline) Thread.sleep(50);
+            throw new AssertionError("Owned idle lock holder exceeded bounded lifetime");
+        }
+    }
+
+    private static void competeCandidateLock(Path root) throws Exception {
+        try (Connection ignored = connect(candidateUrl(root), "2.5.252")) {
+            throw new AssertionError("Second process unexpectedly opened locked candidate");
+        } catch (SQLException expected) {
+            if (expected.getErrorCode() != 90020 || !"90020".equals(expected.getSQLState())) throw expected;
+        }
+        System.out.println("EXPECTED_CANDIDATE_FILE_LOCK_REFUSAL_90020");
+    }
+
+    private static void recoverCandidateLock(Path root) throws Exception {
+        String afterWrite;
+        try (Connection connection = connect(candidateUrl(root), "2.5.252")) {
+            assertCandidateRows(root, connection);
+            assertSchemaAndConstraints(root, connection);
+            long maximum;
+            try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(
+                    "SELECT MAX(ID), COUNT(*) FROM histories")) {
+                if (!rows.next() || rows.getInt(2) != 4) throw new AssertionError("Expected four committed candidate rows");
+                maximum = rows.getLong(1);
+            }
+            try (PreparedStatement insert = connection.prepareStatement(
+                    "INSERT INTO histories (CHANGE_SUMMARY) VALUES (?)", Statement.RETURN_GENERATED_KEYS)) {
+                insert.setString(1, "synthetic-after-killed-idle-holder");
+                if (insert.executeUpdate() != 1) throw new AssertionError("Recovery insert failed");
+                try (ResultSet keys = insert.getGeneratedKeys()) {
+                    if (!keys.next() || keys.getLong(1) <= maximum || keys.next())
+                        throw new AssertionError("Recovery identity did not continue");
+                }
+            }
+            try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery("SELECT COUNT(*) FROM histories")) {
+                if (!rows.next() || rows.getInt(1) != 5) throw new AssertionError("Recovery row missing");
+            }
+            afterWrite = snapshot(connection);
+        }
+        try (Connection connection = connect(candidateUrl(root), "2.5.252")) {
+            if (!afterWrite.equals(snapshot(connection))) throw new AssertionError("Recovery restart lost committed rows");
+            assertSchemaAndConstraints(root, connection);
+        }
+        System.out.println("KILLED_IDLE_HOLDER_COMMITTED_ROWS_METADATA_SCHEMA_ID_AND_REOPEN_OK");
     }
 
 
