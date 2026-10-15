@@ -24,7 +24,7 @@
 | S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 已完成本轮修复，Fork PR #8；45 项测试 |
 | R01 | ZK 连接就绪等待、超时失败、重连与资源释放、多地址/监控 | 已完成本轮修复，Fork PR #9；51 项测试 |
 | P01 | 整合低风险上游 #87、#109 | 已完成，Fork PR #8/#10；LDAP/ACL 继续按 P03 |
-| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | UTF-8/节点自身值已完成 #12；根路径/搜索和离线排序继续处理 |
+| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | UTF-8/节点自身值已完成 #12，根路径/子树搜索已完成 #13；离线排序继续处理 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 待处理 |
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 待处理；#93/#102/#103/#104/#105 |
@@ -34,7 +34,7 @@
 
 ## 上游 PR 逐项清单
 
-14 项中 #109/#86/#50/#87/#107/#88 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14 项中 #109/#86/#50/#87/#107/#88/#54 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
@@ -49,7 +49,7 @@
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | rewritten，vzardlloo 原贡献；Fork PR #12，US-ASCII JVM 端到端测试 |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
-| [#54](https://github.com/DeemOpen/zkui/pull/54) | add zkRootPath configuration and Search in sub node | 待处理 |
+| [#54](https://github.com/DeemOpen/zkui/pull/54) | add zkRootPath configuration and Search in sub node | rewritten，clevertension 原贡献；Fork PR #13，RootNamespaceIT |
 | [#50](https://github.com/DeemOpen/zkui/pull/50) | add auth to the zk client. | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#41](https://github.com/DeemOpen/zkui/pull/41) | trim input or textarea | 待处理 |
 

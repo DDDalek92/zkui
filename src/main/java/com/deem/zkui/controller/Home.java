@@ -19,6 +19,7 @@ package com.deem.zkui.controller;
 
 import com.deem.zkui.dao.Dao;
 import com.deem.zkui.utils.ServletUtil;
+import com.deem.zkui.utils.PathPolicy;
 import com.deem.zkui.utils.ZooKeeperUtil;
 import com.deem.zkui.vo.LeafBean;
 import com.deem.zkui.vo.ZKNode;
@@ -55,7 +56,6 @@ public class Home extends HttpServlet {
             Map<String, Object> templateParam = new HashMap<>();
             String zkPath = request.getParameter("zkPath");
             String navigate = request.getParameter("navigate");
-            ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, globalProps);
             List<String> nodeLst;
             List<LeafBean> leafLst;
             String currentPath, parentPath, displayPath;
@@ -64,27 +64,30 @@ public class Home extends HttpServlet {
                 authRole = ZooKeeperUtil.ROLE_USER;
             }
 
-            if (zkPath == null || zkPath.equals("/")) {
-                templateParam.put("zkpath", "/");
-                ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, "/", authRole);
-                nodeLst = zkNode.getNodeLst();
-                leafLst = zkNode.getLeafBeanLSt();
-                currentPath = "/";
-                displayPath = "/";
-                parentPath = "/";
-            } else {
-                templateParam.put("zkPath", zkPath);
-                ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, zkPath, authRole);
-                nodeLst = zkNode.getNodeLst();
-                leafLst = zkNode.getLeafBeanLSt();
-                currentPath = zkPath + "/";
-                displayPath = zkPath;
-                parentPath = zkPath.substring(0, zkPath.lastIndexOf("/"));
-                if (parentPath.equals("")) {
-                    parentPath = "/";
-                }
+            PathPolicy paths = new PathPolicy(globalProps);
+            displayPath = paths.home(zkPath);
+            parentPath = paths.parent(displayPath);
+            currentPath = "/".equals(displayPath) ? "/" : displayPath + "/";
+            ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, globalProps);
+            ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, displayPath, authRole);
+            nodeLst = zkNode.getNodeLst();
+            leafLst = zkNode.getLeafBeanLSt();
+            java.util.List<Map<String, String>> crumbs = new java.util.ArrayList<>();
+            String crumbPath = paths.root();
+            Map<String, String> rootCrumb = new HashMap<>();
+            rootCrumb.put("path", crumbPath);
+            rootCrumb.put("name", crumbPath);
+            crumbs.add(rootCrumb);
+            String relative = displayPath.substring(paths.root().length());
+            for (String component : relative.split("/")) {
+                if (component.isEmpty()) continue;
+                crumbPath = "/".equals(crumbPath) ? "/" + component : crumbPath + "/" + component;
+                Map<String, String> crumb = new HashMap<>();
+                crumb.put("path", crumbPath);
+                crumb.put("name", component);
+                crumbs.add(crumb);
             }
-
+            templateParam.put("breadCrumbs", crumbs);
             String nodeName = "/".equals(displayPath) ? "/" : displayPath.substring(displayPath.lastIndexOf('/') + 1);
             LeafBean currentNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, parentPath, displayPath, nodeName, authRole);
             templateParam.put("currentNode", currentNode);
@@ -93,7 +96,6 @@ public class Home extends HttpServlet {
             templateParam.put("currentPath", currentPath);
             templateParam.put("nodeLst", nodeLst);
             templateParam.put("leafLst", leafLst);
-            templateParam.put("breadCrumbLst", displayPath.split("/"));
             templateParam.put("remoteImportEnabled", Boolean.parseBoolean(globalProps.getProperty("remoteImportEnabled", "false")));
             templateParam.put("scmRepo", globalProps.getProperty("scmRepo"));
             templateParam.put("scmRepoPath", globalProps.getProperty("scmRepoPath"));
@@ -115,7 +117,7 @@ public class Home extends HttpServlet {
         logger.debug("Home Post Action!");
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
-            Dao dao = new Dao(globalProps);
+            PathPolicy paths = new PathPolicy(globalProps);
 
             Map<String, Object> templateParam = new HashMap<>();
             String action = request.getParameter("action");
@@ -132,6 +134,29 @@ public class Home extends HttpServlet {
             searchStr = searchStr == null ? "" : searchStr.trim();
             String authRole = (String) request.getSession().getAttribute("authRole");
 
+            if (action == null) throw new IllegalArgumentException("Missing action");
+            displayPath = paths.home(displayPath);
+            if (!"Search".equals(action)) {
+                if (!ZooKeeperUtil.ROLE_ADMIN.equals(authRole)) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator role required");
+                    return;
+                }
+                if (currentPath == null) throw new IllegalArgumentException("Missing current path");
+                String parent = currentPath.endsWith("/") && currentPath.length() > 1
+                        ? currentPath.substring(0, currentPath.length() - 1) : currentPath;
+                paths.require(parent);
+                currentPath = "/".equals(parent) ? "/" : parent + "/";
+                if ("Save Node".equals(action)) paths.writable(currentPath + PathPolicy.component(newNode));
+                else if ("Save Property".equals(action) || "Update Property".equals(action)) {
+                    paths.writable(currentPath + PathPolicy.component(newProperty));
+                    if (newValue == null) throw new IllegalArgumentException("Missing value");
+                } else if ("Delete".equals(action)) {
+                    // Validate the complete request before the first deletion/history write.
+                    if (propChkGroup != null) for (String path : propChkGroup) paths.writable(path);
+                    if (nodeChkGroup != null) for (String path : nodeChkGroup) paths.writable(path);
+                } else throw new IllegalArgumentException("Unknown action");
+            }
+            Dao dao = new Dao(globalProps);
             switch (action) {
                 case "Save Node":
                     if (!newNode.equals("") && !currentPath.equals("") && authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
@@ -140,7 +165,7 @@ public class Home extends HttpServlet {
                         request.getSession().setAttribute("flashMsg", "Node created!");
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Creating node: " + currentPath + newNode);
                     }
-                    response.sendRedirect("/home?zkPath=" + displayPath);
+                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Save Property":
                     if (!newProperty.equals("") && !currentPath.equals("") && authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
@@ -152,7 +177,7 @@ public class Home extends HttpServlet {
                         }
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Saving Property: " + currentPath + "," + newProperty);
                     }
-                    response.sendRedirect("/home?zkPath=" + displayPath);
+                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Update Property":
                     if (!newProperty.equals("") && !currentPath.equals("") && authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
@@ -164,10 +189,10 @@ public class Home extends HttpServlet {
                         }
                         dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Updating Property: " + currentPath + "," + newProperty);
                     }
-                    response.sendRedirect("/home?zkPath=" + displayPath);
+                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 case "Search":
-                    Set<LeafBean> searchResult = ZooKeeperUtil.INSTANCE.searchTree(searchStr, ServletUtil.INSTANCE.getZookeeper(request, globalProps), authRole);
+                    Set<LeafBean> searchResult = ZooKeeperUtil.INSTANCE.searchTree(searchStr, displayPath, ServletUtil.INSTANCE.getZookeeper(request, globalProps), authRole);
                     templateParam.put("searchResult", searchResult);
                     ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "search.ftl.html");
                     break;
@@ -192,7 +217,7 @@ public class Home extends HttpServlet {
                         }
 
                     }
-                    response.sendRedirect("/home?zkPath=" + displayPath);
+                    response.sendRedirect("/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;
                 default:
                     response.sendRedirect("/home");

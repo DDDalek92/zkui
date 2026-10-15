@@ -52,6 +52,8 @@ public enum ServletUtil {
                     templateParam.put("flashMsg", session.getAttribute("flashMsg"));
                     session.setAttribute("flashMsg", null);
                 }
+                Properties props = (Properties) request.getServletContext().getAttribute("globalProps");
+                templateParam.put("zkHostsPath", new PathPolicy(props).hosts(props));
                 templateParam.put("authName", session.getAttribute("authName"));
                 templateParam.put("authRole", session.getAttribute("authRole"));
                 templateParam.put("csrfToken", CsrfUtil.token(session));

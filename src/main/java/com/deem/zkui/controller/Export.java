@@ -51,7 +51,7 @@ public class Export extends HttpServlet {
             if (authRole == null) {
                 authRole = ZooKeeperUtil.ROLE_USER;
             }
-            String zkPath = request.getParameter("zkPath");
+            String zkPath = new com.deem.zkui.utils.PathPolicy(globalProps).home(request.getParameter("zkPath"));
             StringBuilder output = new StringBuilder();
             output.append("#App Config Dashboard (ACD) dump created on :").append(new Date()).append("\n");
             Set<LeafBean> leaves = ZooKeeperUtil.INSTANCE.exportTree(zkPath, ServletUtil.INSTANCE.getZookeeper(request, globalProps), authRole);

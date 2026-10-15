@@ -76,6 +76,12 @@ public class AuthFilter implements Filter {
         }
         try {
             fc.doFilter(req, res);
+        } catch (com.deem.zkui.utils.PathPolicy.OutsideNamespaceException ex) {
+            if (response.isCommitted()) throw ex;
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Path is outside the permitted namespace");
+        } catch (IllegalArgumentException ex) {
+            if (response.isCommitted()) throw ex;
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request parameters");
         } catch (com.deem.zkui.utils.ServletUtil.ZooKeeperUnavailableException ex) {
             if (response.isCommitted()) throw ex;
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "ZooKeeper is unavailable");

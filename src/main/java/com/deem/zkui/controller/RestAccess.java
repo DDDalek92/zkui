@@ -18,6 +18,7 @@
 package com.deem.zkui.controller;
 
 import com.deem.zkui.utils.ServletUtil;
+import com.deem.zkui.utils.PathPolicy;
 import com.deem.zkui.utils.ZooKeeperUtil;
 import com.deem.zkui.vo.LeafBean;
 import java.io.IOException;
@@ -50,7 +51,8 @@ public class RestAccess extends HttpServlet {
         ZooKeeper zk = null;
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
-            String zkServer = globalProps.getProperty("zkServer");
+            PathPolicy paths = new PathPolicy(globalProps);
+            String hostsPath = paths.hosts(globalProps);
             String accessRole = ZooKeeperUtil.ROLE_USER;
             HttpSession session = request.getSession(false);
             if (session != null && session.getAttribute("authName") != null
@@ -73,27 +75,31 @@ public class RestAccess extends HttpServlet {
                     return;
                 }
             }
+            for (String propName : propNames) PathPolicy.component(propName);
+            if (appName != null) PathPolicy.component(appName);
+            if (clusterName != null) PathPolicy.component(clusterName);
             String propValue = "";
             LeafBean propertyNode;
 
             if (hostName == null) {
                 hostName = ServletUtil.INSTANCE.getRemoteAddr(request);
             }
+            PathPolicy.component(hostName);
             zk = ServletUtil.INSTANCE.newZookeeper(globalProps);
             //get the path of the hosts entry.
             LeafBean hostsNode = null;
             //If app name is mentioned then lookup path is appended with it.
-            if (appName != null && ZooKeeperUtil.INSTANCE.nodeExists(ZooKeeperUtil.ZK_HOSTS + "/" + hostName + ":" + appName, zk)) {
-                hostsNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, ZooKeeperUtil.ZK_HOSTS, ZooKeeperUtil.ZK_HOSTS + "/" + hostName + ":" + appName, hostName + ":" + appName, accessRole);
+            if (appName != null && ZooKeeperUtil.INSTANCE.nodeExists(hostsPath + "/" + hostName + ":" + appName, zk)) {
+                hostsNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, hostsPath, hostsPath + "/" + hostName + ":" + appName, hostName + ":" + appName, accessRole);
             } else {
-                hostsNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, ZooKeeperUtil.ZK_HOSTS, ZooKeeperUtil.ZK_HOSTS + "/" + hostName, hostName, accessRole);
+                hostsNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, hostsPath, hostsPath + "/" + hostName, hostName, accessRole);
             }
 
             if (hostsNode == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Host mapping not found");
                 return;
             }
-            String lookupPath = hostsNode.getStrValue();
+            String lookupPath = paths.require(hostsNode.getStrValue());
             logger.trace("Root Path:" + lookupPath);
             String[] pathElements = lookupPath.split("/");
 
@@ -104,7 +110,10 @@ public class RestAccess extends HttpServlet {
             for (String pathElement : pathElements) {
                 pathSubSet.append(pathElement);
                 pathSubSet.append("/");
-                searchPath.add(pathSubSet.substring(0, pathSubSet.length() - 1));
+                String ancestor = pathSubSet.substring(0, pathSubSet.length() - 1);
+                // The empty ancestor represents global root in the legacy lookup.
+                if (ancestor.isEmpty()) ancestor = "/";
+                if (paths.contains(ancestor)) searchPath.add(ancestor);
             }
 
             //You specify a cluster or an app name to group.
@@ -163,7 +172,7 @@ public class RestAccess extends HttpServlet {
                 propValue = null;
                 for (String path : searchPath) {
                     logger.trace("Looking up " + path);
-                    propertyNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, path, path + "/" + propName, propName, accessRole);
+                    propertyNode = ZooKeeperUtil.INSTANCE.getNodeValue(zk, path, ZooKeeperUtil.INSTANCE.getNodePath(path, propName), propName, accessRole);
                     if (propertyNode != null) {
                         propValue = propertyNode.getStrValue();
                     }
