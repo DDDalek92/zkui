@@ -57,6 +57,7 @@ public class Import extends HttpServlet {
         try {
             Properties props = (Properties) getServletContext().getAttribute("globalProps");
             ServletFileUpload upload = new ServletFileUpload();
+            upload.setPartHeaderSizeMax(512);
             upload.setSizeMax(2L * ImportSafety.MAX_BYTES);
             upload.setFileSizeMax(ImportSafety.MAX_BYTES);
             FileItemIterator items = upload.getItemIterator(request);

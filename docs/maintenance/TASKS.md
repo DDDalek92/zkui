@@ -27,25 +27,25 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 待处理；#93/#102/#103/#104/#105 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 阶段1已完成 #16（日志/上传/依赖树），Java17/Jetty12和数据库迁移仍待实现；见DEPENDENCIES.md |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 待处理 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | 待处理，不能用 Linux/JDK8 结果替代 |
 | V02 | 验收维护版、已知限制和发布说明 | 待处理 |
 
 ## 上游 PR 逐项清单
 
-14 项中9项已采纳或重写（#41为部分重写、描述功能延期），5项依赖升级继续处理；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14项全部完成本轮差异/讨论审查并给出处置：8项整合，#41部分重写，#105部分重写；#93/#104/#103/#102延期。延期/部分采纳不等于全部功能修复，后续依赖工作仍在D01。；其他条目见逐项状态，预审见 PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | table sorting | rewritten，chenws1012 原贡献；Fork PR #14，本地脚本及真实模板浏览器检查 |
 | [#109](https://github.com/DeemOpen/zkui/pull/109) | correctly display value with new lines | adopted，gouzhuang 原贡献；Fork PR #8，OutputSafetyIT |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | Add ldap auth | rewritten，zhangdong1015 原贡献；Fork PR #11 |
-| [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | 待处理 |
-| [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | 待处理 |
-| [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | 待处理 |
-| [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | 待处理 |
-| [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | 待处理 |
+| [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | rewritten（日志部分），Jetty/MySQL迁移deferred；Fork PR #16 |
+| [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | deferred，目标已EOL且需JDK11；改走Java17/Jetty12兼容迁移，D01 |
+| [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | deferred，待新驱动及真实MySQL/历史库验证，D01/V01 |
+| [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | deferred，不直接打开旧库；导出/新建/导入和回滚验证，D01/V01 |
+| [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | deferred，javax/Jakarta及JDK兼容，目标已EOL；D01 |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | rewritten，vzardlloo 原贡献；Fork PR #12，US-ASCII JVM 端到端测试 |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
