@@ -1,14 +1,6 @@
 # 当前维护验证快照
 
-## 当前增量：合法NULL历史的真实页面兼容（2026-10-15）
-
-复现、修复及准确新head的CI准入见[NULL_HISTORY_VALIDATION.md](NULL_HISTORY_VALIDATION.md)。修改前ADMIN历史页对NULL日期触发InvalidReferenceException，HTTP虽200但内容不完整；不是数据库丢失或迁移成功。此增量不改库、V1、H2/Flyway或访问控制，不能替代完整历史库迁移。
-
-已承接核对并合并的#29 head `aa6d39a08a9dc529a9e313badc3d43a246bb6837`，[运行38743599356](https://github.com/DDDalek92/zkui/actions/runs/38743599356)全部六job成功；Linux/Windows/macOS各16单元+96集成=112项，0失败/错误/跳过，Chrome3组、非root容器、实际MySQL/TLS及3.9.6客户端对3.5.7真实旧ZK服务的Digest/ACL/UTF8/重连检查成功。#27的大树受测范围和#28的MySQL逻辑迁移路径分别见LARGE_TREE_VALIDATION.md、MYSQL_VALIDATION.md；当前运行依赖已更新，旧清单里的待办状态须按这些证据区分。它们不是任意旧环境/全漏洞清零/完整H2升级/正式发布声明。
-
-下文#23/#25待验证和旧依赖描述保留为先前快照：#25最终head `6750ff95f0f7ec8f819b376a00c124073b432b38` 已由[运行38738283086](https://github.com/DDDalek92/zkui/actions/runs/38738283086)全部四job验证后合并，三平台各107项Java、Chrome3组和容器通过。完整应用迁移与其余矩阵仍待办，不应再重复创建相同桥接PR。
-
-## 先前增量：Fork #23（2026-10-15）
+## 当前增量：Fork #23（2026-10-15）
 
 已审查合并[数据库就绪/审计失败策略 #23](https://github.com/DDDalek92/zkui/pull/23)，head `748ad0c86bf3b2721ffdd32414afe90400aea1ab`，[CI 38736989054](https://github.com/DDDalek92/zkui/actions/runs/38736989054)四个job全成功。逐一核对日志：Ubuntu116428803611、macOS116428802960、Windows116428803570各16单元+89集成=105项，0失败/错误/跳过；Linux Chrome3项，0失败/跳过；container116428803377构建、UID/GID10001及登录/环境覆盖/前缀资产冒烟成功。独立detached checkout同一准确head，本地OpenJDK17完整clean verify也是105项通过；本机没有执行Chrome/Docker。
 
