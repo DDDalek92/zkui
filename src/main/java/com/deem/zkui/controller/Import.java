@@ -133,6 +133,8 @@ public class Import extends HttpServlet {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Import interrupted");
+        } catch (KeeperException.NoAuthException ex) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (KeeperException ex) {
             response.sendError(HttpServletResponse.SC_BAD_GATEWAY, "ZooKeeper rejected the import");
         }

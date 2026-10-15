@@ -63,6 +63,8 @@ public class Export extends HttpServlet {
                 out.write(output.toString());
             }
 
+        } catch (KeeperException.NoAuthException ex) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | KeeperException ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());

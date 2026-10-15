@@ -96,41 +96,35 @@ public enum ZooKeeperUtil {
         ArrayList<ACL> newDefault = new ArrayList<>();
         try {
             JSONArray acls = (JSONArray) ((JSONObject) new JSONParser().parse(jsonAcl)).get("acls");
-            for (Iterator it = acls.iterator(); it.hasNext();) {
-                JSONObject acl = (JSONObject) it.next();
+            if (acls == null || acls.isEmpty() || acls.size() > 128) throw new IllegalArgumentException();
+            for (Object item : acls) {
+                JSONObject acl = (JSONObject) item;
                 String scheme = ((String) acl.get("scheme")).trim();
-                String id = ((String) acl.get("id")).trim();
+                String id = (String) acl.get("id");
+                String permissions = ((String) acl.get("perms")).trim().toLowerCase(java.util.Locale.ROOT);
+                if (scheme.isEmpty() || id == null || permissions.isEmpty()) throw new IllegalArgumentException();
+                if ("digest".equals(scheme)) {
+                    int separator = id.indexOf(':');
+                    if (separator < 1 || java.util.Base64.getDecoder().decode(id.substring(separator + 1)).length != 20) {
+                        throw new IllegalArgumentException();
+                    }
+                }
                 int perms = 0;
-                String permStr = ((String) acl.get("perms")).toLowerCase().trim();
-                for (char c : permStr.toCharArray()) {
-                    switch (c) {
-                        case 'a':
-                            perms += ZooDefs.Perms.ADMIN;
-                            break;
-                        case 'c':
-                            perms += ZooDefs.Perms.CREATE;
-                            break;
-                        case 'd':
-                            perms += ZooDefs.Perms.DELETE;
-                            break;
-                        case 'r':
-                            perms += ZooDefs.Perms.READ;
-                            break;
-                        case 'w':
-                            perms += ZooDefs.Perms.WRITE;
-                            break;
-                        case '*':
-                            perms += ZooDefs.Perms.ALL;
-                            break;
-                        default:
-                            throw new RuntimeException("Illegal permission character in ACL " + c);
+                for (char permission : permissions.toCharArray()) {
+                    switch (permission) {
+                        case 'a': perms |= ZooDefs.Perms.ADMIN; break;
+                        case 'c': perms |= ZooDefs.Perms.CREATE; break;
+                        case 'd': perms |= ZooDefs.Perms.DELETE; break;
+                        case 'r': perms |= ZooDefs.Perms.READ; break;
+                        case 'w': perms |= ZooDefs.Perms.WRITE; break;
+                        case '*': perms |= ZooDefs.Perms.ALL; break;
+                        default: throw new IllegalArgumentException();
                     }
                 }
                 newDefault.add(new ACL(perms, new Id(scheme, id)));
             }
-        } catch (ParseException e) {
-            // Throw it all the way up to the error handlers
-            throw new RuntimeException("Unable to parse default ACL " + jsonAcl, e);
+        } catch (ParseException | RuntimeException ex) {
+            throw new IllegalArgumentException("Invalid default ACL configuration");
         }
         defaultAcl = newDefault;
     }
@@ -267,7 +261,8 @@ public enum ZooKeeperUtil {
                         folders.add(child);
                     } else {
                         String childPath = getNodePath(path, child);
-                        leaves.add(this.getNodeValue(zk, path, childPath, child, authRole));
+                        LeafBean leaf = this.getNodeValue(zk, path, childPath, child, authRole);
+                        if (leaf != null) leaves.add(leaf);
                     }
 
                 }
@@ -301,7 +296,8 @@ public enum ZooKeeperUtil {
                 subChildren = zk.getChildren(childPath, false);
                 boolean isFolder = subChildren != null && !subChildren.isEmpty();
                 if (!isFolder) {
-                    leaves.add(this.getNodeValue(zk, path, childPath, child, authRole));
+                    LeafBean leaf = this.getNodeValue(zk, path, childPath, child, authRole);
+                        if (leaf != null) leaves.add(leaf);
                 }
             }
         }
@@ -342,7 +338,7 @@ public enum ZooKeeperUtil {
 
     }
 
-    public LeafBean getNodeValue(ZooKeeper zk, String path, String childPath, String child, String authRole) {
+    public LeafBean getNodeValue(ZooKeeper zk, String path, String childPath, String child, String authRole) throws KeeperException, InterruptedException {
         //Reason exception is caught here is so that lookup can continue to happen if a particular property is not found at parent level.
         try {
             logger.trace("Lookup: path=" + path + ",childPath=" + childPath + ",child=" + child + ",authRole=" + authRole);
@@ -356,10 +352,9 @@ public enum ZooKeeperUtil {
             } else {
                 return (new LeafBean(path, child, dataBytes));
             }
-        } catch (KeeperException | InterruptedException ex) {
-            logger.error(ex.getMessage());
+        } catch (KeeperException.NoNodeException ex) {
+            return null;
         }
-        return null;
 
     }
 

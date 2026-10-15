@@ -23,7 +23,7 @@
 | S05 | URL 导入默认关闭、显式目的主机限制、协议/重定向/超时及上传大小限制 | 已完成，Fork PR #7；完整 URL 白名单，42 项测试 |
 | S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 已完成本轮修复，Fork PR #8；45 项测试 |
 | R01 | ZK 连接就绪等待、超时失败、重连与资源释放、多地址/监控 | 已完成本轮修复，Fork PR #9；51 项测试 |
-| P01 | 整合低风险上游 #87、#109 | 待处理 |
+| P01 | 整合低风险上游 #87、#109 | 已完成，Fork PR #8/#10；LDAP/ACL 继续按 P03 |
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 待处理；关联 #88/#54/#110 等 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | 待处理；关联 #50/#107 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 待处理 |
@@ -47,10 +47,10 @@
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | 待处理 |
 | [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | 待处理 |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | 待处理 |
-| [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | 待处理 |
+| [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | add zkRootPath configuration and Search in sub node | 待处理 |
-| [#50](https://github.com/DeemOpen/zkui/pull/50) | add auth to the zk client. | 待处理 |
+| [#50](https://github.com/DeemOpen/zkui/pull/50) | add auth to the zk client. | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#41](https://github.com/DeemOpen/zkui/pull/41) | trim input or textarea | 待处理 |
 
 ## 上游 Issue 逐项清单
@@ -59,12 +59,12 @@
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
-| [#112](https://github.com/DeemOpen/zkui/issues/112) | 连接带有户名和密码的zk | 待处理 |
+| [#112](https://github.com/DeemOpen/zkui/issues/112) | 连接带有户名和密码的zk | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#111](https://github.com/DeemOpen/zkui/issues/111) | Unable to find image 'zkui:latest' locally | 待处理 |
 | [#108](https://github.com/DeemOpen/zkui/issues/108) | Does zkui support ipv4/ipv6? | 待处理 |
 | [#106](https://github.com/DeemOpen/zkui/issues/106) | LDAP 无法正常登录 | 待处理 |
 | [#100](https://github.com/DeemOpen/zkui/issues/100) | How to change base url | 待处理 |
-| [#99](https://github.com/DeemOpen/zkui/issues/99) | How to config the defaultAcl field in config.cfg file? | 待处理 |
+| [#99](https://github.com/DeemOpen/zkui/issues/99) | How to config the defaultAcl field in config.cfg file? | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#98](https://github.com/DeemOpen/zkui/issues/98) | ERROR ServletUtil:76 - Error :KeeperErrorCode = ConnectionLoss for / | 待处理 |
 | [#95](https://github.com/DeemOpen/zkui/issues/95) | 没有看见初始化表结构的sql | 待处理 |
 | [#94](https://github.com/DeemOpen/zkui/issues/94) | Login not working on Firefox, works on Chrome | 待处理 |
@@ -72,7 +72,7 @@
 | [#90](https://github.com/DeemOpen/zkui/issues/90) | 请教密码是多少？为甚么我死活登录不上去？ | 待处理 |
 | [#85](https://github.com/DeemOpen/zkui/issues/85) | The execution time of the zk.getChildren() method in Windos is 9s, but in Linux it is 1s | 待处理 |
 | [#84](https://github.com/DeemOpen/zkui/issues/84) | 在windos环境下启动服务查看节点时的响应速度比linux环境下启动服务查看节点的响应速度慢了好几倍,大概(9s:1s) | 待处理 |
-| [#80](https://github.com/DeemOpen/zkui/issues/80) | 如果有的节点是digest,登录成功会报错,提示 /node has no auth | 待处理 |
+| [#80](https://github.com/DeemOpen/zkui/issues/80) | 如果有的节点是digest,登录成功会报错,提示 /node has no auth | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#79](https://github.com/DeemOpen/zkui/issues/79) | 创建节点与目录是怎么区分的？ | 待处理 |
 | [#77](https://github.com/DeemOpen/zkui/issues/77) | docker 安装之后登录KeeperErrorCode = ConnectionLoss for / | 待处理 |
 | [#76](https://github.com/DeemOpen/zkui/issues/76) | failed to determine Model class name, are you sure models have been instrumented? | 待处理 |
@@ -80,14 +80,14 @@
 | [#72](https://github.com/DeemOpen/zkui/issues/72) | mac环境下不能运行 | 待处理 |
 | [#71](https://github.com/DeemOpen/zkui/issues/71) | docker support | 待处理 |
 | [#70](https://github.com/DeemOpen/zkui/issues/70) | bootstrap.sh can't support Unix. | 待处理 |
-| [#69](https://github.com/DeemOpen/zkui/issues/69) | can it support zookeeper password settings? | 待处理 |
+| [#69](https://github.com/DeemOpen/zkui/issues/69) | can it support zookeeper password settings? | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#66](https://github.com/DeemOpen/zkui/issues/66) | Can Java 10 Run? | 待处理 |
 | [#64](https://github.com/DeemOpen/zkui/issues/64) | Did not wait for the zk session caused every operation become very slow | fixed，Fork PR #9，ConnectionReliabilityIT |
 | [#63](https://github.com/DeemOpen/zkui/issues/63) | All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead | 待处理 |
 | [#62](https://github.com/DeemOpen/zkui/issues/62) | 当某节点下有子节点时，其 value 在UI中不显示 | 待处理 |
 | [#61](https://github.com/DeemOpen/zkui/issues/61) | KeeperErrorCode = NoNode for /appconfig/hosts  | 待处理 |
 | [#60](https://github.com/DeemOpen/zkui/issues/60) | Can not work in JDK1.9 environment | 待处理 |
-| [#59](https://github.com/DeemOpen/zkui/issues/59) | node's children with ACL setting cannot be listed. | 待处理 |
+| [#59](https://github.com/DeemOpen/zkui/issues/59) | node's children with ACL setting cannot be listed. | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#57](https://github.com/DeemOpen/zkui/issues/57) | NumberFormatException while bringing up zkui on linux | 待处理 |
 | [#56](https://github.com/DeemOpen/zkui/issues/56) | Exception in thread "main" java.net.BindException: Address already in use | 待处理 |
 | [#55](https://github.com/DeemOpen/zkui/issues/55) | Rest API support for import | 待处理 |
@@ -97,8 +97,8 @@
 | [#49](https://github.com/DeemOpen/zkui/issues/49) | appconfig/hosts should add/update upon startup | 待处理 |
 | [#48](https://github.com/DeemOpen/zkui/issues/48) | Monitor throws an error when zkServer is not end with port | fixed，Fork PR #9，ConnectionReliabilityIT |
 | [#43](https://github.com/DeemOpen/zkui/issues/43) | import special characters  not displayed properly | 待处理 |
-| [#42](https://github.com/DeemOpen/zkui/issues/42) | 不支持连接设置密码的zookeeper | 待处理 |
-| [#36](https://github.com/DeemOpen/zkui/issues/36) | KeeperErrorCode = NoAuth for /123  | 待处理 |
+| [#42](https://github.com/DeemOpen/zkui/issues/42) | 不支持连接设置密码的zookeeper | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
+| [#36](https://github.com/DeemOpen/zkui/issues/36) | KeeperErrorCode = NoAuth for /123  | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#33](https://github.com/DeemOpen/zkui/issues/33) | Error :KeeperErrorCode = ConnectionLoss for /  after Login  | 待处理 |
 | [#29](https://github.com/DeemOpen/zkui/issues/29) | 左边菜单栏应该增加属性显示，这样比较直观。 | 待处理 |
 | [#28](https://github.com/DeemOpen/zkui/issues/28) | ldap authentication - DN is not constructed correctly | 待处理 |

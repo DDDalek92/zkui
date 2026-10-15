@@ -93,6 +93,14 @@ public class ZooKeeperOperationsIT {
         // Parent has DELETE permission; deleting the read-only leaf is allowed by ZK semantics.
     }
 
+    @Test public void repeatedReadPermissionDoesNotBecomeWritePermission() throws Exception {
+        ZooKeeperUtil.INSTANCE.setDefaultAcl("{\"acls\":[{\"scheme\":\"world\",\"id\":\"anyone\",\"perms\":\"rr\"}]}");
+        ZooKeeperUtil.INSTANCE.createNode(root + "/", "read-only", "value", client);
+        assertEquals("value", read(root + "/read-only"));
+        assertThrows(KeeperException.NoAuthException.class,
+                () -> client.setData(root + "/read-only", "denied".getBytes(StandardCharsets.UTF_8), -1));
+    }
+
     private String read(String path) throws Exception {
         return new String(client.getData(path, false, null), StandardCharsets.UTF_8);
     }

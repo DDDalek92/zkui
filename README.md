@@ -228,3 +228,18 @@ ZooKeeper connection behavior
 -----------------------------
 
 `zkServer` is the complete native ensemble string, for example `host1:2181,host2:2181/appconfig` or bracketed IPv6 endpoints. zkui passes the whole string to ZooKeeper; it no longer selects only the first member. `zkSessionTimeout` controls the requested ZK session timeout; `zkConnectTimeout` independently bounds initial connection readiness (seconds, 1–60, default 5). Failure returns HTTP 503 rather than an unconnected/null client. UI sessions reuse their connection; REST owns and closes its separate short-lived connection. Monitor parses chroot/IPv6 and continues to other endpoints if one is down. This does not repair server-side ACL, DNS, firewall, packet-size or cluster health problems.
+
+ZooKeeper Digest identity and ACL
+--------------------------------
+
+Web login and ZooKeeper authentication are separate. For a Digest-protected ensemble configure:
+
+```properties
+zkAuthScheme=digest
+zkAuthCredentials=your-user:your-password
+defaultAcl={"acls":[{"scheme":"auth","id":"","perms":"*"}]}
+```
+
+The credentials authenticate the application's shared ZK service identity. The `auth` ACL grants newly created nodes to that authenticated identity; it does not change existing ACLs. Leave both authentication fields empty for an unauthenticated client. Invalid/incomplete credentials and malformed/empty ACL lists stop startup instead of falling back to open access. Blank `defaultAcl` retains the legacy world-open creation policy.
+
+For explicit `digest` ACL entries use `username:base64(SHA1(username:password))` as the ID, never the plaintext credential. `defaultAcl` is not a login mechanism. See the [official 3.5.7 ACL guide](https://zookeeper.apache.org/doc/r3.5.7/zookeeperProgrammers.html#sc_ZooKeeperAccessControl). Protect credentials in config files and in transit. UI ADMIN cannot bypass a read-only or unauthorized ZK identity; affected operations return HTTP 403. Per-web-user ZK identities and Kerberos are not implemented by these settings.
