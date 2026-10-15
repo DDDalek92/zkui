@@ -17,7 +17,7 @@ import org.junit.rules.TemporaryFolder;
 final class TestApplication extends ExternalResource {
     private final TemporaryFolder temporary = new TemporaryFolder();
     private final String name;
-    private final String[] overrides;
+    private final java.util.function.Supplier<String[]> overrideProvider;
     private final String password = UUID.randomUUID().toString();
     private IsolatedZooKeeper server;
     private Process process;
@@ -25,8 +25,12 @@ final class TestApplication extends ExternalResource {
     String base;
 
     TestApplication(String name, String... overrides) {
+        this(name, () -> overrides);
+    }
+
+    TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider) {
         this.name = name;
-        this.overrides = overrides;
+        this.overrideProvider = overrideProvider;
     }
 
     @Override protected void before() throws Throwable {
@@ -46,6 +50,7 @@ final class TestApplication extends ExternalResource {
             try (InputStream in = new FileInputStream(System.getProperty("zkui.test.config"))) {
                 config.load(in);
             }
+            String[] overrides = overrideProvider.get();
             for (int i = 0; i < overrides.length; i += 2) {
                 if (overrides[i + 1] == null) config.remove(overrides[i]);
                 else config.setProperty(overrides[i], overrides[i + 1]);
@@ -63,7 +68,10 @@ final class TestApplication extends ExternalResource {
             config.setProperty("jdbcUrl", "jdbc:h2:" + new File(work, "history").getAbsolutePath());
             config.setProperty("userSet", "{\"users\":[" + user("test-admin", "ADMIN") + ","
                     + user("test-user", "USER") + "," + user("test-other", "OTHER") + "]}");
-            config.setProperty("ldapAuth", "false");
+            config.setProperty("ldapAuth", config.getProperty("testUseLdap", "false"));
+            if ("true".equals(config.getProperty("testUseLdap")) && !config.getProperty("ldapUrl").startsWith("ldap://127.0.0.1:")) {
+                throw new AssertionError("LDAP tests must use their loopback fixture");
+            }
             try (OutputStream out = new FileOutputStream(new File(work, "config.cfg"))) {
                 config.store(out, "Isolated security regression configuration");
             }
@@ -109,9 +117,13 @@ final class TestApplication extends ExternalResource {
     }
 
     Reply authenticate(String username, String cookie) throws IOException {
+        return authenticateWithPassword(username, password, cookie);
+    }
+
+    Reply authenticateWithPassword(String username, String suppliedPassword, String cookie) throws IOException {
         Reply page = get("/login", cookie);
         String sessionCookie = cookie == null ? page.cookie.split(";", 2)[0] : cookie;
-        return request("/login", "username=" + username + "&password=" + password
+        return request("/login", "username=" + URLEncoder.encode(username, "UTF-8") + "&password=" + URLEncoder.encode(suppliedPassword, "UTF-8")
                 + "&csrfToken=" + token(page.body), sessionCookie,
                 "application/x-www-form-urlencoded; charset=UTF-8");
     }
