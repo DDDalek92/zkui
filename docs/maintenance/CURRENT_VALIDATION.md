@@ -1,5 +1,11 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前入口：原生导入中断与只读目标
+
+#33已在准确head `69d367fc832ad4679314a492df01d98c9ca48dbe` 的[PR运行38781568897](https://github.com/DDDalek92/zkui/actions/runs/38781568897)及[push运行38781523517](https://github.com/DDDalek92/zkui/actions/runs/38781523517)全部六job成功后审查合并：三平台各121项，Chrome3组、容器/MySQL/旧ZK通过。master现为4eff9d8，其push运行38782275556也已查询success。下方#33“新head待验收”为提交时快照，已由对应PR最终准确head审查完成，不是当前阻塞。
+
+本次从该最新远程基线隔离检出，新增原生RUNSCRIPT在受控检查点终止后的半成品拒绝、只读目标90097导入拒绝，见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。本地OpenJDK17.0.20完整clean verify为BUILD SUCCESS，16单元+107集成=123项零失败/错误/跳过，含定向9项预演；完整文本日志与报告一致。本增量准确head六job仍须独立核验。只读模式不等于文件系统权限/磁盘故障，受控中断不等于任意写页崩溃。完整应用驱动/Flyway切换及切换后差量恢复仍未完成。
+
 ## 2026-10-15 当前接续：候选库锁竞争/空闲持锁进程终止
 
 #32准确head `4aa07b1886a50723b6f4922f1b6b4bf9f43b4c7c` 的[运行38780428584](https://github.com/DDDalek92/zkui/actions/runs/38780428584)六job/完整日志已核验：三平台各120项零失败/错误/跳过，Linux Chrome3组及容器/MySQL/旧ZK通过后合并，master为d20eece。完整证据已写入H2_SCHEMA_VALIDATION.md；下方“本增量待CI”属于#32提交时快照。

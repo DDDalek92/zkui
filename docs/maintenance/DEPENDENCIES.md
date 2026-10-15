@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> D01-C故障预演接续：受控原生RUNSCRIPT中断后的半成品拒绝、显式只读目标导入拒绝见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。运行H2/Flyway未升级，实际文件系统不可写/磁盘故障、完整应用及差量恢复仍未完成。
+
 > D01-C接续：隔离预演新增固定V1的语义表结构/PK/索引/可空性/自增和实际约束探测，见[H2_SCHEMA_VALIDATION.md](H2_SCHEMA_VALIDATION.md)。候选H2/Flyway仍仅测试隔离使用；不改变运行包，不代表完整应用迁移或任意历史库验收完成。
 
 > 当前更新：#28已完成Connector/J26.7.0、MySQL8.4+方言和真实旧库逻辑迁移/TLS/启动验证；#29已完成ZK3.9.6（Netty4.1.137.Final）、FreeMarker2.3.35及CommonsIO2.22，六个CI job通过。见MYSQL_VALIDATION.md和CLIENT_TEMPLATE_UPGRADE.md。下文旧版本/待办描述保留历史；H2/Flyway运行时、JSON库、SBOM/漏洞/许可证及其余部署验证仍未完成。
