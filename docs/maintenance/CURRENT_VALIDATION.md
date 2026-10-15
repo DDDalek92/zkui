@@ -6,7 +6,11 @@
 
 迁移异常/必需表读取失败现在启动前停止；审计写失败显式503且不冒充ZK回滚，见[DATABASE_READINESS.md](DATABASE_READINESS.md)。V1 blob仍为 `fadfd7e9462b348131965f855949529ac6ceaa39`，运行H2/Flyway未升级。#22隔离H2预演在[运行38728588004](https://github.com/DDDalek92/zkui/actions/runs/38728588004)四job成功、三平台各100项，是先前增量证据。
 
-并行出现的同目标 #24 已关闭未合并，分支保留，没有覆盖 #23；#24本地104项不能冒充 #23准确head的105项。#25是后续Flyway桥接实验，必须独立检查其新head及CI；本段不宣称它已成功。完整H2/Flyway迁移、实际MySQL、其余失败矩阵/差量恢复/I02/依赖和部署验收仍未完成。
+并行出现的同目标 #24 已关闭未合并，分支保留，没有覆盖 #23；#24本地104项不能冒充 #23准确head的105项。上游2026-10-15重查仍14个开放PR/46个开放Issue，编号集合无新增，不等于全部修复。
+
+#25是后续Flyway桥接实验。其初始head `dac03a897f81d171cc3f919d50dbb9f6abe752dd` 在[运行38737460221](https://github.com/DDDalek92/zkui/actions/runs/38737460221)三平台均失败于反射签名 `NoSuchMethodException: Flyway.setDataSource(String,String,String)`，不是完整桥接已执行后的迁移结论。已核对Flyway4.2官方源码的第四个varargs String[]参数；该工作分支已更新为 `87c04805dd3e5b2dfec476140841f3dc2e65463f` 并重新运行CI，未覆盖它或用旧绿灯替代新head。桥接还会转换checksum/格式，不能将之误称所有元数据不变；需原引擎先校验，并检查负向夹具。
+
+继续入口：先检查#25后续准确head的全部CI/源码及校验拒绝证据，不能把实验失败/未验标为完成。完整H2/Flyway迁移、实际MySQL、约束/索引、锁/中断/不可写和差量恢复、I02、依赖/部署验收仍未完成。#25同时更新TASKS/DEPENDENCIES/D01计划；本PR只记录CURRENT_VALIDATION和DATABASE_READINESS，避免并行编辑同一组文件。
 
 ## 先前证据与历史记录
 

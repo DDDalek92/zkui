@@ -1,7 +1,5 @@
 # D01：Java17 与历史数据库迁移验收方案
 
-> 当前补充：Fork #23已完成数据库初始化失败停止与审计写失败显式503策略，准确head三平台各105项Java、Chrome3组及容器全通过，见[DATABASE_READINESS.md](DATABASE_READINESS.md)。下方PR #20关于吞迁移/插入异常的描述是历史；现在不再如此，但ZK/JDBC不具备共享事务，也不是完整跨版本迁移放行。后续已有Fork #25桥接实验，先检查其准确head、讨论和CI，不重复实现。
-
 > 后续实现：D01-A/B已在#21整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。D01-C首批跨驱动预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现，LEGACY有限夹具通过，完整矩阵仍未完成。下文保存PR #20原始设计及当时阻塞，不是所有步骤的当前通过声明。
 
 2026-10-15；审查基线 `cc231beb306e6a6871160f55ae5b239facfba797`。

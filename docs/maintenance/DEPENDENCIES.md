@@ -28,4 +28,4 @@
 
 后续D01-C首批隔离预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)：测试专用2.5.252驱动不在运行包中；原1.3.174导出在普通模式因DATETIME/50004失败，LEGACY有限夹具通过。应用默认H2/Flyway/V1仍未升级，不能把预演绿灯当作完整应用迁移放行。
 
-见 [D01_MIGRATION_PLAN.md](D01_MIGRATION_PLAN.md)：保留原方案及Java17实现后的差异；H2跨版本合成夹具、独立驱动/目录、逐字段/生成ID/Flyway元数据校验及失败回滚矩阵仍未完整执行。#23已将迁移异常/必需表读取失败改为HTTP启动前终止，审计写失败显式503且提示ZK变更可能已生效，见[DATABASE_READINESS.md](DATABASE_READINESS.md)。不是跨系统事务或持续写禁用策略，不能把方法返回/登录成功当持久化或完整迁移证明。运行H2/Flyway仍未升级；后续已有#25桥接实验，应核对准确head CI后再给结论。
+见 [D01_MIGRATION_PLAN.md](D01_MIGRATION_PLAN.md)：保留原方案及Java17实现后的差异；H2跨版本合成夹具、独立驱动/目录、逐字段/生成ID/Flyway元数据校验及失败回滚矩阵仍未完整执行。Dao仍保留原迁移/插入错误的日志后继续策略，不能把进程存活或登录成功作为数据库迁移通过证据。当前只验证同一旧H2驱动/V1上的JDBC兼容，不代表历史库跨版本迁移完成。
