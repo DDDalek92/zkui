@@ -73,6 +73,19 @@ public class H2MigrationRehearsalIT {
         return result;
     }
 
+
+    @Test public void originalEngineRejectsTamperedChecksumBeforeBridgeCanRecalculateIt() throws Exception {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        assertEquals(0, run(root, "tamper", false).status);
+        Reply refused = runWithClasspath(root, "bridge", false, true);
+        assertNotEquals("Old validation must refuse a changed checksum", 0, refused.status);
+        Reply checked = run(root, "assert-tampered", false);
+        assertEquals(checked.output, 0, checked.status);
+        assertTrue(checked.output.contains("TAMPERED_METADATA_REJECTED_BEFORE_BRIDGE"));
+        assertEquals(before, sealedManifest(root));
+    }
+
     @Test public void supportedFlywayBridgePreservesMetadataAndModernValidationDoesNotRepair() throws Exception {
         Path root = fixture();
         Map<String, String> before = sealedManifest(root);

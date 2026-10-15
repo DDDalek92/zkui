@@ -24,6 +24,7 @@ final class TestApplication extends ExternalResource {
     private javax.net.ssl.SSLContext testTls;
     ZooKeeper observer;
     String base;
+    private String historyUrl;
 
     TestApplication(String name, String... overrides) {
         this(name, () -> overrides);
@@ -72,7 +73,8 @@ final class TestApplication extends ExternalResource {
                 }
             }
             config.setProperty("env", "prod");
-            config.setProperty("jdbcUrl", "jdbc:h2:" + new File(work, "history").getAbsolutePath());
+            historyUrl = "jdbc:h2:" + new File(work, "history").getAbsolutePath();
+            config.setProperty("jdbcUrl", historyUrl);
             config.setProperty("userSet", "{\"users\":[" + user("test-admin", "ADMIN") + ","
                     + user("test-user", "USER") + "," + user("test-other", "OTHER") + "]}");
             config.setProperty("ldapAuth", config.getProperty("testUseLdap", "false"));
@@ -192,6 +194,16 @@ final class TestApplication extends ExternalResource {
         if (cookie != null) body = "--zkui-test\r\nContent-Disposition: form-data; name=\"csrfToken\"\r\n\r\n"
                 + token(get("/login", cookie).body) + "\r\n" + body;
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
+    }
+
+    void dropHistoryTable() throws Exception {
+        Properties config = new Properties();
+        try (InputStream in = new FileInputStream(System.getProperty("zkui.test.config"))) { config.load(in); }
+        try (java.sql.Connection connection = java.sql.DriverManager.getConnection(historyUrl,
+                config.getProperty("jdbcUser"), config.getProperty("jdbcPwd"));
+                java.sql.Statement statement = connection.createStatement()) {
+            statement.execute("DROP TABLE HISTORIES");
+        }
     }
 
     String zkAddress() { return server.address(); }

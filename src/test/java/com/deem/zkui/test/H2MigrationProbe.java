@@ -24,6 +24,8 @@ public final class H2MigrationProbe {
             case "rollback": rollback(root); break;
             case "bridge": bridge(root); break;
             case "modern": modern(root); break;
+            case "tamper": tamper(root); break;
+            case "assert-tampered": assertTampered(root); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
@@ -142,13 +144,22 @@ public final class H2MigrationProbe {
     // It runs only on old-work; the original sealed database and export remain untouched.
     private static void bridge(Path root) throws Exception {
         String jdbc = url(root, "old-work") + ";IFEXISTS=TRUE";
+        // Flyway4 automatically recalculates checksums while upgrading its metadata format.
+        // Validate with the original engine first so that auto-conversion cannot conceal tampering.
+        Class<?> original = Class.forName("com.googlecode.flyway.core.Flyway");
+        Object validator = original.getConstructor().newInstance();
+        original.getMethod("setDataSource", String.class, String.class, String.class).invoke(validator, jdbc, "sa", "");
+        original.getMethod("validate").invoke(validator);
         Class<?> type = Class.forName("org.flywaydb.core.Flyway");
         Object flyway = type.getConstructor().newInstance();
-        type.getMethod("setDataSource", String.class, String.class, String.class).invoke(flyway, jdbc, "sa", "");
+        type.getMethod("setDataSource", String.class, String.class, String.class, String[].class)
+                .invoke(flyway, jdbc, "sa", "", new String[0]);
         type.getMethod("setValidateOnMigrate", boolean.class).invoke(flyway, true);
         type.getMethod("migrate").invoke(flyway);
         try (Connection connection = connect(jdbc, "1.3.174"); Statement statement = connection.createStatement()) {
             assertStable(root, connection);
+            assertConvertedChecksum(connection);
+            Files.writeString(root.resolve("expected-bridge-metadata"), snapshotRows(connection, "SELECT * FROM \"schema_version\""));
             try (ResultSet columns = connection.getMetaData().getColumns(null, "PUBLIC", "schema_version", "version_rank")) {
                 if (columns.next()) throw new AssertionError("Bridge did not upgrade metadata");
             }
@@ -163,6 +174,7 @@ public final class H2MigrationProbe {
         try (Connection connection = connect(jdbc, "2.5.252"); Statement statement = connection.createStatement()) {
             statement.execute("RUNSCRIPT FROM " + literal(root.resolve("export-bridged.sql")) + " CHARSET 'UTF-8' FROM_1X");
             assertStable(root, connection);
+            assertConvertedChecksum(connection);
         }
         for (int i = 0; i < 2; i++) {
             Class<?> type = Class.forName("org.flywaydb.core.Flyway");
@@ -176,12 +188,51 @@ public final class H2MigrationProbe {
             Object flyway = fluent.getMethod("load").invoke(configuration);
             type.getMethod("migrate").invoke(flyway);
             type.getMethod("validate").invoke(flyway);
-            try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) { assertStable(root, connection); }
+            try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) {
+                assertStable(root, connection);
+                assertConvertedChecksum(connection);
+                if (!Files.readString(root.resolve("expected-bridge-metadata")).equals(snapshotRows(connection, "SELECT * FROM \"schema_version\"")))
+                    throw new AssertionError("Modern Flyway changed bridged metadata");
+            }
         }
         try (Connection connection = connect(jdbc + ";IFEXISTS=TRUE", "2.5.252")) {
             appendAndCheck(connection, "synthetic-modern-row");
         }
         System.out.println("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK");
+    }
+
+
+    private static void assertConvertedChecksum(Connection connection) throws Exception {
+        java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+        try (var input = H2MigrationProbe.class.getResourceAsStream("/db/migration/V1__Core.sql")) {
+            if (input == null) throw new AssertionError("Original V1 resource missing");
+            try (var lines = new java.io.BufferedReader(new java.io.InputStreamReader(input, java.nio.charset.StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = lines.readLine()) != null) crc.update(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        }
+        try (Statement statement = connection.createStatement();
+                ResultSet rows = statement.executeQuery("SELECT \"checksum\" FROM \"schema_version\" WHERE \"version\"='1'")) {
+            if (!rows.next() || rows.getInt(1) != (int) crc.getValue() || rows.next())
+                throw new AssertionError("Unexpected checksum conversion");
+        }
+    }
+
+    private static void tamper(Path root) throws Exception {
+        try (Connection connection = connect(url(root, "old-work") + ";IFEXISTS=TRUE", "1.3.174");
+                Statement statement = connection.createStatement()) {
+            if (statement.executeUpdate("UPDATE \"schema_version\" SET \"checksum\"=123 WHERE \"version\"='1'") != 1)
+                throw new AssertionError("Expected exactly one V1 record");
+        }
+    }
+
+    private static void assertTampered(Path root) throws Exception {
+        try (Connection connection = connect(url(root, "old-work") + ";IFEXISTS=TRUE", "1.3.174");
+                Statement statement = connection.createStatement();
+                ResultSet rows = statement.executeQuery("SELECT \"checksum\", \"version_rank\" FROM \"schema_version\" WHERE \"version\"='1'")) {
+            if (!rows.next() || rows.getInt(1) != 123) throw new AssertionError("Invalid metadata was silently converted/repaired");
+        }
+        System.out.println("TAMPERED_METADATA_REJECTED_BEFORE_BRIDGE");
     }
 
     private static void assertStable(Path root, Connection connection) throws Exception {
@@ -191,7 +242,7 @@ public final class H2MigrationProbe {
 
     private static String stableSnapshot(Connection connection) throws Exception {
         String history = snapshotRows(connection, "SELECT * FROM histories ORDER BY ID");
-        String metadata = snapshotRows(connection, "SELECT \"installed_rank\", \"version\", \"description\", \"type\", \"script\", \"checksum\", \"installed_by\", \"installed_on\", \"execution_time\", \"success\" FROM \"schema_version\"");
+        String metadata = snapshotRows(connection, "SELECT \"installed_rank\", \"version\", \"description\", \"type\", \"script\", \"installed_by\", \"installed_on\", \"execution_time\", \"success\" FROM \"schema_version\"");
         return history + metadata;
     }
 

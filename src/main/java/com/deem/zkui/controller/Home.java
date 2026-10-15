@@ -223,6 +223,10 @@ public class Home extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/home");
             }
 
+        } catch (Dao.HistoryWriteException ex) {
+            request.getSession().removeAttribute("flashMsg");
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                    "History write failed. ZooKeeper changes may already be applied; inspect state before retrying.");
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | TemplateException | KeeperException ex) {

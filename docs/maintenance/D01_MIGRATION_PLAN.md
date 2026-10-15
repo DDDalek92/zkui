@@ -1,5 +1,7 @@
 # D01：Java17 与历史数据库迁移验收方案
 
+> 后续更新：Fork #23已合并。启动迁移失败/历史列不可读时停止HTTP启动，显式启用旧Flyway校验；历史写入失败明确返回503并提示先核对已执行的ZK变更。见DATABASE_READINESS.md及PR #23的105项/三平台CI。下文关于原先“吞错继续”的描述为历史基线，不再代表当前策略。驱动/Flyway跨版本迁移仍未放行。
+
 > 后续实现：D01-A/B已在#21整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。D01-C首批跨驱动预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现，LEGACY有限夹具通过，完整矩阵仍未完成。下文保存PR #20原始设计及当时阻塞，不是所有步骤的当前通过声明。
 
 2026-10-15；审查基线 `cc231beb306e6a6871160f55ae5b239facfba797`。
