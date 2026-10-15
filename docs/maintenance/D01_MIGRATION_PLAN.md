@@ -1,6 +1,6 @@
 # D01：Java17 与历史数据库迁移验收方案
 
-> 后续实现：D01-A/B现已整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。下文保存PR #20的原始测试设计和当时阻塞；跨版本H2/Flyway/MySQL矩阵仍未执行，不能以同驱动V1兼容测试替代。
+> 后续实现：D01-A/B已在#21整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。D01-C首批跨驱动预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现，LEGACY有限夹具通过，完整矩阵仍未完成。下文保存PR #20原始设计及当时阻塞，不是所有步骤的当前通过声明。
 
 2026-10-15；审查基线 `cc231beb306e6a6871160f55ae5b239facfba797`。
 **这是待执行的测试设计，不是迁移工具、已通过报告或生产操作指令。**
@@ -73,7 +73,7 @@ CI 与容器的 JDK 要随最低运行要求同步；不能让 Java11 字节码�
 未来工具只允许测试管理的本地路径，不接受任意用户 URL。
 测试用 env=prod，不能通过 env=dev/Flyway.clean() 重建来掩盖迁移失败。
 
-## H2 转换验收步骤（全部待执行）
+## H2 转换验收步骤（原计划，当前分项证据见隔离预演）
 
 1. 锁定旧/新应用 SHA、完整驱动/工具坐标及 SHA256、JDK、OS、时区、编码与夹具种子。
    用旧版本建立夹具，关闭后封存；确认 V1 字节未改，保存旧逻辑快照。
