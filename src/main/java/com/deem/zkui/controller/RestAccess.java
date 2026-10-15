@@ -179,6 +179,8 @@ public class RestAccess extends HttpServlet {
                 out.write(resultOut.toString());
             }
 
+        } catch (KeeperException.NoAuthException ex) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (KeeperException | InterruptedException ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());

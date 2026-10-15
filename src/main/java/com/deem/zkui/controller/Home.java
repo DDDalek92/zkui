@@ -98,6 +98,8 @@ public class Home extends HttpServlet {
 
             ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "home.ftl.html");
 
+        } catch (KeeperException.NoAuthException ex) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (KeeperException | InterruptedException | TemplateException ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
@@ -192,6 +194,8 @@ public class Home extends HttpServlet {
                     response.sendRedirect("/home");
             }
 
+        } catch (KeeperException.NoAuthException ex) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | TemplateException | KeeperException ex) {
             logger.error(Arrays.toString(ex.getStackTrace()));
             ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());

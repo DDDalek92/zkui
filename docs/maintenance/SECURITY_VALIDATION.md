@@ -71,3 +71,11 @@ URL 默认关闭；开启后只有运维配置的完整 HTTP(S) URL 可用（精
 监控用 ZK 原生地址解析器分离 ensemble/chroot/IPv6；每节点每命令失败不阻断后续节点，1秒连接/读取、3秒响应期限及1Mi字符限制。ConnectionReliabilityIT 5项（延迟服务、不可达、HTTP503、会话ID保留、坏首节点+chroot+监控）及 MonitorEndpointTest 1项（IPv6/chroot）通过；全套 JDK8 verify 51项。
 
 上游 #86 来源和重写说明见 PR_REVIEW.md。#64 的短等待与 #48 的端口/chroot解析问题有直接回归。#33/#77/#98 的历史网络/版本/容器环境尚无同一环境复现，不能仅因改进连接而宣称全部解决。IPv6 地址解析已测，真实双栈网络尚待验证。
+
+## Digest 客户端身份与 ACL（上游 #50/#87）
+
+zkAuthScheme=digest 和 zkAuthCredentials=username:password 提供客户端身份，UI 会话及独立 REST 客户端均在首次操作前添加身份；Web 的 ADMIN 不能绕过 ZK 权限。defaultAcl 只控制新节点授权，支持已认证创建者 auth ACL；Digest ACL 标识要求原生 SHA1 摘要而非明文口令。配置在启动前验证且错误消息不回显原值；ACL权限改为按位 OR，避免 rr 相加误变成写权限，错误/空 ACL 不静默开放。读取缺少节点才返回 null，NoAuth 明确返回 HTTP403。
+
+新增2项配置单元测试、4项真实JAR Digest回归、1项真实ZK重复权限回归；完整JDK8 verify共58项（8单元+50集成）通过。覆盖UI/Export/REST正确身份、错误身份403、Web ADMIN使用只读ZK身份不能写、创建者ACL拒绝匿名、普通日志不含凭据、重复r仍只读、无效配置不回显。配置注释JSON实际解析成功。
+
+PR来源及重写说明见 PR_REVIEW.md，关联 #112/#99/#80/#69/#59/#42/#36 的Digest连接问题。认证身份是应用全局服务身份，Web角色仍独立控制应用操作；没有实现每个Web用户独立ZK身份、Kerberos或任意SASL提供者验证。Digest凭据必须通过可信网络/TLS传输并保护配置文件。

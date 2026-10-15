@@ -132,6 +132,8 @@ final class TestApplication extends ExternalResource {
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
     }
 
+    String zkAddress() { return server.address(); }
+
     java.util.Set<Long> sessions() { return server.sessions(); }
 
     String logContents() throws IOException {

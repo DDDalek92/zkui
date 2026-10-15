@@ -98,8 +98,16 @@ public enum ServletUtil {
         try {
             int sessionTimeout = Math.multiplyExact(Integer.parseInt(props.getProperty("zkSessionTimeout", "5")), 1000);
             int connectTimeout = Math.multiplyExact(Integer.parseInt(props.getProperty("zkConnectTimeout", "5")), 1000);
+            ZkClientAuth.validate(props);
             ZooKeeperUtil.INSTANCE.setDefaultAcl(props.getProperty("defaultAcl"));
-            return ZooKeeperUtil.INSTANCE.createZKConnection(props.getProperty("zkServer"), sessionTimeout, connectTimeout);
+            ZooKeeper client = ZooKeeperUtil.INSTANCE.createZKConnection(props.getProperty("zkServer"), sessionTimeout, connectTimeout);
+            try {
+                ZkClientAuth.apply(client, props);
+                return client;
+            } catch (RuntimeException ex) {
+                closeZookeeper(client);
+                throw ex;
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new ZooKeeperUnavailableException(ex);
