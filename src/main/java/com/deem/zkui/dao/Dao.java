@@ -69,8 +69,17 @@ public class Dao {
             }
             //Remove the above line if deploying to prod.
             flyway.migrate();
+            // A migration record alone does not prove the application table is usable.
+            try (Connection connection = openConnection();
+                    PreparedStatement statement = connection.prepareStatement(
+                            "SELECT ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP FROM histories WHERE 1 = 0");
+                    ResultSet ignored = statement.executeQuery()) {
+                // Validate the exact columns used by the DAO before HTTP starts.
+            }
         } catch (Exception ex) {
-            logger.error("Error trying to migrate db! Not severe hence proceeding forward.");
+            // Driver/migration messages may contain credentials or SQL data. Do not chain or print them.
+            logger.error("History database initialization failed; HTTP server will not start");
+            throw new IllegalStateException("History database initialization failed; HTTP server was not started");
         }
         
     }
@@ -109,6 +118,10 @@ public class Dao {
         }
     }
 
+    public static final class HistoryWriteException extends IllegalStateException {
+        public HistoryWriteException() { super("History write failed"); }
+    }
+
     public void insertHistory(String user, String ipAddress, String summary) {
         try (Connection connection = openConnection();
                 PreparedStatement statement = connection.prepareStatement(
@@ -123,8 +136,9 @@ public class Dao {
             statement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
             statement.executeUpdate();
         } catch (Exception ex) {
-            // Preserve the existing best-effort audit policy; never log row values or credentials.
+            // The ZK operation may already have succeeded. Report the audit failure explicitly.
             logger.error("History insert failed");
+            throw new HistoryWriteException();
         }
         
     }
