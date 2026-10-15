@@ -50,6 +50,7 @@ public class Dao {
     public int getHistoryLimit() { return historyLimit; }
 
     protected Connection openConnection() throws SQLException {
+        H2FileFormatGuard.check(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"));
         try {
             Class.forName(globalProps.getProperty("jdbcClass"));
         } catch (ClassNotFoundException ex) {
@@ -61,6 +62,8 @@ public class Dao {
     
     public void checkNCreate() {
         try {
+            // Before even constructing a migration datasource, and especially before dev-mode clean.
+            H2FileFormatGuard.check(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"));
             Flyway flyway = new Flyway();
             flyway.setValidateOnMigrate(true);
             flyway.setDataSource(new com.googlecode.flyway.core.util.jdbc.DriverDataSource(

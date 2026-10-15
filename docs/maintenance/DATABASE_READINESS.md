@@ -1,5 +1,7 @@
 # Database readiness and audit failure policy
 
+Local H2 file-format preflight now runs before every DAO connection and before Flyway datasource construction/dev clean. A sibling incompatible format prevents startup instead of silently creating a parallel empty database; see [H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md). This is not the full H2/Flyway runtime upgrade.
+
 The HTTP server must not start if Flyway initialization fails or the exact histories columns cannot be queried.
 Migration errors stop startup with a generic message; driver exceptions are not chained into the uncaught exception because they can contain JDBC URLs, credentials or SQL data.
 This does not upgrade H2/Flyway, repair migration metadata or change V1.
