@@ -30,7 +30,7 @@
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1、#21的Java17/Jetty12 EE8/JDBC完成；D01-C首批隔离驱动/封存副本/数据元数据/ID/重开/恢复预演已实现，见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现；#23已完成启动失败即停止、显式校验checksum及运行时审计失败503策略（三平台各105项通过），见DATABASE_READINESS.md；Flyway桥接副本预演见FLYWAY_BRIDGE_REHEARSAL.md；完整应用/驱动升级、其余失败矩阵、实际MySQL和依赖审计仍未完成 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
-| I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 待处理，不能用普通CRUD替代 |
+| I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算回归等待准确head三平台CI，见LARGE_TREE_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
 | E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | 增强队列，见ISSUE_TRIAGE.md；尚未实现 |
 | V02 | 验收维护版、已知限制和发布说明 | 维护预览说明和验证报告已准备，Fork PR #19；正式发行仍受D01/历史DB与部署验证阻塞，未发布 |
 

@@ -65,6 +65,7 @@ public class Main {
         }
 
         com.deem.zkui.utils.EnvironmentConfig.apply(globalProps, System.getenv());
+        com.deem.zkui.utils.TreeWork.configureBuffer(globalProps);
         String contextPath = com.deem.zkui.utils.WebPaths.context(globalProps.getProperty("baseURL", "/"));
         String urlPrefix = "/".equals(contextPath) ? "" : contextPath;
         new com.deem.zkui.utils.PathPolicy(globalProps).hosts(globalProps);

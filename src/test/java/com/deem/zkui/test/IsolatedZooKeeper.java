@@ -30,6 +30,18 @@ final class IsolatedZooKeeper implements AutoCloseable {
         }
     }
 
+    void seedChildren(String parent, int count, byte[] value) throws Exception {
+        if (!parent.startsWith("/load-fixture-") || count < 1 || count > 500001)
+            throw new AssertionError("Only owned, bounded load fixtures are allowed");
+        // Populate the test server's real in-memory DataTree without measuring 300k fsync/writes.
+        // Subsequent reads use real client/server protocol; this is not a durability/write benchmark.
+        for (int i = 0; i < count; i++) {
+            String name = String.format(java.util.Locale.ROOT, "n%06d", i);
+            server.getZKDatabase().getDataTree().createNode(parent + "/" + name, value,
+                    org.apache.zookeeper.ZooDefs.Ids.OPEN_ACL_UNSAFE, 0, -1, 1, System.currentTimeMillis());
+        }
+    }
+
     String address() {
         return "127.0.0.1:" + factory.getLocalPort();
     }

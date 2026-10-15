@@ -69,7 +69,11 @@ public class Home extends HttpServlet {
             parentPath = paths.parent(displayPath);
             currentPath = "/".equals(displayPath) ? "/" : displayPath + "/";
             ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, globalProps);
-            ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, displayPath, authRole);
+            int page = request.getParameter("page") == null ? 1 : Integer.parseInt(request.getParameter("page"));
+            ZKNode zkNode = ZooKeeperUtil.INSTANCE.listNodeEntries(zk, displayPath, authRole, page);
+            templateParam.put("pageNumber", zkNode.getPage());
+            templateParam.put("pageCount", zkNode.getPageCount());
+            templateParam.put("totalChildren", zkNode.getTotalChildren());
             nodeLst = zkNode.getNodeLst();
             leafLst = zkNode.getLeafBeanLSt();
             java.util.List<Map<String, String>> crumbs = new java.util.ArrayList<>();
@@ -103,6 +107,8 @@ public class Home extends HttpServlet {
 
             ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "home.ftl.html");
 
+        } catch (com.deem.zkui.utils.TreeWork.LimitException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, ex.getMessage());
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (KeeperException | InterruptedException | TemplateException ex) {
@@ -227,6 +233,8 @@ public class Home extends HttpServlet {
             request.getSession().removeAttribute("flashMsg");
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
                     "History write failed. ZooKeeper changes may already be applied; inspect state before retrying.");
+        } catch (com.deem.zkui.utils.TreeWork.LimitException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, ex.getMessage());
         } catch (KeeperException.NoAuthException ex) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "ZooKeeper identity is not authorized");
         } catch (InterruptedException | TemplateException | KeeperException ex) {

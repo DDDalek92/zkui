@@ -158,12 +158,38 @@ public enum ZooKeeperUtil {
         return leaves;
     }
 
-    private void exportTreeInternal(Set<LeafBean> entries, String path, ZooKeeper zk, String authRole) throws InterruptedException, KeeperException {
-        // 1. List leaves
-        entries.addAll(this.listLeaves(zk, path, authRole));
-        // 2. Process folders
-        for (String folder : this.listFolders(zk, path)) {
-            exportTreeInternal(entries, this.getNodePath(path, folder), zk, authRole);
+    private void exportTreeInternal(Set<LeafBean> entries, String root, ZooKeeper zk, String authRole) throws InterruptedException, KeeperException {
+        TreeWork budget = new TreeWork();
+        java.util.ArrayDeque<String> pending = new java.util.ArrayDeque<>();
+        java.util.ArrayDeque<Integer> depths = new java.util.ArrayDeque<>();
+        pending.push(root); depths.push(0);
+        while (!pending.isEmpty()) {
+            String path = pending.pop();
+            int depth = depths.pop();
+            budget.visit(depth);
+            Stat stat = zk.exists(path, false);
+            if (stat == null) throw new KeeperException.NoNodeException(path);
+            budget.children(stat.getNumChildren()); // Refuse huge responses before fetching their child names.
+            List<String> children = zk.getChildren(path, false);
+            budget.reserve(children.size());
+            for (String child : children) {
+                if (child.equals(ZK_SYSTEM_NODE)) continue;
+                budget.checkTime();
+                String childPath = getNodePath(path, child);
+                budget.bytes(childPath.length() * 3);
+                Stat childStat = zk.exists(childPath, false);
+                if (childStat == null) continue; // Concurrent deletion.
+                if (childStat.getNumChildren() > 0) {
+                    pending.push(childPath); depths.push(depth + 1);
+                } else {
+                    budget.visit(depth + 1);
+                    LeafBean leaf = getNodeValue(zk, path, childPath, child, authRole);
+                    if (leaf != null) {
+                        budget.bytes(leaf.getValue() == null ? 0 : leaf.getValue().length);
+                        entries.add(leaf);
+                    }
+                }
+            }
         }
     }
 
@@ -251,41 +277,47 @@ public enum ZooKeeperUtil {
     }
 
     public ZKNode listNodeEntries(ZooKeeper zk, String path, String authRole) throws KeeperException, InterruptedException {
+        return listNodeEntries(zk, path, authRole, 1);
+    }
+
+    public ZKNode listNodeEntries(ZooKeeper zk, String path, String authRole, int page) throws KeeperException, InterruptedException {
+        if (page < 1) throw new IllegalArgumentException("Page must be positive");
+        TreeWork budget = new TreeWork();
+        Stat stat = zk.exists(path, false);
+        if (stat == null) throw new KeeperException.NoNodeException(path);
+        if (stat.getNumChildren() > TreeWork.MAX_CHILDREN) throw new TreeWork.LimitException();
+        List<String> children = new ArrayList<>(zk.getChildren(path, false));
+        if (children.size() > TreeWork.MAX_CHILDREN) throw new TreeWork.LimitException();
+        children.remove(ZK_SYSTEM_NODE);
+        Collections.sort(children);
+        int pages = Math.max(1, (children.size() + TreeWork.PAGE_SIZE - 1) / TreeWork.PAGE_SIZE);
+        if (page > pages) throw new IllegalArgumentException("Page is outside the current child list");
+        int from = (page - 1) * TreeWork.PAGE_SIZE;
+        int to = Math.min(children.size(), from + TreeWork.PAGE_SIZE);
         List<String> folders = new ArrayList<>();
         List<LeafBean> leaves = new ArrayList<>();
-
-        List<String> children = zk.getChildren(path, false);
-        if (children != null) {
-            for (String child : children) {
-                if (!child.equals(ZK_SYSTEM_NODE)) {
-
-                    List<String> subChildren = zk.getChildren(path + ("/".equals(path) ? "" : "/") + child, false);
-                    boolean isFolder = subChildren != null && !subChildren.isEmpty();
-                    if (isFolder) {
-                        folders.add(child);
-                    } else {
-                        String childPath = getNodePath(path, child);
-                        LeafBean leaf = this.getNodeValue(zk, path, childPath, child, authRole);
-                        if (leaf != null) leaves.add(leaf);
-                    }
-
+        for (String child : children.subList(from, to)) {
+            budget.checkTime();
+            String childPath = getNodePath(path, child);
+            budget.bytes(childPath.length() * 3);
+            Stat childStat = zk.exists(childPath, false);
+            if (childStat == null) continue;
+            if (childStat.getNumChildren() > 0) folders.add(child);
+            else {
+                LeafBean leaf = getNodeValue(zk, path, childPath, child, authRole);
+                if (leaf != null) {
+                    budget.bytes(leaf.getValue() == null ? 0 : leaf.getValue().length);
+                    leaves.add(leaf);
                 }
-
             }
         }
-
-        Collections.sort(folders);
-        Collections.sort(leaves, new Comparator<LeafBean>() {
-            @Override
-            public int compare(LeafBean o1, LeafBean o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        ZKNode zkNode = new ZKNode();
-        zkNode.setLeafBeanLSt(leaves);
-        zkNode.setNodeLst(folders);
-        return zkNode;
+        ZKNode result = new ZKNode();
+        result.setNodeLst(folders);
+        result.setLeafBeanLSt(leaves);
+        result.setTotalChildren(children.size());
+        result.setPage(page);
+        result.setPageCount(pages);
+        return result;
     }
 
     @Deprecated
@@ -402,13 +434,31 @@ public enum ZooKeeperUtil {
 
     }
 
-    private void deleteFolderInternal(String folderPath, ZooKeeper zk) throws KeeperException, InterruptedException {
-
-        logger.debug("Deleting folder " + folderPath);
-        for (String child : zk.getChildren(folderPath, false)) {
-            deleteFolderInternal(getNodePath(folderPath, child), zk);
+    private void deleteFolderInternal(String root, ZooKeeper zk) throws KeeperException, InterruptedException {
+        // Complete bounded discovery before the first delete; avoid recursive Java-stack growth.
+        TreeWork budget = new TreeWork();
+        List<String> targets = new ArrayList<>();
+        java.util.ArrayDeque<String> pending = new java.util.ArrayDeque<>();
+        java.util.ArrayDeque<Integer> depths = new java.util.ArrayDeque<>();
+        pending.push(root); depths.push(0);
+        while (!pending.isEmpty()) {
+            String path = pending.pop();
+            int depth = depths.pop();
+            budget.visit(depth);
+            Stat stat = zk.exists(path, false);
+            if (stat == null) throw new KeeperException.NoNodeException(path);
+            budget.children(stat.getNumChildren());
+            List<String> children = zk.getChildren(path, false);
+            budget.reserve(children.size());
+            targets.add(path);
+            for (String child : children) {
+                String childPath = getNodePath(path, child);
+                budget.bytes(childPath.length() * 3);
+                pending.push(childPath); depths.push(depth + 1);
+            }
         }
-        zk.delete(folderPath, -1);
+        Collections.reverse(targets);
+        for (String path : targets) { budget.checkTime(); zk.delete(path, -1); }
     }
 
     public void deleteLeaves(List<String> leafNames, ZooKeeper zk) throws InterruptedException, KeeperException {

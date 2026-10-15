@@ -22,6 +22,14 @@ import java.util.List;
 
 public class ZKNode {
 
+    private int totalChildren, page, pageCount;
+    public int getTotalChildren() { return totalChildren; }
+    public void setTotalChildren(int value) { totalChildren = value; }
+    public int getPage() { return page; }
+    public void setPage(int value) { page = value; }
+    public int getPageCount() { return pageCount; }
+    public void setPageCount(int value) { pageCount = value; }
+
     List<String> nodeLst;
     List<LeafBean> leafBeanLSt;
 

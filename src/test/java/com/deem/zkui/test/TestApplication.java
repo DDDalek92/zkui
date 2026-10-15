@@ -196,6 +196,11 @@ final class TestApplication extends ExternalResource {
         return request("/import", body, cookie, "multipart/form-data; boundary=zkui-test");
     }
 
+    void seedLoadChildren(String root, int count, byte[] value) throws Exception {
+        create(root, "");
+        server.seedChildren(root, count, value);
+    }
+
     void dropHistoryTable() throws Exception {
         Properties config = new Properties();
         try (InputStream in = new FileInputStream(System.getProperty("zkui.test.config"))) { config.load(in); }
