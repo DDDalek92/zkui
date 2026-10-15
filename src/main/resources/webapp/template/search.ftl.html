@@ -39,7 +39,7 @@
                     <#list searchResult as leaf>
                     <tr>
                         <td>
-                            <a href="/home?zkPath=${leaf.path?html}">${leaf.path?html}</a>
+                            <a href="/home?zkPath=${leaf.path?url('UTF-8')?html}">${leaf.path?html}</a>
                         </td>
                         <td>${leaf.name?html}</td>
                         <td><span class="mono-pre-wrap">${leaf.strValue?html}</span></td>

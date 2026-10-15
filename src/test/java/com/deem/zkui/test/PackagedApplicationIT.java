@@ -64,7 +64,7 @@ public class PackagedApplicationIT {
                 String cookie = login.cookie.split(";", 2)[0];
                 Reply home = request(base + "/home", null, cookie);
                 assertEquals(200, home.status);
-                assertTrue("Home must render the ZooKeeper tree", home.body.contains("/home?zkPath=/appconfig"));
+                assertTrue("Home must render the ZooKeeper tree", home.body.contains("/home?zkPath=%2Fappconfig"));
 
                 String create = "action=Save+Property&searchStr=&currentPath=%2Fappconfig%2F&displayPath=%2Fappconfig"
                         + "&newProperty=smoke-key&newValue=smoke-value&csrfToken=" + TestApplication.token(home.body);

@@ -130,10 +130,14 @@ public enum ZooKeeperUtil {
     }
 
     public Set<LeafBean> searchTree(String searchString, ZooKeeper zk, String authRole) throws InterruptedException, KeeperException {
-        //Export all nodes and then search.
+        return searchTree(searchString, ZK_ROOT_NODE, zk, authRole);
+    }
+
+    public Set<LeafBean> searchTree(String searchString, String rootPath, ZooKeeper zk, String authRole) throws InterruptedException, KeeperException {
+        //Export the requested subtree and then search.
         Set<LeafBean> searchResult = new TreeSet<>();
         Set<LeafBean> leaves = new TreeSet<>();
-        exportTreeInternal(leaves, ZK_ROOT_NODE, zk, authRole);
+        exportTreeInternal(leaves, rootPath, zk, authRole);
         for (LeafBean leaf : leaves) {
             String leafValue = ServletUtil.INSTANCE.externalizeNodeValue(leaf.getValue());
             if (leaf.getPath().contains(searchString) || leaf.getName().contains(searchString) || leafValue.contains(searchString)) {

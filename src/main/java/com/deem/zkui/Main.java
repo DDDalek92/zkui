@@ -59,6 +59,7 @@ public class Main {
             System.exit(1);
         }
 
+        new com.deem.zkui.utils.PathPolicy(globalProps).hosts(globalProps);
         com.deem.zkui.utils.ZkClientAuth.validate(globalProps);
         com.deem.zkui.utils.ZooKeeperUtil.INSTANCE.setDefaultAcl(globalProps.getProperty("defaultAcl"));
         globalProps.setProperty("uptime", new Date().toString());

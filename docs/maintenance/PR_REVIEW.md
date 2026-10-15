@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | 修正 defaultAcl 示例注释 | 已重做，Fork PR #10 | JSON 示例修正；凭据/ACL 分离，Digest/Auth ACL 回归 |
 | [#109](https://github.com/DeemOpen/zkui/pull/109) | 保留多行节点文本空格和换行 | 已采纳并扩展，Fork PR #8 | OutputSafetyIT；HTML 转义及搜索结果同步处理，真实浏览器待验证 |
-| [#54](https://github.com/DeemOpen/zkui/pull/54) | 配置根路径、子树搜索 | 修改后整合候选 | 根路径安全边界、搜索性能、空路径与路径遍历 |
+| [#54](https://github.com/DeemOpen/zkui/pull/54) | 配置根路径、子树搜索 | 已重做，Fork PR #13 | 全部HTTP数据入口受根路径限制，搜索当前子树，RootNamespaceIT |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | 表格排序 | 修改后整合候选 | 外部 CDN 供应链和离线部署、前端版本适配 |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | 修复中文乱码 | 已重做，Fork PR #12 | HTTP 表单/节点写入/导入/导出 UTF-8；不采纳原始值日志 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | 多 ZooKeeper 地址与监控 | 已重做并验证，Fork PR #9 | 完整 ensemble、chroot、监控失败隔离及超时；#64/#48 有直接回归 |
@@ -63,3 +63,5 @@
 最终每项应补齐：`代码差异已审`、`讨论已审`、`测试编号`、`是否重现`、`合入 Fork 的 PR URL`、`处理状态`。除上述 #109/#86/#50/#87/#107 已完成记录外，其余项目上述字段仍 **待完成**。
 
 - **#88 → Fork PR #12，rewritten**。作者 `vzardlloo`，提交 `f2103f8dcbbc7e8ce355392f280e3908c0913710`；全量差异及讨论已审（无评论）。采纳 UTF-8 读取意图，命令输出编码已在 #9 处理；补齐 HTTP 表单解码、所有节点写入及导出编码。不采纳 LeafBean 原始值 INFO 日志。TextAndNodeValuesIT 在默认 US-ASCII 的真实应用 JAR 下验证中文表单/上传/导出及值空白保留；同时修复父节点自身值不显示（#62），继续按角色遮蔽和 HTML 转义。
+
+- **#54 → Fork PR #13，rewritten**。作者 `clevertension`，提交 `bc047739818b587a430f8a4a7966485421a00aa5`；通过公开git ref核对完整4文件差异，讨论已查（无评论）。采纳可配置根和当前子树搜索，扩展为Home/Export/Import/REST一致的应用命名空间限制；路径使用原生PathUtils校验，拒绝越界/相似前缀/保留根删除，批量目标预检，导航停在根。REST新增可配置根内hosts位置且禁止向根外祖先回退。RootNamespaceIT验证真实JAR；原PR仅默认页面/搜索起点变化，不直接提供完整隔离，故重写。

@@ -31,19 +31,9 @@
                 </#if>
 
                 <ul class="breadcrumb">
-                    <#assign breadCrumbPath = "">
-                    <#if breadCrumbLst?has_content>
-                    <#list breadCrumbLst as breadCrumb>
-
-                    <#if breadCrumb != "">
-                    <#assign breadCrumbPath = breadCrumbPath + "/" +  breadCrumb>
-                    </#if>
-
-                    <li><a href="/home?zkPath=${breadCrumbPath?html}" class="breadcrumb-select">${breadCrumb?html}</a></li>
+                    <#list breadCrumbs as crumb>
+                    <li><a href="/home?zkPath=${crumb.path?url('UTF-8')?html}" class="breadcrumb-select">${crumb.name?html}</a></li>
                     </#list>
-                    <#else>
-                    <li>/</li>
-                    </#if>
                 </ul>
 
             </div>
@@ -52,12 +42,12 @@
         <div class="row-fluid">
             <div class="col-md-3 well pre-scrollable scroll-pane" >
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${parentPath?html}"><..></a>
+                <a href="/home?zkPath=${parentPath?url('UTF-8')?html}"><..></a>
                 <br/>
                 <#list nodeLst as node>
                 <input type="checkbox" name="nodeChkGroup" value="${currentPath?html}${node?html}"/>
                 <span class="glyphicon glyphicon-folder-close"></span>
-                <a href="/home?zkPath=${currentPath?html}${node?html}">${node?html}</a>
+                <a href="/home?zkPath=${(currentPath + node)?url('UTF-8')?html}">${node?html}</a>
                 <br/>
                 </#list>
 
@@ -93,7 +83,7 @@
                                 </#if>
                             </td>
                             <#if navigate?? && navigate == 'true'>
-                            <td><a href="/home?zkPath=${leaf.strValue?html}">${leaf.strValue?html}</a></td>
+                            <td><a href="/home?zkPath=${leaf.strValue?url('UTF-8')?html}">${leaf.strValue?html}</a></td>
                             <#else>
                             <td>
                                 <#if leaf.value??>

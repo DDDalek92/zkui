@@ -88,6 +88,7 @@ public class Import extends HttpServlet {
                         + fields.getOrDefault("scmFileRevision", "") + "@" + fields.getOrDefault("scmFilePath", "");
                 contents = ImportSafety.fetch(source, props);
             }
+            com.deem.zkui.utils.PathPolicy paths = new com.deem.zkui.utils.PathPolicy(props);
             List<String> records = new ArrayList<>();
             int lineNumber = 0;
             for (String line : contents.split("\r?\n", -1)) {
@@ -103,6 +104,10 @@ public class Import extends HttpServlet {
                     path = ("/".equals(parent) ? "" : parent) + "/" + line.substring(first + 1, second);
                 }
                 PathUtils.validatePath(path);
+                try { paths.writable(path); }
+                catch (com.deem.zkui.utils.PathPolicy.OutsideNamespaceException ex) {
+                    throw new IOException("Import path is outside the permitted namespace");
+                }
                 if ("/".equals(path) || "/zookeeper".equals(path) || path.startsWith("/zookeeper/")) {
                     throw new IOException("Reserved import path at line " + lineNumber);
                 }
@@ -111,7 +116,10 @@ public class Import extends HttpServlet {
             }
             if (records.isEmpty()) throw new IOException("Import contains no records");
             boolean overwrite = Boolean.parseBoolean(fields.getOrDefault("scmOverwrite", "false"));
-            ZooKeeperUtil.INSTANCE.importData(records, overwrite, ServletUtil.INSTANCE.getZookeeper(request, props));
+            org.apache.zookeeper.ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, props);
+            // Never create missing ancestors outside the configured namespace.
+            if (zk.exists(paths.root(), false) == null) throw new IOException("Configured root does not exist");
+            ZooKeeperUtil.INSTANCE.importData(records, overwrite, zk);
             // Values, filenames and URLs can contain secrets or markup; keep only a summary.
             new Dao(props).insertHistory((String) session.getAttribute("authName"), request.getRemoteAddr(),
                     "Imported " + records.size() + " entries; overwrite=" + overwrite);

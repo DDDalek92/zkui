@@ -27,7 +27,7 @@
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <#if displayPath??>
-                <li><a href="/home?zkPath=/appconfig/hosts&navigate=true">Hosts</a></li>
+                <li><a href="/home?zkPath=${zkHostsPath?url('UTF-8')?html}&amp;navigate=true">Hosts</a></li>
 
                 <#if authRole?? && authRole == 'ADMIN' >
                 <li><a href="#" data-toggle="modal" data-target="#addNodeModal">Add Node</a></li>
@@ -36,7 +36,7 @@
                 <li><a href="#" data-toggle="modal" data-target="#importModal">Import</a></li>
                 </#if>
 
-                <li><a href="/export?zkPath=${displayPath?html}" target="_blank">Export</a></li>
+                <li><a href="/export?zkPath=${displayPath?url('UTF-8')?html}" target="_blank">Export</a></li>
                 <li><a href="#" data-toggle="modal" data-target="#searchModal">Search</a></li>
                 <#if authRole?? && authRole == 'ADMIN'><li><a href="/history">History</a></li></#if>
                 <li><a href="/monitor">Monitor</a></li>

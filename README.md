@@ -265,3 +265,9 @@ The `{0}` username is escaped as a DN value. An empty pattern preserves domain/U
 Text values and parent nodes
 ---------------------------
 HTTP forms, node writes, uploaded text and exported text use UTF-8 explicitly. Configuration value whitespace is preserved. The home page displays the current node’s own value even when it has children, with HTML escaping and the same password-name masking as other values; this display is read-only. The legacy export format escapes newlines as literal `\n` and removes carriage returns: it is not a lossless binary backup format.
+
+Root namespace and subtree search
+---------------------------------
+`zkRootPath` defaults to `/`. Set an existing absolute ZooKeeper path to confine UI reads/writes, export, import and REST lookups to that namespace. Paths are relative to any native `zkServer` chroot. The home page and a missing export path start there; parent navigation stops there. Search runs inside the current displayed node. Out-of-namespace paths return 403; malformed paths return 400. The configured root itself and `/zookeeper` are protected from modification/deletion. Complete import/delete batches are checked before any write, but backend failures after validation can still partially apply a batch.
+
+`zkHostsPath` optionally selects the REST host-mapping node within the root. Its default is `/appconfig/hosts` when root is `/`, otherwise `<zkRootPath>/hosts`. Create it and its mappings explicitly; startup does not mutate ZooKeeper. Mapping targets must remain inside the root, and REST property inheritance never consults outside ancestors. Root limits supplement ZooKeeper ACLs and chroot; web roles remain application-wide. Search/export still collect trees in memory and are unsuitable for unbounded trees.
