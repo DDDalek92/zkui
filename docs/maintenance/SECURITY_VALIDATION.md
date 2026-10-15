@@ -14,4 +14,26 @@
 
 验证命令：JDK 8 + `./mvnw -B -ntp clean verify`。本地共 3 项单元测试、11 项集成测试，0 失败/错误/跳过。远程状态以 PR 的 GitHub Actions 检查为准。
 
-范围限制：管理员的 URL 导入仍有 SSRF、超时和资源边界待处理（SEC-03/11）；CSRF（SEC-07）尚未修复；授权补丁不替代这些边界。SEC-02 将单独验证和修复。
+范围限制：管理员的 URL 导入仍有 SSRF、超时和资源边界待处理（SEC-03/11）；CSRF（SEC-07）尚未修复；授权补丁不替代这些边界。SEC-02 见下一节。
+
+## SEC-02：REST 认证与密码读取
+
+基线：SEC-01 修复后的源码（与 Fork `master` `24d28dd` 内容相同）。原配置 `blockPwdOverRest=false` 让匿名和 USER 请求都以 ADMIN 角色查询。使用模拟 host 映射及三种大小写的密码字段复现匿名密码原值读取；新增 10 项测试在修复前 9 失败、1 通过。缺失参数还导致 500。
+
+修复策略与兼容性：
+
+| 调用者/配置 | REST 行为 |
+| --- | --- |
+| 匿名；未设置/关闭/非法 `allowAnonymousRest` | 401，在创建 Session 和 ZK 连接前拒绝 |
+| USER 或未知角色；任意遮蔽设置 | 可以读取普通属性，密码字段始终遮蔽 |
+| ADMIN；`blockPwdOverRest` 缺失/true/非法 | 密码字段遮蔽 |
+| 已登录 ADMIN；显式 `blockPwdOverRest=false` | 允许读取密码原值 |
+| 显式 `allowAnonymousRest=true` | 匿名按 USER 读取，密码始终遮蔽，不因旧 false 设置提升权限 |
+
+过滤器改用精确 Servlet 路径，仅放行登录入口或显式开启的 REST 入口；路径中仅包含这些名称不再绕过认证。普通 UI 未登录仍重定向登录。`pwd/password/passwd` 检测统一大小写；成功 REST 响应禁止缓存。缺失/空白属性名返回 400，未知 host 映射返回 404。
+
+`RestAccessIT` 使用 5 个隔离的真实 JAR 实例分别验证默认、旧 false、缺失、非法、匿名兼容配置；包含匿名/USER/未知角色/ADMIN、普通属性正常读取、混合大小写密码遮蔽、匿名拒绝不创建 Session、旧配置只给 ADMIN 读取原值、参数状态、精确路径及登录入口可用。
+
+最终本地 JDK 8 `./mvnw -B -ntp clean verify`：3 个单元测试 + 21 个集成测试，0 失败/错误/跳过；`git diff --check` 通过。远程 CI 状态以修复 PR 检查为准。
+
+迁移：已有匿名脚本必须先登录并复用 Cookie，README 已更新示例；只在有意公开配置的可信环境开启匿名兼容。密码遮蔽基于字段名，不保证识别任意 token/密钥；当前登录角色仍为全局权限，host/app/cluster 参数不是细粒度授权。会话固定、CSRF、客户端 ZK 连接生命周期等仍有独立待处理项。

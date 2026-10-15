@@ -18,10 +18,10 @@
 package com.deem.zkui.filter;
 
 import java.io.IOException;
+import java.util.Properties;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -43,19 +43,21 @@ public class AuthFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        if (!request.getRequestURI().contains("/login") && !request.getRequestURI().contains("/acd/appconfig")) {
-            RequestDispatcher dispatcher;
-            HttpSession session = request.getSession();
-            if (session != null) {
-                if (session.getAttribute("authName") == null || session.getAttribute("authRole") == null) {
-                    response.sendRedirect("/login");
-                    return;
+        String path = request.getServletPath();
+        if (!"/login".equals(path)) {
+            boolean rest = "/acd/appconfig".equals(path);
+            HttpSession session = request.getSession(false);
+            boolean authenticated = session != null && session.getAttribute("authName") != null
+                    && session.getAttribute("authRole") != null;
+            Properties props = (Properties) request.getServletContext().getAttribute("globalProps");
+            boolean anonymousRest = rest && props != null
+                    && Boolean.parseBoolean(props.getProperty("allowAnonymousRest", "false"));
+            if (!authenticated && !anonymousRest) {
+                if (rest) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Login required for REST access");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/login");
                 }
-
-            } else {
-                request.setAttribute("fail_msg", "Session timed out!");
-                dispatcher = request.getRequestDispatcher("/Login");
-                dispatcher.forward(request, response);
                 return;
             }
         }

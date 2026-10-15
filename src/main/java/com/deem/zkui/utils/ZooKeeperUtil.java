@@ -360,11 +360,8 @@ public enum ZooKeeperUtil {
     }
 
     public Boolean checkIfPwdField(String property) {
-        if (property.contains("PWD") || property.contains("pwd") || property.contains("PASSWORD") || property.contains("password") || property.contains("PASSWD") || property.contains("passwd")) {
-            return true;
-        } else {
-            return false;
-        }
+        String name = property.toLowerCase(java.util.Locale.ROOT);
+        return name.contains("pwd") || name.contains("password") || name.contains("passwd");
     }
 
     public void createNode(String path, String name, String value, ZooKeeper zk) throws KeeperException, InterruptedException {

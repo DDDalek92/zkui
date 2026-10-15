@@ -1,11 +1,11 @@
 # ZKUI 安全审计与修复跟踪
 
-> 来源：Fork `master` 基线 `1b3e7c1` 静态代码审查，2026-10-15。**SEC-01 已在隔离环境动态复现并修复；其余项仍是待验证风险，不是 CVE 报告。** 不应直接将当前版本暴露到公网。
+> 来源：Fork `master` 基线 `1b3e7c1` 静态代码审查，2026-10-15。**SEC-01/02 已在隔离环境动态复现并修复；其余项仍是待验证风险，不是 CVE 报告。** 不应直接将当前版本暴露到公网。
 
 | ID | 优先级 | 静态发现与证据 | 建议的验证及处置 |
 | --- | --- | --- | --- |
 | SEC-01 | P0（已修复） | [`AuthFilter.java`](../../src/main/java/com/deem/zkui/filter/AuthFilter.java) 只检查登录态；[`Import.java`](../../src/main/java/com/deem/zkui/controller/Import.java) 的 `doPost` 无 ADMIN 角色校验，与 [`Home.java`](../../src/main/java/com/deem/zkui/controller/Home.java) 中写操作的校验不一致 | 已复现 USER/未知角色可写入。`Import.doPost` 入口校验 ADMIN，在解析上传、创建 Dao、获取 URL 前返回 403。6 项真实 JAR 回归通过，见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md) |
-| SEC-02 | P0 | [`RestAccess.java`](../../src/main/java/com/deem/zkui/controller/RestAccess.java) 与 `AuthFilter` 允许匿名访问 `/acd/appconfig`；[`config.cfg`](../../config.cfg) 默认 `blockPwdOverRest=false`，REST 路径会将角色设置成 ADMIN | 验证包含密钥的节点是否被匿名读取；重新设计最小权限策略，默认阻断敏感字段，评估 REST 认证 |
+| SEC-02 | P0（已修复） | [`RestAccess.java`](../../src/main/java/com/deem/zkui/controller/RestAccess.java) 与 `AuthFilter` 允许匿名访问 `/acd/appconfig`；[`config.cfg`](../../config.cfg) 默认 `blockPwdOverRest=false`，REST 路径会将角色设置成 ADMIN | 已复现匿名及 USER 获得密码原值。默认要求登录、默认遮蔽密码，显式关闭遮蔽仅对已登录 ADMIN 有效；匿名兼容显式开启仍按 USER 读取。10 项真实 JAR 回归，见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md) |
 | SEC-03 | P1 | [`Import.java`](../../src/main/java/com/deem/zkui/controller/Import.java) 将请求构造的地址交给 `new URL(...).openConnection()` | 在隔离环境测试服务端请求伪造（SSRF）路径；限制协议/目的地址并配置超时，考虑禁用远程 URL 导入 |
 | SEC-04 | P1 | [`ZooKeeperUtil.java`](../../src/main/java/com/deem/zkui/utils/ZooKeeperUtil.java) 在节点创建、修改、导入时可输出原始值；`Import` 历史记录可能包含导入行 | 对密钥、令牌、密码以及普通值统一脱敏，避免将原始数据写入日志和持久化历史 |
 | SEC-05 | P1 | [`config.cfg`](../../config.cfg) 含示例默认管理账号、明文密码和 `https=false`；ZooKeeper ACL 留空时使用 `OPEN_ACL_UNSAFE` | 移除生产环境默认凭据，启动时警示或拒绝不安全组合，文档要求可信网络及 TLS |
