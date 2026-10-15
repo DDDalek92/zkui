@@ -24,7 +24,7 @@
 | S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 已完成本轮修复，Fork PR #8；45 项测试 |
 | R01 | ZK 连接就绪等待、超时失败、重连与资源释放、多地址/监控 | 已完成本轮修复，Fork PR #9；51 项测试 |
 | P01 | 整合低风险上游 #87、#109 | 已完成，Fork PR #8/#10；LDAP/ACL 继续按 P03 |
-| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | UTF-8/节点自身值已完成 #12，根路径/子树搜索已完成 #13；离线排序继续处理 |
+| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 待处理 |
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 待处理；#93/#102/#103/#104/#105 |
@@ -34,11 +34,11 @@
 
 ## 上游 PR 逐项清单
 
-14 项中 #109/#86/#50/#87/#107/#88/#54 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14 项中 #109/#86/#50/#87/#107/#88/#54/#110 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
-| [#110](https://github.com/DeemOpen/zkui/pull/110) | table sorting | 待处理 |
+| [#110](https://github.com/DeemOpen/zkui/pull/110) | table sorting | rewritten，chenws1012 原贡献；Fork PR #14，本地脚本及真实模板浏览器检查 |
 | [#109](https://github.com/DeemOpen/zkui/pull/109) | correctly display value with new lines | adopted，gouzhuang 原贡献；Fork PR #8，OutputSafetyIT |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | Add ldap auth | rewritten，zhangdong1015 原贡献；Fork PR #11 |
 | [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | 待处理 |

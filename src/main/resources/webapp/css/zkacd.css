@@ -76,3 +76,8 @@ code {
     word-break: break-word;
     white-space: pre-wrap;
 }
+
+.sort-column { background: transparent; border: 0; padding: 0; color: inherit; font: inherit; font-weight: bold; cursor: pointer; }
+th[aria-sort="none"] .sort-column::after { content: " ↕"; }
+th[aria-sort="ascending"] .sort-column::after { content: " ↑"; }
+th[aria-sort="descending"] .sort-column::after { content: " ↓"; }

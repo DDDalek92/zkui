@@ -32,6 +32,12 @@ jobs:
         run: |
           set -o pipefail
           ./mvnw -B -ntp clean verify 2>&1 | tee "$RUNNER_TEMP/maven-build.log"
+      - name: Browser sorting checks against rendered JAR pages
+        env:
+          ZKUI_BROWSER_CHANNEL: chrome
+        run: |
+          npm ci --ignore-scripts
+          npm test
       - name: Save test reports and build log
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

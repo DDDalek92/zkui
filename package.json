@@ -1,0 +1,6 @@
+{
+  "name": "zkui-browser-checks",
+  "private": true,
+  "scripts": { "test": "node --test src/test/js/*.test.js" },
+  "devDependencies": { "playwright": "1.62.1" }
+}
