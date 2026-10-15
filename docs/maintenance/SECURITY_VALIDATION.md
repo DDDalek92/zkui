@@ -49,3 +49,11 @@ JDK 8 完整验证共 27 项通过。GET 退出暂时保留，下一项 CSRF 修
 基线新增 5 个 HTTP 复现用例全部失败：无 token/错误 token 可写入、登录未校验预登录 token、GET 退出会销毁 Session、无 token POST 可退出、管理员无 token multipart 可导入。修复在 AuthFilter 校验所有非 GET/HEAD/OPTIONS 请求；multipart 由 Import 在解析字段后、创建 Dao/获取 URL/写 ZK 前校验。Token 使用独立 SecureRandom 32 字节、绑定 Session、恒定时间比较；登录同时轮换 Session 和 token。
 
 表单（登录、主页、导入、历史查询、退出）均带隐藏字段；脚本可用 X-CSRF-Token。退出仅支持 POST，GET 405 且保留登录。7 个 CSRF 集成测试含跨 Session 拒绝、登录轮换 token、header 成功写入；原有 CRUD/导入测试已适配真实 token。完整 JDK 8 verify 共 34 项通过。README 更新脚本迁移示例。尚未验证真实浏览器，上传边界及 XSS 仍独立排队。
+
+## SEC-03/11：导入来源和资源限制
+
+将无大小限制的磁盘 multipart 解析替换为逐项流式读取：1 MiB 单文件、2 MiB 请求、32 项、8 KiB 字段、单文件及 10000 条记录上限；严格 UTF-8，验证全部记录/路径后才写入，拒绝根和 `/zookeeper` 路径。过大 413，无效输入 400；不返回输入行或远程 URL。导入历史仅记条目数/覆盖策略，不再保存文件名/URL/原始配置值。
+
+URL 默认关闭；开启后只有运维配置的完整 HTTP(S) URL 可用（精确匹配，不是请求自报主机），拒绝 userinfo/fragment、其他协议和所有重定向；HTTP 200、1 MiB、3 秒连接/读取超时及 10 秒正文读取期限。白名单是显式网络授权，需信任该端点及 DNS；不声称在允许任意不可信 URL 的情况下解决 DNS 重绑定。默认隐藏远程导入 UI。
+
+新增 2 项输入单元测试、6 项真实 JAR 集成测试，覆盖 UTF-8/过大/无效字节、默认关闭/未批准、本地批准来源成功、重定向不访问目标、过大响应、超时、上传过大、无效整文件无写入、保留路径、parts/多文件限制。第一次发现 Commons streaming 把文件超限包在 IOException 中导致状态 400，补齐异常映射后验证 413。完整 JDK8 verify 共 42 项通过。分批应用仍非 ZK 事务；依赖组件漏洞扫描另行进行。

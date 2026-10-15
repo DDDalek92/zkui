@@ -17,45 +17,35 @@
  */
 package com.deem.zkui.controller;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
+import com.deem.zkui.dao.Dao;
+import com.deem.zkui.utils.CsrfUtil;
+import com.deem.zkui.utils.ImportSafety;
+import com.deem.zkui.utils.ServletUtil;
+import com.deem.zkui.utils.ZooKeeperUtil;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.zookeeper.KeeperException;
-import com.deem.zkui.dao.Dao;
-import com.deem.zkui.utils.ServletUtil;
-import com.deem.zkui.utils.ZooKeeperUtil;
-import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.zookeeper.common.PathUtils;
 
 @SuppressWarnings("serial")
 @WebServlet(urlPatterns = {"/import"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10, // 10 MB
-        maxFileSize = 1024 * 1024 * 50, // 50 MB
-        maxRequestSize = 1024 * 1024 * 100)      // 100 MB
 public class Import extends HttpServlet {
-
-    private final static Logger logger = LoggerFactory.getLogger(Import.class);
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -64,107 +54,86 @@ public class Import extends HttpServlet {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator role required for import");
             return;
         }
-        logger.debug("Importing Action!");
         try {
-            Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
-
-            String zkServer = globalProps.getProperty("zkServer");
-            String[] zkServerLst = zkServer.split(",");
-
-            StringBuilder sbFile = new StringBuilder();
-            String scmOverwrite = "false";
-            String scmServer = "";
-            String scmFilePath = "";
-            String scmFileRevision = "";
-            String uploadFileName = "";
-            String csrfToken = request.getHeader("X-CSRF-Token");
-
-            DiskFileItemFactory factory = new DiskFileItemFactory();
-            factory.setSizeThreshold(1034);
-            ServletFileUpload upload = new ServletFileUpload(factory);
-            List items = upload.parseRequest(request);
-
-            Iterator iter = items.iterator();
-            while (iter.hasNext()) {
-                FileItem item = (FileItem) iter.next();
-                if (item.isFormField()) {
-                    if (item.getFieldName().equals("csrfToken") && csrfToken == null) {
-                        csrfToken = item.getString("UTF-8");
+            Properties props = (Properties) getServletContext().getAttribute("globalProps");
+            ServletFileUpload upload = new ServletFileUpload();
+            upload.setSizeMax(2L * ImportSafety.MAX_BYTES);
+            upload.setFileSizeMax(ImportSafety.MAX_BYTES);
+            FileItemIterator items = upload.getItemIterator(request);
+            Map<String, String> fields = new HashMap<>();
+            String contents = "";
+            int parts = 0;
+            int files = 0;
+            while (items.hasNext()) {
+                if (++parts > ImportSafety.MAX_PARTS) throw new IOException("Too many import form parts");
+                FileItemStream item = items.next();
+                try (InputStream input = item.openStream()) {
+                    String value = ImportSafety.read(input, item.isFormField() ? 8192 : ImportSafety.MAX_BYTES);
+                    if (item.isFormField()) fields.put(item.getFieldName(), value);
+                    else {
+                        if (++files > 1) throw new IOException("Only one import file is allowed");
+                        contents = value;
                     }
-                    if (item.getFieldName().equals("scmOverwrite")) {
-                        scmOverwrite = item.getString();
-                    }
-                    if (item.getFieldName().equals("scmServer")) {
-                        scmServer = item.getString();
-                    }
-                    if (item.getFieldName().equals("scmFilePath")) {
-                        scmFilePath = item.getString();
-                    }
-                    if (item.getFieldName().equals("scmFileRevision")) {
-                        scmFileRevision = item.getString();
-                    }
-
-                } else {
-                    uploadFileName = item.getName();
-                    sbFile.append(item.getString("UTF-8"));
                 }
             }
-
-            if (!com.deem.zkui.utils.CsrfUtil.valid(session, csrfToken)) {
+            String token = request.getHeader("X-CSRF-Token");
+            if (token == null) token = fields.get("csrfToken");
+            if (!CsrfUtil.valid(session, token)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF token");
                 return;
             }
-            Dao dao = new Dao(globalProps);
-            InputStream inpStream;
-
-            if (sbFile.toString().length() == 0) {
-                uploadFileName = scmServer + scmFileRevision + "@" + scmFilePath;
-                logger.debug("P4 file Processing " + uploadFileName);
-                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Importing P4 File: " + uploadFileName + "<br/>" + "Overwrite: " + scmOverwrite);
-                URL url = new URL(uploadFileName);
-                URLConnection conn = url.openConnection();
-                inpStream = conn.getInputStream();
-
-            } else {
-                logger.debug("Upload file Processing " + uploadFileName);
-                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Uploading File: " + uploadFileName + "<br/>" + "Overwrite: " + scmOverwrite);
-                inpStream = new ByteArrayInputStream(sbFile.toString().getBytes("UTF-8"));
+            if (contents.isEmpty()) {
+                String source = fields.get("remoteUrl");
+                if (source == null) source = fields.getOrDefault("scmServer", "")
+                        + fields.getOrDefault("scmFileRevision", "") + "@" + fields.getOrDefault("scmFilePath", "");
+                contents = ImportSafety.fetch(source, props);
             }
-
-            // open the stream and put it into BufferedReader
-            BufferedReader br = new BufferedReader(new InputStreamReader(inpStream));
-            String inputLine;
-            List<String> importFile = new ArrayList<>();
-            Integer lineCnt = 0;
-            while ((inputLine = br.readLine()) != null) {
-                lineCnt++;
-                // Empty or comment?
-                if (inputLine.trim().equals("") || inputLine.trim().startsWith("#")) {
-                    continue;
+            List<String> records = new ArrayList<>();
+            int lineNumber = 0;
+            for (String line : contents.split("\r?\n", -1)) {
+                lineNumber++;
+                if (line.trim().isEmpty() || line.trim().startsWith("#")) continue;
+                String path;
+                if (line.startsWith("-")) path = line.substring(1);
+                else {
+                    int first = line.indexOf('=');
+                    int second = line.indexOf('=', first + 1);
+                    if (first < 1 || second <= first + 1) throw new IOException("Invalid import format at line " + lineNumber);
+                    String parent = line.substring(0, first);
+                    path = ("/".equals(parent) ? "" : parent) + "/" + line.substring(first + 1, second);
                 }
-                if (inputLine.startsWith("-")) {
-                    //DO nothing.
-                } else if (!inputLine.matches("/.+=.+=.*")) {
-                    throw new IOException("Invalid format at line " + lineCnt + ": " + inputLine);
+                PathUtils.validatePath(path);
+                if ("/".equals(path) || "/zookeeper".equals(path) || path.startsWith("/zookeeper/")) {
+                    throw new IOException("Reserved import path at line " + lineNumber);
                 }
-
-                importFile.add(inputLine);
+                records.add(line);
+                if (records.size() > 10000) throw new IOException("Import exceeds 10000 records");
             }
-            br.close();
-
-            ZooKeeperUtil.INSTANCE.importData(importFile, Boolean.valueOf(scmOverwrite), ServletUtil.INSTANCE.getZookeeper(request, response, zkServerLst[0], globalProps));
-            for (String line : importFile) {
-                if (line.startsWith("-")) {
-                    dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "File: " + uploadFileName + ", Deleting Entry: " + line);
-                } else {
-                    dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "File: " + uploadFileName + ", Adding Entry: " + line);
-                }
-            }
-            request.getSession().setAttribute("flashMsg", "Import Completed!");
+            if (records.isEmpty()) throw new IOException("Import contains no records");
+            boolean overwrite = Boolean.parseBoolean(fields.getOrDefault("scmOverwrite", "false"));
+            ZooKeeperUtil.INSTANCE.importData(records, overwrite, ServletUtil.INSTANCE.getZookeeper(
+                    request, response, props.getProperty("zkServer"), props));
+            // Values, filenames and URLs can contain secrets or markup; keep only a summary.
+            new Dao(props).insertHistory((String) session.getAttribute("authName"), request.getRemoteAddr(),
+                    "Imported " + records.size() + " entries; overwrite=" + overwrite);
+            session.setAttribute("flashMsg", "Import Completed!");
             response.sendRedirect("/home");
-        } catch (FileUploadException | IOException | InterruptedException | KeeperException ex) {
-            logger.error(Arrays.toString(ex.getStackTrace()));
-            ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
+        } catch (FileUploadBase.SizeLimitExceededException | FileUploadBase.FileSizeLimitExceededException | ImportSafety.TooLargeException ex) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Import exceeds input limits");
+        } catch (FileUploadBase.FileUploadIOException ex) {
+            if (ex.getCause() instanceof FileUploadBase.FileSizeLimitExceededException
+                    || ex.getCause() instanceof FileUploadBase.SizeLimitExceededException) {
+                response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Import exceeds input limits");
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid import upload");
+            }
+        } catch (FileUploadException | IOException | IllegalArgumentException ex) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid, unavailable or unapproved import input");
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Import interrupted");
+        } catch (KeeperException ex) {
+            response.sendError(HttpServletResponse.SC_BAD_GATEWAY, "ZooKeeper rejected the import");
         }
     }
 }

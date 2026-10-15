@@ -93,6 +93,7 @@ public class Home extends HttpServlet {
             templateParam.put("nodeLst", nodeLst);
             templateParam.put("leafLst", leafLst);
             templateParam.put("breadCrumbLst", displayPath.split("/"));
+            templateParam.put("remoteImportEnabled", Boolean.parseBoolean(globalProps.getProperty("remoteImportEnabled", "false")));
             templateParam.put("scmRepo", globalProps.getProperty("scmRepo"));
             templateParam.put("scmRepoPath", globalProps.getProperty("scmRepoPath"));
             templateParam.put("navigate", navigate);
