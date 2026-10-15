@@ -27,7 +27,7 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1、#21的Java17/Jetty12 EE8/JDBC完成；D01-C首批隔离驱动/封存副本/数据元数据/ID/重开/恢复预演已实现，见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现；#23已完成启动失败即停止、显式校验checksum及运行时审计失败503策略（三平台各105项通过），见DATABASE_READINESS.md；Flyway桥接副本预演见FLYWAY_BRIDGE_REHEARSAL.md；完整H2应用/驱动升级及其余失败矩阵仍未完成；MySQL方言/26.7驱动及5.6逻辑导出到8.4/TLS/应用验证已由#28通过；ZK3.9.6/Netty4.1.137/FreeMarker2.3.35/CommonsIO2.22已由#29六job通过；见MYSQL_VALIDATION.md及CLIENT_TEMPLATE_UPGRADE.md；依赖审计仍未完成 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #21的Java17/Jetty12 EE8/JDBC、#23的启动/审计失败策略、#28的MySQL8.4/Connector26.7/真实旧库导出与TLS、#29的ZK/Netty/模板/IO已完成。#32–#36补齐有限副本结构/锁/导入中断/差量恢复及文件格式保护。本增量实现H2 2.5.252/Flyway13.10.3运行时与旧V1桥接的真实Main/HTTP/审计ID/重启，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准入以准确新head全CI为准。MySQL运行Flyway2仍未移除，现代API/module/checksum兼容、实际权限/磁盘失败、更广历史/时区夹具与安全/许可证/SBOM审计未完成；不等于D01或任意旧库迁移全完成。 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
@@ -109,6 +109,10 @@
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | deferred；312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
 
 ## 本轮接续与优先队列（2026-10-15）
+
+- #36准确head8335b8f6dbc43c3951ef1ef93ab8137d2537aba9的PR38797311625及push38797301172全部六job/三平台各137项成功后已审查合并；master a41ec71的push38797983943也六job成功。重新核查Fork无未完成PR，上游仍14/46且无新增；承接既有干净隔离分支，不复建已合并保护器。
+- 本增量实现H2 2.5.252/Flyway13.10.3运行时、新建方言及原V1离线桥接后的真实Main/HTTP/新审计ID/同路径重启；未桥接、未知版本/标记和schema漂移拒绝，现代H2禁止dev自动clean。真正旧驱动/旧Flyway在子进程隔离，不把新版fat JAR当旧引擎。见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准确新head全CI仍是合并门槛。
+- 后续顺序：MySQL现代Flyway API/module及原checksum兼容/移除运行Flyway2；实际权限/磁盘失败、更广历史夹具和时区验收；SBOM/漏洞/许可证及剩余部署/增强。保留Flyway关于H22.5高于厂商已验2.3.232的警告和有限自验证范围。D01整体、所有历史库/原Windows根因及正式发行均未叫作完成。
 
 - #35已核对准确head81aa63fcc21c39faa56a65d72eb0bcc6e18cca17的PR运行38789692993（attempt2）及push38789687026全部六job成功后审查合并；三平台各127项、Chrome3组及容器/MySQL/旧ZK通过。容器首轮依赖解析失败后仅重跑失败job，同head通过，没有更改代码/依赖或关闭校验。master为2c9c68e，其push38790758128 success，无未完成Fork PR；上游仍14/46且无新增。
 - 在该最新基线隔离复现并修复实际应用的H2格式错配静默建空库风险：连接/Flyway/dev清库前拒绝不兼容同base文件，真实JAR拒绝启动并保留两库hash，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)。本增量不切换运行H2/Flyway，不是完整新版Main/HTTP验收；准确新head全部CI须通过后才合并。完成后继续完整新版新建/历史桥接应用及MySQL旧API/checksum兼容，不跳到发行。

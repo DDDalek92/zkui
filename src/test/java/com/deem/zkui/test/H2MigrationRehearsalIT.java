@@ -5,6 +5,7 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.sql.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -48,9 +49,11 @@ public class H2MigrationRehearsalIT {
     }
     private Process startWithClasspath(Path root, String mode, boolean candidate, boolean bridge) throws Exception {
         String classes = new File(H2MigrationProbe.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath();
-        String driver = new File(System.getProperty(candidate ? "zkui.migration.h2.jar" : "zkui.test.jar")).getAbsolutePath();
+        String driver = new File(System.getProperty(candidate ? "zkui.migration.h2.jar" : "zkui.migration.old.h2.jar")).getAbsolutePath();
         assertTrue("Required isolated driver/app artifact missing", new File(driver).isFile());
-        String classpath = classes + File.pathSeparator + driver;
+        String classpath = classes + File.pathSeparator + driver
+                + File.pathSeparator + new File("target/classes").getAbsolutePath();
+        if (!candidate) classpath += File.pathSeparator + new File(System.getProperty("zkui.migration.old.flyway.jar")).getAbsolutePath();
         if (bridge) classpath += File.pathSeparator + new File(System.getProperty("zkui.migration.bridge.jar")).getAbsolutePath();
         if ("modern".equals(mode)) {
             // Use test dependencies, excluding the old H2; never include the assembled application JAR.
@@ -70,6 +73,112 @@ public class H2MigrationRehearsalIT {
     }
     private Map<String, String> sealedManifest(Path root) throws Exception {
         return directoryManifest(root.resolve("sealed-source"));
+    }
+
+    @Test public void genuineBridgedHistoryRunsInPackagedMainAndSurvivesApplicationRestart() throws Throwable {
+        // Explicit JDBC session and child-app UTC avoid dependence on a cached JVM default timezone.
+        // A naive TIMESTAMP is not a portable Instant without an agreed source/target timezone.
+        runBridgedApplication();
+    }
+
+    private void runBridgedApplication() throws Throwable {
+        Path root = fixture();
+        Map<String, String> before = sealedManifest(root);
+        byte[] exportBefore = Files.readAllBytes(root.resolve("export.sql"));
+        Reply bridge = runWithClasspath(root, "bridge", false, true);
+        assertEquals(bridge.output, 0, bridge.status);
+        Reply imported = run(root, "application-import", true);
+        assertEquals(imported.output, 0, imported.status);
+        TestApplication app = new TestApplication("modern-bridged-application",
+                () -> new String[]{"baseURL", "/migrated/", "jdbcUser", "sa", "jdbcPwd", "", "testTimeZone", "UTC", "testHistoryUtc", "true"},
+                base -> Files.copy(root.resolve("new-application/history.mv.db"), Path.of(base + ".mv.db")));
+        app.before();
+        try {
+            String expectedMetadata = Files.readString(root.resolve("expected-bridge-metadata"));
+            try (Connection connection = DriverManager.getConnection(app.historyJdbcUrl(), "sa", "")) {
+                assertTrue(connection.getMetaData().getDatabaseProductVersion().startsWith("2.5.252 "));
+                assertEquals(Files.readString(root.resolve("expected-base-history")),
+                        H2MigrationProbe.snapshotRows(connection, "SELECT * FROM histories ORDER BY ID"));
+                assertEquals(expectedMetadata, H2MigrationProbe.snapshotRows(connection, "SELECT * FROM \"schema_version\""));
+            }
+            String admin = app.login("test-admin");
+            TestApplication.Reply page = app.get("/history", admin);
+            assertEquals(200, page.status);
+            assertTrue(page.body.contains("<td>41</td>"));
+            assertTrue(page.body.contains("<td>9007199254740993</td>"));
+            assertTrue(page.body.contains("中文😀"));
+            assertTrue(page.body.contains("action=\"/migrated/history\""));
+            TestApplication.Reply filtered = app.post("/history", "action=showhistory&historyNode="
+                    + java.net.URLEncoder.encode("中文😀", java.nio.charset.StandardCharsets.UTF_8), admin);
+            assertEquals(200, filtered.status);
+            assertTrue(filtered.body.contains("<td>9007199254740993</td>"));
+            assertFalse(filtered.body.contains("<td>41</td>"));
+            assertFalse(filtered.body.contains("<td>9007199254741003</td>"));
+            String user = app.login("test-user");
+            assertEquals(403, app.get("/history", user).status);
+            assertEquals(403, app.post("/history", "action=showhistory&historyNode=", user).status);
+            assertEquals(302, app.post("/home", "action=Save+Property&currentPath=/appconfig/&displayPath=/appconfig"
+                    + "&newProperty=after-migration&newValue=owned", admin).status);
+            assertEquals("owned", app.read("/appconfig/after-migration"));
+            String rowsAfter;
+            try (Connection connection = DriverManager.getConnection(app.historyJdbcUrl(), "sa", "");
+                    Statement statement = connection.createStatement();
+                    ResultSet rows = statement.executeQuery("SELECT MAX(ID), COUNT(*) FROM histories")) {
+                assertTrue(rows.next());
+                assertTrue(rows.getLong(1) > H2MigrationProbe.HIGH_ID + 10);
+                assertEquals(4, rows.getInt(2));
+                rowsAfter = H2MigrationProbe.snapshotRows(connection, "SELECT * FROM histories ORDER BY ID");
+            }
+            app.restart();
+            assertEquals(200, app.get("/history", app.login("test-admin")).status);
+            try (Connection connection = DriverManager.getConnection(app.historyJdbcUrl(), "sa", "")) {
+                assertEquals(rowsAfter, H2MigrationProbe.snapshotRows(connection, "SELECT * FROM histories ORDER BY ID"));
+                assertEquals(expectedMetadata, H2MigrationProbe.snapshotRows(connection, "SELECT * FROM \"schema_version\""));
+            }
+        } finally { app.after(); }
+        assertArrayEquals(exportBefore, Files.readAllBytes(root.resolve("export.sql")));
+        assertEquals(before, sealedManifest(root));
+        Reply rollback = run(root, "rollback", false);
+        assertEquals(rollback.output, 0, rollback.status);
+    }
+
+    @Test public void unbridgedMetadataCannotBeAutoConvertedByDaoOrPackagedMain() throws Throwable {
+        Path root = fixture();
+        Map<String, String> sealed = sealedManifest(root);
+        byte[] export = Files.readAllBytes(root.resolve("export.sql"));
+        Reply imported = run(root, "application-import-unbridged", true);
+        assertEquals(imported.output, 0, imported.status);
+        String url = H2MigrationProbe.url(root, "new-application") + ";MODE=LEGACY;IFEXISTS=TRUE";
+        String metadata, history;
+        try (Connection c = DriverManager.getConnection(url, "sa", "")) {
+            metadata = H2MigrationProbe.snapshotRows(c, "SELECT * FROM \"schema_version\"");
+            history = H2MigrationProbe.snapshotRows(c, "SELECT * FROM histories ORDER BY ID");
+        }
+        Properties props = new Properties();
+        props.setProperty("jdbcClass", "org.h2.Driver"); props.setProperty("jdbcUrl", url);
+        props.setProperty("jdbcUser", "sa"); props.setProperty("jdbcPwd", "");
+        props.setProperty("env", "dev");
+        try { new com.deem.zkui.dao.Dao(props).checkNCreate(); fail("Unbridged metadata must be refused before any conversion/clean"); }
+        catch (IllegalStateException expected) {
+            assertEquals("History database initialization failed; HTTP server was not started", expected.getMessage());
+            assertNull(expected.getCause());
+        }
+        try (Connection c = DriverManager.getConnection(url, "sa", "")) {
+            assertEquals(metadata, H2MigrationProbe.snapshotRows(c, "SELECT * FROM \"schema_version\""));
+            assertEquals(history, H2MigrationProbe.snapshotRows(c, "SELECT * FROM histories ORDER BY ID"));
+            try (ResultSet columns = c.getMetaData().getColumns(null, "PUBLIC", "schema_version", "version_rank")) { assertTrue(columns.next()); }
+        }
+        TestApplication app = new TestApplication("modern-unbridged-refusal",
+                () -> new String[]{"jdbcUser", "sa", "jdbcPwd", ""},
+                base -> Files.copy(root.resolve("new-application/history.mv.db"), Path.of(base + ".mv.db")));
+        boolean ready = false;
+        try {
+            try { app.before(); ready = true; }
+            catch (AssertionError expected) { assertTrue(expected.getMessage(), expected.getMessage().contains("History database initialization failed")); }
+            assertFalse("Unbridged metadata must not reach HTTP readiness", ready);
+        } finally { if (ready) app.after(); }
+        assertEquals(sealed, sealedManifest(root));
+        assertArrayEquals(export, Files.readAllBytes(root.resolve("export.sql")));
     }
     private Map<String, String> directoryManifest(Path sealed) throws Exception {
         Map<String, String> result = new TreeMap<>();

@@ -21,9 +21,9 @@
         <!-- Embedded-server helpers only; not shipped with the ZooKeeper client application. -->
         <dependency><groupId>io.dropwizard.metrics</groupId><artifactId>metrics-core</artifactId><version>4.2.37</version><scope>test</scope></dependency>
         <dependency><groupId>org.xerial.snappy</groupId><artifactId>snappy-java</artifactId><version>1.1.10.12</version><scope>test</scope></dependency>
-        <!-- Isolated migration rehearsal only; not packaged with the application. -->
+        <!-- Modern H2 runtime. Legacy Flyway below is retained only for MySQL compatibility. -->
         <dependency>
-            <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>13.10.0</version><scope>test</scope>
+            <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>13.10.3</version>
         </dependency>
         <dependency>
             <groupId>com.unboundid</groupId>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.3.174</version>
+            <version>2.5.252</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -126,7 +126,7 @@
     </dependencies>
     <build>
         <plugins>
-            <!-- Test-only candidate driver: never enters the runtime dependency graph or assembled JAR. -->
+            <!-- Genuine legacy engines are copied only for isolated historical fixtures. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -144,6 +144,9 @@
                                 <type>jar</type>
                                 <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory>
                                 <destFileName>h2-candidate.jar</destFileName>
+                            </artifactItem><artifactItem>
+                                <groupId>com.h2database</groupId><artifactId>h2</artifactId><version>1.3.174</version><type>jar</type>
+                                <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory><destFileName>h2-old.jar</destFileName>
                             </artifactItem><artifactItem>
                                 <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>4.2.0</version><type>jar</type>
                                 <outputDirectory>${project.build.directory}/migration-drivers</outputDirectory>
@@ -176,6 +179,8 @@
                     <systemPropertyVariables>
                         <zkui.migration.bridge.jar>${project.build.directory}/migration-drivers/flyway-bridge.jar</zkui.migration.bridge.jar>
                         <zkui.migration.h2.jar>${project.build.directory}/migration-drivers/h2-candidate.jar</zkui.migration.h2.jar>
+                        <zkui.migration.old.h2.jar>${project.build.directory}/migration-drivers/h2-old.jar</zkui.migration.old.h2.jar>
+                        <zkui.migration.old.flyway.jar>${project.build.directory}/migration-drivers/flyway-old.jar</zkui.migration.old.flyway.jar>
                         <zkui.test.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</zkui.test.jar>
                         <zkui.test.config>${project.basedir}/config.cfg</zkui.test.config>
                     </systemPropertyVariables>

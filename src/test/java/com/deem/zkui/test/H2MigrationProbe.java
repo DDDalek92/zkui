@@ -28,6 +28,8 @@ public final class H2MigrationProbe {
             case "rollback": rollback(root); break;
             case "bridge": bridge(root); break;
             case "modern": modern(root); break;
+            case "application-import": applicationImport(root, true); break;
+            case "application-import-unbridged": applicationImport(root, false); break;
             case "tamper": tamper(root); break;
             case "assert-tampered": assertTampered(root); break;
             case "schema-drift": schemaDrift(root); break;
@@ -315,6 +317,18 @@ public final class H2MigrationProbe {
             appendAndCheck(connection, "synthetic-modern-row");
         }
         System.out.println("FLYWAY13_MIGRATE_VALIDATE_RESTART_AND_ID_OK");
+    }
+
+    private static void applicationImport(Path root, boolean bridged) throws Exception {
+        Files.createDirectory(root.resolve("new-application"));
+        try (Connection connection = connect(url(root, "new-application") + ";MODE=LEGACY", "2.5.252");
+                Statement statement = connection.createStatement()) {
+            statement.execute("RUNSCRIPT FROM " + literal(root.resolve(bridged ? "export-bridged.sql" : "export.sql")) + " CHARSET 'UTF-8' FROM_1X");
+            assertStable(root, connection);
+            assertSchemaAndConstraints(root, connection);
+            if (bridged) assertConvertedChecksum(connection);
+        }
+        System.out.println("OWNED_BRIDGED_APPLICATION_TARGET_READY_NO_APP_CONNECTION_YET");
     }
 
     /** Compare semantic JDBC metadata, not driver-specific sizes or generated constraint names. */

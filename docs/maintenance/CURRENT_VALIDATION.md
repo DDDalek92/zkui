@@ -1,5 +1,15 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前入口：H2 现代运行时与真实桥接应用
+
+最终本地 `clean verify` 于2026-10-15 22:41:24 UTC完成，完整文本BUILD SUCCESS；Surefire 11套32项、Failsafe 29套117项，总149项零失败/错误/跳过，Failsafe汇总timeout=false。包含最后的跨schema非空库拒绝修订。原V1 blob仍为 `fadfd7e9462b348131965f855949529ac6ceaa39`。本机未执行Chrome/Docker/MySQL容器；新PR准确head六job仍须独立核验，不以本地成功替代。
+
+#36已在准确head `8335b8f6dbc43c3951ef1ef93ab8137d2537aba9` 的[PR运行38797311625](https://github.com/DDDalek92/zkui/actions/runs/38797311625)及push38797301172六job成功后审查合并，三平台各137项、Chrome3组、容器/MySQL/旧ZK通过。合并基线 `a41ec71817026e32a780699ceebe72844fbffb9a` 的push38797983943也六job success；其树与已验PR完全一致。下方#36待CI为历史快照。
+
+本增量从该最新远程基线的既有干净隔离分支接续，切换H2 2.5.252/Flyway13.10.3运行包，旧驱动/旧Flyway仅在迁移子进程隔离使用（MySQL运行仍保留Flyway2，不混称移除所有旧引擎）。新增真正旧V1桥接目标的Main/HTTP/审计新ID/同路径重启及未桥接拒绝，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)。原V1未改；上游仍14个开放PR/46个开放Issue，无新增，不是全部修好。
+
+已实际发现并修正鲜库TABLE内部标记的重复启动拒绝、隔离导入子进程缺原资源、旧夹具凭据与app默认凭据不一致，以及UTC/非UTC及H2缓存时区导致的对比偏移。此前中间失败不是通过报告。时区现在在验收连接/进程上明确固定；厂商H2验证上限2.3.232警告仍保留，不能声称官方认证2.5.252。准确新head完整本地及全部CI结果须分别记录后审查合并，最终证据以对应PR为准。
+
 ## 2026-10-15 当前入口：H2 文件格式启动前保护
 
 #35准确head `81aa63fcc21c39faa56a65d72eb0bcc6e18cca17` 的[PR运行38789692993](https://github.com/DDDalek92/zkui/actions/runs/38789692993)（attempt2）及push38789687026全部六job成功后已审查合并；三平台各16单元+111集成=127项，Chrome3组及容器/MySQL/旧ZK通过。容器首次为Maven依赖描述符解析失败；同head的push容器已通过，再仅重跑失败job后也成功，未改代码、POM、TLS或校验。master `2c9c68e3088d1b20d078992c161624a816f782bc` 的push38790758128已查询success。下方#35待CI为旧快照，不再是当前阻塞。

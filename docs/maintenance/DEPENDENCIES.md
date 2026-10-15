@@ -1,5 +1,9 @@
 # 依赖维护状态与执行顺序
 
+> 当前H2运行时增量：H2 2.5.252 / 开源Flyway13.10.3，独立新建方言及原V1桥接Main/HTTP/重启/拒绝验证，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)。MySQL仍使用旧Flyway2及既有checksum路径，现代API/module迁移和旧引擎移除是下一项；Flyway的H2厂商验证上限警告未屏蔽。下方“候选仅测试/运行H2未升级”为历史快照，不代表本增量源码。最终准入仍依准确head全部CI。
+
+本增量实际运行依赖图见[MODERN_H2_DEPENDENCY_TREE.txt](MODERN_H2_DEPENDENCY_TREE.txt)，由固定dependency-plugin3.8.1的runtime tree生成：H22.5.252与org.flywaydb13.10.3进入运行包，H21.3/Flyway4不在运行图，com.googlecode Flyway2.2.1因MySQL仍保留。此图不是SBOM/CVE/许可证审核通过报告；原DEPENDENCY_TREE.txt留作旧阶段快照。
+
 > D01-C新增实际应用本地文件格式保护，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)：复现旧驱动忽略新版文件而建立旁路空库，现于连接/迁移/dev清库前拒绝；不改变运行H2/Flyway或已应用V1，完整新版Main/HTTP仍未完成。
 
 > D01-C有限追加差量预演见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)：旧驱动只开封存副本，记录逐字段恢复/冲突拒绝，不改迁移元数据；不是在线/通用降级工具。完整新版H2/Flyway应用及MySQL旧API/checksum兼容仍需独立实现验收。

@@ -56,7 +56,9 @@ public class Dao {
         } catch (ClassNotFoundException ex) {
             throw new SQLException("Configured JDBC driver is unavailable", ex);
         }
-        return DriverManager.getConnection(globalProps.getProperty("jdbcUrl"),
+        String url = globalProps.getProperty("jdbcUrl");
+        if ("org.h2.Driver".equals(globalProps.getProperty("jdbcClass"))) url = ModernH2History.url(url);
+        return DriverManager.getConnection(url,
                 globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
     }
     
@@ -64,19 +66,23 @@ public class Dao {
         try {
             // Before even constructing a migration datasource, and especially before dev-mode clean.
             H2FileFormatGuard.check(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"));
-            Flyway flyway = new Flyway();
-            flyway.setValidateOnMigrate(true);
-            flyway.setDataSource(new com.googlecode.flyway.core.util.jdbc.DriverDataSource(
-                    globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"),
-                    globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd")));
-            try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
-            //Will wipe db each time. Avoid this in prod.
-            if ("dev".equals(globalProps.getProperty("env", "prod"))) {
-                flyway.clean();
+            if ("org.h2.Driver".equals(globalProps.getProperty("jdbcClass"))) {
+                ModernH2History.migrate(globalProps);
+            } else {
+                // Preserve the separately validated MySQL engine/checksum path in this increment.
+                Flyway flyway = new Flyway();
+                flyway.setValidateOnMigrate(true);
+                flyway.setDataSource(new com.googlecode.flyway.core.util.jdbc.DriverDataSource(
+                        globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"),
+                        globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd")));
+                try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
+                // Historical explicit dev-clean behavior remains only on this legacy backend.
+                if ("dev".equals(globalProps.getProperty("env", "prod"))) {
+                    flyway.clean();
+                }
+                try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
+                flyway.migrate();
             }
-            //Remove the above line if deploying to prod.
-            try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
-            flyway.migrate();
             // A migration record alone does not prove the application table is usable.
             try (Connection connection = openConnection();
                     PreparedStatement statement = connection.prepareStatement(
