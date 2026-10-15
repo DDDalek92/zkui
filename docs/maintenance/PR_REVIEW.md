@@ -1,5 +1,7 @@
 # 上游开放 PR 审核台账（初稿）
 
+> 当前证据（2026-10-15）：#102升级意图已由Fork #37的H22.5.252/现代Flyway独立重写有限验收，准确head两轮六job及合并master六job全成功，三平台各149项；原始2.1.210补丁仍不直接采用，任意历史库迁移仍不普遍放行。下一步MySQL checksum/API/module工作先增加独立引擎桥接预演（MYSQL_FLYWAY_BRIDGE.md），不是应用运行路径切换；上游仍14项，不改其状态。
+
 > H2接续（2026-10-15）：本增量以2.5.252/现代Flyway13.10.3重做#102的运行时升级意图，独立新建方言及原V1离线桥接后的真实Main/HTTP/重启见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，仍须准确head全部CI准入。不直接采用旧2.1.210补丁；任意历史库/真实权限磁盘/更广时区夹具及正式迁移放行仍延期，不能把这项有限应用验收或14项分类叫做全部问题修复。
 
 > 当前处置补充（2026-10-15）：#103已由Fork #28的Connector/J26.7/MySQL8.4+方言、真实5.6逻辑迁移/TLS路径superseded；#105日志/Jetty/MySQL意图分别由#16/#21/#28重写，不采用其历史目标版本。#102完整H2应用/驱动迁移仍延期；#25仅证明有限合成副本桥接。下方#103/MySQL deferred及旧ORM描述是历史，不是当前全部状态。14项处置不等于全部功能修复，具体head证据见MYSQL_VALIDATION.md、CURRENT_VALIDATION.md和Fork PR。

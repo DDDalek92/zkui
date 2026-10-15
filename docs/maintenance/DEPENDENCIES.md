@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> MySQL接续（2026-10-15）：#37及合并master六job已验证，三平台各149项。现增加独立副本上的旧Flyway2先校验/官方Flyway4转换/现代Flyway13+MySQL模块预演，见[MYSQL_FLYWAY_BRIDGE.md](MYSQL_FLYWAY_BRIDGE.md)。`flyway-mysql:13.10.3` 仅复制测试jar，未加入运行依赖图；应用MySQL仍保留Flyway2，实际新head MySQL CI未完成前不称桥接通过，更不能称运行旧引擎已移除。
+
 > 当前H2运行时增量：H2 2.5.252 / 开源Flyway13.10.3，独立新建方言及原V1桥接Main/HTTP/重启/拒绝验证，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)。MySQL仍使用旧Flyway2及既有checksum路径，现代API/module迁移和旧引擎移除是下一项；Flyway的H2厂商验证上限警告未屏蔽。下方“候选仅测试/运行H2未升级”为历史快照，不代表本增量源码。最终准入仍依准确head全部CI。
 
 本增量实际运行依赖图见[MODERN_H2_DEPENDENCY_TREE.txt](MODERN_H2_DEPENDENCY_TREE.txt)，由固定dependency-plugin3.8.1的runtime tree生成：H22.5.252与org.flywaydb13.10.3进入运行包，H21.3/Flyway4不在运行图，com.googlecode Flyway2.2.1因MySQL仍保留。此图不是SBOM/CVE/许可证审核通过报告；原DEPENDENCY_TREE.txt留作旧阶段快照。

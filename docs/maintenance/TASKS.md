@@ -110,6 +110,9 @@
 
 ## 本轮接续与优先队列（2026-10-15）
 
+- #37已由准确head1c4f50a00910190c42aed15267cf6c7fc2a5f16b的PR38819046224/push38819038419全六job成功并审查合并；master5182459的38819831969六job也成功，三平台各149项。H2现代运行时及有限真实桥接应用验收完成，不等于任意历史库普遍迁移放行。
+- 首个接续项是MySQL现代Flyway：先在独立副本补原Flyway2校验/官方Flyway4格式及checksum转换/现代Flyway13+MySQL模块引擎预演、损坏副本转换前拒绝。见[MYSQL_FLYWAY_BRIDGE.md](MYSQL_FLYWAY_BRIDGE.md)，准确新head真实MySQL和全部CI仍是准入门槛。候选MySQL模块只复制测试jar，应用MySQL仍运行Flyway2，旧引擎移除及真实Main组合验收继续下一项；不冒称已完成。
+
 - #36准确head8335b8f6dbc43c3951ef1ef93ab8137d2537aba9的PR38797311625及push38797301172全部六job/三平台各137项成功后已审查合并；master a41ec71的push38797983943也六job成功。重新核查Fork无未完成PR，上游仍14/46且无新增；承接既有干净隔离分支，不复建已合并保护器。
 - 本增量实现H2 2.5.252/Flyway13.10.3运行时、新建方言及原V1离线桥接后的真实Main/HTTP/新审计ID/同路径重启；未桥接、未知版本/标记和schema漂移拒绝，现代H2禁止dev自动clean。真正旧驱动/旧Flyway在子进程隔离，不把新版fat JAR当旧引擎。见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准确新head全CI仍是合并门槛。
 - 后续顺序：MySQL现代Flyway API/module及原checksum兼容/移除运行Flyway2；实际权限/磁盘失败、更广历史夹具和时区验收；SBOM/漏洞/许可证及剩余部署/增强。保留Flyway关于H22.5高于厂商已验2.3.232的警告和有限自验证范围。D01整体、所有历史库/原Windows根因及正式发行均未叫作完成。

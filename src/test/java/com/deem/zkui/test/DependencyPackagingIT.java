@@ -37,6 +37,8 @@ public class DependencyPackagingIT {
         try (JarFile jar = new JarFile(System.getProperty("zkui.test.jar"))) {
             assertNull(jar.getEntry("org/javalite/activejdbc/Model.class"));
             assertEquals("13.10.3", version(jar, "org.flywaydb/flyway-core"));
+            // MySQL's modern module is a copied, isolated rehearsal artifact, not runtime yet.
+            assertNull(jar.getEntry("org/flywaydb/database/mysql/MySQLDatabase.class"));
             // Legacy Flyway remains only for the separately validated MySQL path in this increment.
             assertEquals("2.2.1", version(jar, "com.googlecode.flyway/flyway-core"));
             try (java.net.URLClassLoader isolated = new java.net.URLClassLoader(

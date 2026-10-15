@@ -1,5 +1,17 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前入口：MySQL Flyway 独立副本桥接
+
+#37准确head `1c4f50a00910190c42aed15267cf6c7fc2a5f16b` 的PR38819046224/push38819038419全部六job成功并逐日志审查后已合并；master `5182459ee6e8500268e65ec589124749590a0762` 的[运行38819831969](https://github.com/DDDalek92/zkui/actions/runs/38819831969)也六job success，Ubuntu/macOS/Windows各32单元+117集成=149项零失败/错误/跳过、Chrome3组、容器/MySQL/旧ZK均通过。master树 `4d334515b41594bb86e1e68611984fe690b5ecc9` 与已验证head一致；下方#37待CI是提交时快照。
+
+本轮从该最新远程基线隔离继续MySQL原引擎先validate、官方Flyway4元数据/checksum转换、现代Flyway13/MySQL模块重开及损坏副本拒绝，见[MYSQL_FLYWAY_BRIDGE.md](MYSQL_FLYWAY_BRIDGE.md)。只增加独立引擎预演，应用MySQL仍使用Flyway2；候选模块仅复制到测试目录，不进入运行包。原V1不改。准确新head本地/真实MySQL及全CI尚须分别记录，禁止把编译或H2通过称为MySQL桥接已验收。
+
+首轮本地clean verify单元32项通过，但assembly产物缺ZIP尾目录，集成测试报Invalid or corrupt jarfile/zip END header not found；磁盘空间充足，不能把该轮当通过。原样重建后JAR压缩完整性检查通过，继续完整回归；没有修改构建校验、运行实现或放松测试来绕过。MySQL候选模块的实际pom.properties为13.10.3，服务注册文件存在；本机无Docker，真实桥接仍待准确head CI。
+
+重建完整clean verify于2026-10-15 23:41:54 UTC完成BUILD SUCCESS：32单元+117集成=149项、零失败/错误/跳过，Failsafe timeout=false。仅新增MySQL helper的追加重开/坏checksum拒绝最后修订随后于23:42:14 UTC独立test-compile成功（48个测试源文件）；未把这项编译叫作MySQL运行验证。原引擎隔离classpath的owned开关/未知模式拒绝冒烟通过，不建立数据库连接。新MySQL预演仍必须以准确head CI mysql job日志为准。
+
+当前Fork无其他未完成PR；上游仍14开放PR/46开放Issue，编号集合无新增；分类不是全部修复。D01整体和MySQL应用现代API/旧运行引擎移除、实际权限磁盘/更广历史夹具及安全依赖审计仍未完成。
+
 ## 2026-10-15 当前入口：H2 现代运行时与真实桥接应用
 
 最终本地 `clean verify` 于2026-10-15 22:41:24 UTC完成，完整文本BUILD SUCCESS；Surefire 11套32项、Failsafe 29套117项，总149项零失败/错误/跳过，Failsafe汇总timeout=false。包含最后的跨schema非空库拒绝修订。原V1 blob仍为 `fadfd7e9462b348131965f855949529ac6ceaa39`。本机未执行Chrome/Docker/MySQL容器；新PR准确head六job仍须独立核验，不以本地成功替代。
