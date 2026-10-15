@@ -4,3 +4,5 @@ zkui.iml
 *.out
 *.h2.db
 *.log
+
+/node_modules/
