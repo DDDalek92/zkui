@@ -41,6 +41,5 @@ com.deem:zkui:jar:2.0-SNAPSHOT
 +- commons-fileupload:commons-fileupload:jar:1.6.0:compile
 |  \- commons-io:commons-io:jar:2.19.0:compile
 +- com.googlecode.flyway:flyway-core:jar:2.2.1:compile
-+- mysql:mysql-connector-java:jar:8.0.16:compile
-|  \- com.google.protobuf:protobuf-java:jar:3.6.1:compile
++- com.mysql:mysql-connector-j:jar:26.7.0:compile
 \- freemarker:freemarker:jar:2.3.8:compile

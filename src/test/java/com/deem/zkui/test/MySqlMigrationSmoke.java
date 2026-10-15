@@ -126,6 +126,17 @@ public final class MySqlMigrationSmoke {
         }
 
         packagedHistoryPage(restored);
+        Path untrusted = Files.createTempFile("zkui-owned-untrusted-", ".p12");
+        try {
+            java.security.KeyStore trust = java.security.KeyStore.getInstance("PKCS12");
+            trust.load(null, "synthetic-untrusted".toCharArray());
+            try (OutputStream out = Files.newOutputStream(untrusted)) { trust.store(out, "synthetic-untrusted".toCharArray()); }
+            Properties rejectedTls = config("zkui_fixture", false);
+            rejectedTls.setProperty("jdbcUrl", rejectedTls.getProperty("jdbcUrl")
+                    + "&trustCertificateKeyStoreUrl=" + URLEncoder.encode(untrusted.toUri().toString(), StandardCharsets.UTF_8)
+                    + "&trustCertificateKeyStorePassword=synthetic-untrusted&trustCertificateKeyStoreType=PKCS12&fallbackToSystemTrustStore=false");
+            refused(rejectedTls);
+        } finally { Files.delete(untrusted); }
         Properties wrongPassword = config("zkui_fixture", false);
         wrongPassword.setProperty("jdbcPwd", "wrong-synthetic-fixture-password");
         refused(wrongPassword);

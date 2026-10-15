@@ -105,8 +105,8 @@ jobs:
           chmod 644 "$tls"/*
           keytool -importcert -noprompt -alias ci-ca -file "$tls/ca.crt" -keystore "$tls/trust.p12" -storetype PKCS12 -storepass synthetic-trust-only
           trap 'docker logs zkui-mysql56 || true; docker logs zkui-mysql84 || true; docker rm -fv zkui-mysql56 zkui-mysql84 || true' EXIT
-          docker run -d --name zkui-mysql56 -p 127.0.0.1:13306:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -e MYSQL_DATABASE=zkui_fixture mysql:5.6.51 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql-mode=NO_ENGINE_SUBSTITUTION --skip-ssl
-          docker run -d --name zkui-mysql84 -p 127.0.0.1:13307:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -v "$tls:/ci-tls:ro" mysql:8.4 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00 --ssl-ca=/ci-tls/ca.crt --ssl-cert=/ci-tls/server.crt --ssl-key=/ci-tls/server.key --require-secure-transport=ON
+          docker run -d --name zkui-mysql56 -p 127.0.0.1:13306:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -e MYSQL_DATABASE=zkui_fixture mysql:5.6.51@sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql-mode=NO_ENGINE_SUBSTITUTION --skip-ssl
+          docker run -d --name zkui-mysql84 -p 127.0.0.1:13307:3306 -e MYSQL_ROOT_PASSWORD=synthetic-mysql-ci-only -e MYSQL_ROOT_HOST=% -v "$tls:/ci-tls:ro" mysql:8.4@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00 --ssl-ca=/ci-tls/ca.crt --ssl-cert=/ci-tls/server.crt --ssl-key=/ci-tls/server.key --require-secure-transport=ON
           for name in zkui-mysql56 zkui-mysql84; do
             ready=false
             for attempt in $(seq 1 120); do
@@ -115,7 +115,7 @@ jobs:
             done
             test "$ready" = true
           done
-          docker image inspect -f '{{index .RepoDigests 0}}' mysql:5.6.51 mysql:8.4 | tee target/mysql-image-digests.txt
+          docker image inspect -f '{{index .RepoDigests 0}}' mysql:5.6.51@sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae mysql:8.4@sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70 | tee target/mysql-image-digests.txt
           java -Duser.timezone=UTC -cp target/test-classes:target/classes:target/migration-drivers/mysql-old.jar:target/migration-drivers/flyway-old.jar com.deem.zkui.test.MySqlMigrationSmoke seed
           docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_fixture > target/mysql-synthetic-export.sql
           docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-synthetic-export.sql
