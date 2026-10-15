@@ -1,5 +1,8 @@
 # 依赖维护状态与执行顺序
 
+> 当前更新：#28已完成Connector/J26.7.0、MySQL8.4+方言和真实旧库逻辑迁移/TLS/启动验证；#29已完成ZK3.9.6（Netty4.1.137.Final）、FreeMarker2.3.35及CommonsIO2.22，六个CI job通过。见MYSQL_VALIDATION.md和CLIENT_TEMPLATE_UPGRADE.md。下文旧版本/待办描述保留历史；H2/Flyway运行时、JSON库、SBOM/漏洞/许可证及其余部署验证仍未完成。
+
+
 > 后续更新：Fork #23已合并。启动迁移失败/历史列不可读时停止HTTP启动，显式启用旧Flyway校验；历史写入失败明确返回503并提示先核对已执行的ZK变更。见DATABASE_READINESS.md及PR #23的105项/三平台CI。下文关于原先“吞错继续”的描述为历史基线，不再代表当前策略。驱动/Flyway跨版本迁移仍未放行。
 
 2026-10-15。依赖清单由固定工具 `org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree` 实取，见 DEPENDENCY_TREE.txt；不等于 CVE 扫描。

@@ -1,5 +1,15 @@
 # 当前维护验证快照
 
+## 最新已合并增量
+
+- #25隔离Flyway桥接：head6750ff95f0f7ec8f819b376a00c124073b432b38，运行38738283086，三平台各107项及全部job通过。
+- #27大树分页/共享删除预算：head47ae47027bbeb5ca3e8c7fc6432a0c403bf50111，运行38739863015，三平台各112项、Chrome和容器通过；含312763个真实服务内存树节点读取，未测WAL/写吞吐。
+- #28真实MySQL逻辑迁移/TLS/方言/驱动：head088e4afda3ef8dd1cd7dc267150c55f7e22ddbfc，运行38741719034，五job通过；三平台各112项，新增实际5.6->8.4逻辑转移与证书拒绝/打包应用验证。应用MySQL基线8.4+，不等于用户服务器原地升级。
+- #29 ZK/Netty/模板/IO：headaa6d39a08a9dc529a9e313badc3d43a246bb6837，运行38743599356，六job通过；三平台各112项、真实旧ZK3.5.7服务与新3.9.6客户端Digest/ACL/重连、Chrome、容器和MySQL通过。
+
+上面均逐job核对日志，0失败/错误/跳过。H2/Flyway应用驱动升级、完整故障/差量恢复、安全审计和其余增强仍未完成。hosts初始化为后续候选，不能用这些旧head证据替代它的准确head CI。
+
+
 ## 当前增量：Fork #23（2026-10-15）
 
 已审查合并[数据库就绪/审计失败策略 #23](https://github.com/DDDalek92/zkui/pull/23)，head `748ad0c86bf3b2721ffdd32414afe90400aea1ab`，[CI 38736989054](https://github.com/DDDalek92/zkui/actions/runs/38736989054)四个job全成功。逐一核对日志：Ubuntu116428803611、macOS116428802960、Windows116428803570各16单元+89集成=105项，0失败/错误/跳过；Linux Chrome3项，0失败/跳过；container116428803377构建、UID/GID10001及登录/环境覆盖/前缀资产冒烟成功。独立detached checkout同一准确head，本地OpenJDK17完整clean verify也是105项通过；本机没有执行Chrome/Docker。

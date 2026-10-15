@@ -8,7 +8,7 @@ CI generates an original-format database with Flyway2.2.1/original V1/Connector8
 
 Modern connections use sslMode=VERIFY_IDENTITY, a two-day CI CA/server certificate with localhost/IP SAN, an owned truststore and UTC. The test checks a nonempty TLS cipher. The old offline generator uses loopback-only plaintext and is never a production example. No caller URLs, user databases or production services are accepted by the smoke helper. CI images are pinned to the observed official digests: MySQL5.6.51 sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae and MySQL8.4 sha256:24989179f58856db763f418010c1169fecc944e3ec1ea7e921572d83eb070f70. A separate empty custom truststore must fail with fallback disabled, proving the successful connection does not rely on skipped certificate verification.
 
-Validation pending exact-head CI including the additional MySQL job. This is not an in-place server-upgrade procedure, universal historical-database proof, H2/Flyway runtime upgrade, complete recovery/delta-preservation matrix or final vulnerability/launch clearance.
+Validated in merged #28, head088e4afda3ef8dd1cd7dc267150c55f7e22ddbfc, run38741719034: five jobs passed, three platforms each112 tests, browser/container and actual MySQL/TLS including untrusted-store refusal passed. This is not an in-place server-upgrade procedure, universal historical-database proof, H2/Flyway runtime upgrade, complete recovery/delta-preservation matrix or final vulnerability/launch clearance.
 
 Official version/coordinates/compatibility basis:
 - https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-7-0.html
