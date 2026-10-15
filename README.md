@@ -90,6 +90,11 @@ If you want to use LDAP authentication provide the ldap url. This will take prec
 ldapUrl=ldap://<ldap_host>:<ldap_port>/dc=mycom,dc=com
 If you dont provide this then default roleSet file authentication will be used.
 
+Import authorization
+--------------------
+
+File uploads and remote URL imports require a logged-in ADMIN. USER and unknown roles receive HTTP 403 before upload parsing or remote fetching. Import files can create, overwrite and delete nodes, so read-only users must not submit them.
+
 REST call
 ====================
 A lot of times you require your shell scripts to be able to read properties from zookeeper. This can now be achieved with a http call. Password are not exposed via rest api for security reasons. The rest call is a read only operation requiring no authentication.

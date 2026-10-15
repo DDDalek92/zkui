@@ -34,6 +34,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -57,6 +58,12 @@ public class Import extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("authName") == null
+                || !ZooKeeperUtil.ROLE_ADMIN.equals(session.getAttribute("authRole"))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator role required for import");
+            return;
+        }
         logger.debug("Importing Action!");
         try {
             Properties globalProps = (Properties) this.getServletContext().getAttribute("globalProps");
