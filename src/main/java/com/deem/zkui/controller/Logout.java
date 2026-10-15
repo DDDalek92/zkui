@@ -18,15 +18,11 @@
 package com.deem.zkui.controller;
 
 import java.io.IOException;
-import java.util.Properties;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.zookeeper.ZooKeeper;
-import com.deem.zkui.utils.ServletUtil;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,19 +34,10 @@ public class Logout extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            logger.debug("Logout Action!");
-            Properties globalProps = (Properties) getServletContext().getAttribute("globalProps");
-            String zkServer = globalProps.getProperty("zkServer");
-            String[] zkServerLst = zkServer.split(",");
-            ZooKeeper zk = ServletUtil.INSTANCE.getZookeeper(request, response, zkServerLst[0],globalProps);
-            request.getSession().invalidate();
-            zk.close();
-            response.sendRedirect("/login");
-        } catch (InterruptedException ex) {
-            logger.error(Arrays.toString(ex.getStackTrace()));
-            ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
-        }
-
+        logger.debug("Logout Action!");
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) session.invalidate();
+        response.sendRedirect("/login");
     }
+
 }

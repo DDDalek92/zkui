@@ -37,3 +37,9 @@
 最终本地 JDK 8 `./mvnw -B -ntp clean verify`：3 个单元测试 + 21 个集成测试，0 失败/错误/跳过；`git diff --check` 通过。远程 CI 状态以修复 PR 检查为准。
 
 迁移：已有匿名脚本必须先登录并复用 Cookie，README 已更新示例；只在有意公开配置的可信环境开启匿名兼容。密码遮蔽基于字段名，不保证识别任意 token/密钥；当前登录角色仍为全局权限，host/app/cluster 参数不是细粒度授权。会话固定、CSRF、客户端 ZK 连接生命周期等仍有独立待处理项。
+
+## SEC-06：会话标识和退出
+
+在 `c5e186c` 基线上新增 3 项真实 JAR 测试，修复前 2 失败、1 通过：成功登录沿用旧标识，Cookie 也没有 HttpOnly。修复后成功登录调用 Servlet 3.1 `changeSessionId()`，旧 Cookie 无法访问 home；Cookie 标记 HttpOnly，仅启用 COOKIE 跟踪，URL `jsessionid` 不能代替 Cookie。退出只使现有 Session 失效，由 null 安全的监听器关闭已有 ZK 连接，不再为退出创建连接/重复关闭。
+
+JDK 8 完整验证共 27 项通过。GET 退出暂时保留，下一项 CSRF 修复会改为带 token 的 POST；会话 Cookie 的 Secure 依赖实际 HTTPS 部署。

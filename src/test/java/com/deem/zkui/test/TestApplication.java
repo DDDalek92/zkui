@@ -96,10 +96,14 @@ final class TestApplication extends ExternalResource {
     }
 
     String login(String username) throws IOException {
-        Reply reply = request("/login", "username=" + username + "&password=" + password, null,
-                "application/x-www-form-urlencoded; charset=UTF-8");
+        Reply reply = authenticate(username, null);
         if (reply.status != 302 || reply.cookie == null) throw new AssertionError("Test login failed");
         return reply.cookie.split(";", 2)[0];
+    }
+
+    Reply authenticate(String username, String cookie) throws IOException {
+        return request("/login", "username=" + username + "&password=" + password, cookie,
+                "application/x-www-form-urlencoded; charset=UTF-8");
     }
 
     Reply get(String path, String cookie) throws IOException {
