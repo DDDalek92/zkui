@@ -44,6 +44,7 @@ public class AuthFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
+        request.setCharacterEncoding("UTF-8");
         String path = request.getServletPath();
         if (!"/login".equals(path)) {
             boolean rest = "/acd/appconfig".equals(path);

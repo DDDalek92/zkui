@@ -24,7 +24,7 @@
 | S06 | 敏感日志/历史记录与 HTML 输出转义审计 | 已完成本轮修复，Fork PR #8；45 项测试 |
 | R01 | ZK 连接就绪等待、超时失败、重连与资源释放、多地址/监控 | 已完成本轮修复，Fork PR #9；51 项测试 |
 | P01 | 整合低风险上游 #87、#109 | 已完成，Fork PR #8/#10；LDAP/ACL 继续按 P03 |
-| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 待处理；关联 #88/#54/#110 等 |
+| P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | UTF-8/节点自身值已完成 #12；根路径/搜索和离线排序继续处理 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 待处理 |
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 待处理；#93/#102/#103/#104/#105 |
@@ -34,7 +34,7 @@
 
 ## 上游 PR 逐项清单
 
-14 项中 #109/#86/#50/#87 已整合，#107 在本轮完成；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14 项中 #109/#86/#50/#87/#107/#88 已整合；其他条目见逐项状态，预审见 PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
@@ -46,7 +46,7 @@
 | [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | 待处理 |
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | 待处理 |
 | [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | 待处理 |
-| [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | 待处理 |
+| [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | rewritten，vzardlloo 原贡献；Fork PR #12，US-ASCII JVM 端到端测试 |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
 | [#54](https://github.com/DeemOpen/zkui/pull/54) | add zkRootPath configuration and Search in sub node | 待处理 |
@@ -84,7 +84,7 @@
 | [#66](https://github.com/DeemOpen/zkui/issues/66) | Can Java 10 Run? | 待处理 |
 | [#64](https://github.com/DeemOpen/zkui/issues/64) | Did not wait for the zk session caused every operation become very slow | fixed，Fork PR #9，ConnectionReliabilityIT |
 | [#63](https://github.com/DeemOpen/zkui/issues/63) | All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead | 待处理 |
-| [#62](https://github.com/DeemOpen/zkui/issues/62) | 当某节点下有子节点时，其 value 在UI中不显示 | 待处理 |
+| [#62](https://github.com/DeemOpen/zkui/issues/62) | 当某节点下有子节点时，其 value 在UI中不显示 | fixed，Fork PR #12，TextAndNodeValuesIT |
 | [#61](https://github.com/DeemOpen/zkui/issues/61) | KeeperErrorCode = NoNode for /appconfig/hosts  | 待处理 |
 | [#60](https://github.com/DeemOpen/zkui/issues/60) | Can not work in JDK1.9 environment | 待处理 |
 | [#59](https://github.com/DeemOpen/zkui/issues/59) | node's children with ACL setting cannot be listed. | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
@@ -96,7 +96,7 @@
 | [#51](https://github.com/DeemOpen/zkui/issues/51) | Unable to locate the Javac Compiler in. | 待处理 |
 | [#49](https://github.com/DeemOpen/zkui/issues/49) | appconfig/hosts should add/update upon startup | 待处理 |
 | [#48](https://github.com/DeemOpen/zkui/issues/48) | Monitor throws an error when zkServer is not end with port | fixed，Fork PR #9，ConnectionReliabilityIT |
-| [#43](https://github.com/DeemOpen/zkui/issues/43) | import special characters  not displayed properly | 待处理 |
+| [#43](https://github.com/DeemOpen/zkui/issues/43) | import special characters  not displayed properly | fixed，Fork PR #12，US-ASCII JVM 下真实上传回归 |
 | [#42](https://github.com/DeemOpen/zkui/issues/42) | 不支持连接设置密码的zookeeper | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#36](https://github.com/DeemOpen/zkui/issues/36) | KeeperErrorCode = NoAuth for /123  | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#33](https://github.com/DeemOpen/zkui/issues/33) | Error :KeeperErrorCode = ConnectionLoss for /  after Login  | 待处理 |

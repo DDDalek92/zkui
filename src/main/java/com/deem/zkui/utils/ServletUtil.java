@@ -143,7 +143,7 @@ public enum ServletUtil {
     }
 
     public String externalizeNodeValue(byte[] value) {
-        return value == null ? "" : new String(value).replaceAll("\\n", "\\\\n").replaceAll("\\r", "");
+        return value == null ? "" : new String(value, java.nio.charset.StandardCharsets.UTF_8).replaceAll("\\n", "\\\\n").replaceAll("\\r", "");
         // We might want to BASE64 encode it
     }
 

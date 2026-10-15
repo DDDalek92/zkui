@@ -78,6 +78,7 @@ final class TestApplication extends ExternalResource {
             File log = new File("target/failsafe-reports/" + name + ".log");
             log.getParentFile().mkdirs();
             process = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
+                    "-Dfile.encoding=" + config.getProperty("testFileEncoding", "UTF-8"),
                     "-Dlog4j.configuration=" + new File("target/test-classes/log4j.properties").toURI(),
                     "-jar", System.getProperty("zkui.test.jar"))
                     .directory(work).redirectErrorStream(true).redirectOutput(log).start();
