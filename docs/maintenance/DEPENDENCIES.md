@@ -22,3 +22,7 @@
 - [H2官方迁移流程](https://www.h2database.com/html/migration-to-v2.html)：原版本导出SQL，新版本创建新库后导入。
 
 没有把上游历史Dependabot目标版本当作当前安全版本；延期项目仍是执行任务，不是已修复。
+
+## D01 实现前验收细化
+
+见 [D01_MIGRATION_PLAN.md](D01_MIGRATION_PLAN.md)：Java17插桩候选、Jetty整体迁移、旧库合成夹具、独立驱动/目录、逐字段/生成ID/Flyway元数据校验及失败回滚矩阵。源码审查确认 Dao 会吞掉迁移/插入异常，故进程存活或登录成功不能作为数据库迁移通过证据。方案尚未执行，不代表依赖升级或历史迁移完成。
