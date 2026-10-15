@@ -203,25 +203,15 @@ public class Home extends HttpServlet {
                     ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "search.ftl.html");
                     break;
                 case "Delete":
-                    if (authRole.equals(ZooKeeperUtil.ROLE_ADMIN)) {
-
-                        if (propChkGroup != null) {
-                            for (String prop : propChkGroup) {
-                                List delPropLst = Arrays.asList(prop);
-                                ZooKeeperUtil.INSTANCE.deleteLeaves(delPropLst, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
-                                request.getSession().setAttribute("flashMsg", "Delete Completed!");
-                                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Deleting Property: " + delPropLst.toString());
-                            }
-                        }
-                        if (nodeChkGroup != null) {
-                            for (String node : nodeChkGroup) {
-                                List delNodeLst = Arrays.asList(node);
-                                ZooKeeperUtil.INSTANCE.deleteFolders(delNodeLst, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
-                                request.getSession().setAttribute("flashMsg", "Delete Completed!");
-                                dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(), "Deleting Nodes: " + delNodeLst.toString());
-                            }
-                        }
-
+                    List<String> selected = new java.util.ArrayList<>();
+                    if (propChkGroup != null) selected.addAll(Arrays.asList(propChkGroup));
+                    if (nodeChkGroup != null) selected.addAll(Arrays.asList(nodeChkGroup));
+                    if (!selected.isEmpty()) {
+                        // One preflight/budget across all selected roots before the first deletion.
+                        ZooKeeperUtil.INSTANCE.deleteFolders(selected, ServletUtil.INSTANCE.getZookeeper(request, globalProps));
+                        request.getSession().setAttribute("flashMsg", "Delete Completed!");
+                        dao.insertHistory((String) request.getSession().getAttribute("authName"), request.getRemoteAddr(),
+                                "Deleting nodes: " + selected);
                     }
                     response.sendRedirect(request.getContextPath() + "/home?zkPath=" + java.net.URLEncoder.encode(displayPath, "UTF-8"));
                     break;

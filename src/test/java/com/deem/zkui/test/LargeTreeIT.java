@@ -37,6 +37,28 @@ public class LargeTreeIT {
         assertEquals("synthetic-load-value", app.read(root + "/n312762"));
     }
 
+    @Test public void combinedDeleteSelectionIsPreflightedBeforeAnyRootIsRemoved() throws Exception {
+        String first = "/load-fixture-first", second = "/load-fixture-second";
+        app.seedLoadChildren(first, 6000, new byte[0]);
+        app.seedLoadChildren(second, 6000, new byte[0]);
+        String admin = app.login("test-admin");
+        assertEquals(413, app.post("/home", "action=Delete&displayPath=%2F&currentPath=%2F"
+                + "&nodeChkGroup=" + first + "&nodeChkGroup=" + second, admin).status);
+        assertEquals(6000, app.observer.exists(first, false).getNumChildren());
+        assertEquals(6000, app.observer.exists(second, false).getNumChildren());
+    }
+
+    @Test public void overlappingDeleteSelectionsRemoveEachNodeOnce() throws Exception {
+        String root = "/load-fixture-overlap";
+        app.create(root, "");
+        app.create(root + "/child", "");
+        app.create(root + "/child/leaf", "value");
+        String admin = app.login("test-admin");
+        assertEquals(302, app.post("/home", "action=Delete&displayPath=%2F&currentPath=%2F"
+                + "&nodeChkGroup=" + root + "/child&nodeChkGroup=" + root, admin).status);
+        assertNull(app.observer.exists(root, false));
+    }
+
     @Test public void pageValueBudgetPreventsUnboundedRenderedResponses() throws Exception {
         String root = "/load-fixture-bytes";
         app.seedLoadChildren(root, 26, new byte[400000]);

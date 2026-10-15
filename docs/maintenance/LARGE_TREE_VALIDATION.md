@@ -9,3 +9,5 @@ Export/search now traverse iteratively with one child-list fetch per visited fol
 Load regression uses the test-owned ZooKeeper server's real in-memory DataTree populated with312,763 children, matching upstream#6. Reads go through the real HTTP/JAR/ZooKeeper protocol; fixture insertion bypasses transaction logging, so this is not a write-throughput, durability or production-network benchmark. Tests verify first/second/last pages, invalid pages, context links, refused whole-tree export/search/delete with children intact, page-value bytes, and depth refusal without mutation.
 
 All exact-head platform/browser/container CI must pass before merge. This does not reproduce the original Windows9s/Linux1s environment in#85. No users' ZooKeeper/database service or credentials are used.
+
+Final review additionally requires one budget/preflight across all selected deletion roots and de-duplicates overlapping selections. A combined12,000-child selection is refused with both6,000-child parents intact; selecting a child and its ancestor deletes each once in descendant-first order.

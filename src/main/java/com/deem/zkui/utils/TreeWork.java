@@ -11,7 +11,7 @@ public final class TreeWork {
     public static final long MAX_BYTES = 8L * 1024 * 1024;
     private final long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
     private int nodes;
-    private int discovered = 1;
+    private int discovered;
     private long bytes;
 
     public static final class LimitException extends IllegalStateException {

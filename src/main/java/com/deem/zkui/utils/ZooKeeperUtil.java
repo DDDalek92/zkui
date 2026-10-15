@@ -162,6 +162,7 @@ public enum ZooKeeperUtil {
         TreeWork budget = new TreeWork();
         java.util.ArrayDeque<String> pending = new java.util.ArrayDeque<>();
         java.util.ArrayDeque<Integer> depths = new java.util.ArrayDeque<>();
+        budget.reserve(1);
         pending.push(root); depths.push(0);
         while (!pending.isEmpty()) {
             String path = pending.pop();
@@ -426,24 +427,28 @@ public enum ZooKeeperUtil {
         return zk.exists(nodeFullPath, false) != null;
     }
 
-    public void deleteFolders(List<String> folderNames, ZooKeeper zk) throws KeeperException, InterruptedException {
-
-        for (String folderPath : folderNames) {
-            deleteFolderInternal(folderPath, zk);
+    public void deleteFolders(List<String> roots, ZooKeeper zk) throws KeeperException, InterruptedException {
+        TreeWork budget = new TreeWork();
+        java.util.Set<String> targets = new java.util.LinkedHashSet<>();
+        for (String root : roots) {
+            if (!targets.contains(root)) collectDeleteTargets(root, zk, budget, targets);
         }
-
+        List<String> ordered = new ArrayList<>(targets);
+        // Descendants are always longer than their ancestors, including overlapping selections.
+        ordered.sort(Comparator.comparingInt(String::length).reversed());
+        for (String path : ordered) { budget.checkTime(); zk.delete(path, -1); }
     }
 
-    private void deleteFolderInternal(String root, ZooKeeper zk) throws KeeperException, InterruptedException {
-        // Complete bounded discovery before the first delete; avoid recursive Java-stack growth.
-        TreeWork budget = new TreeWork();
-        List<String> targets = new ArrayList<>();
+    private void collectDeleteTargets(String root, ZooKeeper zk, TreeWork budget, Set<String> targets) throws KeeperException, InterruptedException {
         java.util.ArrayDeque<String> pending = new java.util.ArrayDeque<>();
         java.util.ArrayDeque<Integer> depths = new java.util.ArrayDeque<>();
+        budget.reserve(1);
+        budget.bytes(root.length() * 3);
         pending.push(root); depths.push(0);
         while (!pending.isEmpty()) {
             String path = pending.pop();
             int depth = depths.pop();
+            if (targets.contains(path)) continue;
             budget.visit(depth);
             Stat stat = zk.exists(path, false);
             if (stat == null) throw new KeeperException.NoNodeException(path);
@@ -457,8 +462,6 @@ public enum ZooKeeperUtil {
                 pending.push(childPath); depths.push(depth + 1);
             }
         }
-        Collections.reverse(targets);
-        for (String path : targets) { budget.checkTime(); zk.delete(path, -1); }
     }
 
     public void deleteLeaves(List<String> leafNames, ZooKeeper zk) throws InterruptedException, KeeperException {
