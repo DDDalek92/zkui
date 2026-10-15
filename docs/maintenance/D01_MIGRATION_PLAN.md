@@ -1,5 +1,7 @@
 # D01：Java17 与历史数据库迁移验收方案
 
+> 当前补充：迁移异常及必需历史表读取失败已改为Jetty启动前非零退出，真实JAR复现/验收见[DATABASE_STARTUP_GATE.md](DATABASE_STARTUP_GATE.md)。插入仍保留best-effort；下方PR #20关于两类异常均继续的描述是历史，不代表门禁实现后的当前行为。完整跨版本迁移仍未放行。
+
 > 后续实现：D01-A/B已在#21整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。D01-C首批跨驱动预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)；普通模式DATETIME阻塞已复现，LEGACY有限夹具通过，完整矩阵仍未完成。下文保存PR #20原始设计及当时阻塞，不是所有步骤的当前通过声明。
 
 2026-10-15；审查基线 `cc231beb306e6a6871160f55ae5b239facfba797`。

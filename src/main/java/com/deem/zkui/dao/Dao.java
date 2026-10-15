@@ -69,8 +69,18 @@ public class Dao {
             }
             //Remove the above line if deploying to prod.
             flyway.migrate();
+            // Migration metadata alone does not prove that the required table still exists.
+            // Check the actual read path without loading history or creating an audit row.
+            try (Connection connection = openConnection();
+                    PreparedStatement statement = connection.prepareStatement(
+                            "SELECT ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP FROM histories WHERE 1 = 0");
+                    ResultSet rows = statement.executeQuery()) {
+                if (rows.next()) throw new SQLException("Unexpected startup probe result");
+            }
         } catch (Exception ex) {
-            logger.error("Error trying to migrate db! Not severe hence proceeding forward.");
+            // Do not attach the JDBC/Flyway exception: drivers can embed URLs or credentials.
+            // Main calls this before constructing/binding Jetty, so failure is not readiness.
+            throw new IllegalStateException("Database initialization failed; server was not started");
         }
         
     }

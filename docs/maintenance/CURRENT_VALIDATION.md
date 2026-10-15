@@ -1,5 +1,7 @@
 # 当前维护验证快照
 
+本轮数据库初始化门禁证据见[DATABASE_STARTUP_GATE.md](DATABASE_STARTUP_GATE.md)及对应Fork PR准确head的Checks。迁移/必需表读取失败已改为启动前停止，审计写失败仍best-effort；不是完整H2/Flyway跨版本迁移放行。
+
 已核对并合并Fork #21：head37369d1127c9729ced003169a4ba27f894823adf，[运行38716523453](https://github.com/DDDalek92/zkui/actions/runs/38716523453)四job全成功；Linux/Windows/macOS的Temurin17各16单元+81集成=97项，0失败/错误/跳过，Chrome3组与Java17非root容器冒烟成功。新增H2隔离预演及其新head验证见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)和对应Fork PR。
 
 当前Java17/Jetty12 EE8/JDBC基线见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)及对应Fork PR准确head的CI。以下保留PR #18/#20的Java8结果和当时阻塞作为历史，不代表Java17的执行结果。
@@ -22,7 +24,7 @@
 
 保留的验收限制：
 
-- 当前仍是Java8/旧Jetty和数据库栈，不是已完成现代Java安全发行版。DEPENDENCIES.md列出Java17/Jetty12、H2/Flyway/MySQL/ZK/模板/传递依赖的迁移和审计队列；依赖树不是漏洞扫描通过报告。
+- 上表Java8/旧Jetty是历史结果；当前Java17/Jetty12已在#21完成，但H2/Flyway/MySQL/ZK/模板/传递依赖的迁移和审计仍未完成。依赖树不是漏洞扫描通过报告，当前不宣称现代Java安全发行版。
 - 未升级/迁移用户历史数据库，没有删除或改写V1/Flyway记录；H2旧库到新库、实际MySQL、新旧版本回滚组合仍需独立验证。
 - 真实AD、LDAPS可信证书链、Kerberos/JAAS、双栈ZK网络、实际nginx/TLS与Firefox真实登录未验证。
 - 30万子节点、原Windows9秒延迟的原配置/网络未复现；普通CI不能说明那些性能问题已解决。
