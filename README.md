@@ -4,9 +4,11 @@ A UI dashboard that allows CRUD operations on Zookeeper.
 
 Requirements
 ====================
-The maintenance build is verified with JDK 8 (including `javac`). Maven 3.9.9 is
-provided by the included Maven Wrapper. JDK 17 builds currently fail in the legacy
-ActiveJDBC instrumentation plugin; newer JDK support remains a separate task.
+The maintenance build requires JDK 17 (including `javac`). Maven 3.9.9 is
+provided by the included Maven Wrapper. Jetty 12 EE8 retains the `javax.servlet`
+application API. History storage uses parameterized JDBC and no longer needs
+ActiveJDBC bytecode instrumentation. H2/Flyway versions and V1 remain unchanged;
+this is not a historical-database format upgrade. Java 8 is no longer supported.
 
 Setup
 ====================
@@ -30,7 +32,8 @@ loopback ZooKeeper servers and use temporary H2 databases; no external ZooKeeper
 Docker, database or production configuration is needed. First use requires
 network access to download Maven and dependencies.
 
-The Java 8 GitHub Actions workflow runs the same command and uploads test reports.
+The Java 17 GitHub Actions workflow runs the same command on Linux, Windows and
+macOS and uploads test reports; Chrome and a non-root Java 17 Docker smoke are also checked.
 See [test strategy](docs/maintenance/TEST_STRATEGY.md) and
 [build validation](docs/maintenance/BUILD_VALIDATION.md) for verified scope and
 remaining security, compatibility and deployment work.
@@ -40,7 +43,7 @@ Technology Stack
 1. Embedded Jetty Server.
 2. Freemarker template.
 3. H2 DB.
-4. Active JDBC.
+4. JDBC history storage.
 5. JSON.
 6. SLF4J.
 7. Zookeeper.

@@ -22,18 +22,18 @@
 | [#80](https://github.com/DeemOpen/zkui/issues/80) | 1 | fixed | Digest访问场景由#10正确添加客户端身份；后端NoAuth仍返回403。 |
 | [#79](https://github.com/DeemOpen/zkui/issues/79) | 0 | documentation | 节点数据/子节点并存及foo/bar占位说明见OPERATIONS；#12显示父节点值，未删除旧占位。 |
 | [#77](https://github.com/DeemOpen/zkui/issues/77) | 1 | not-reproducible | 缺原docker-compose网络/版本证据；#18解释容器localhost，未采用评论的盲目降级。 |
-| [#76](https://github.com/DeemOpen/zkui/issues/76) | 0 | documentation | ActiveJDBC需构建插桩；#2真实JAR历史读写通过；原MySQL/IDE组合未复验，现代JDK迁移仍待做。 |
+| [#76](https://github.com/DeemOpen/zkui/issues/76) | 0 | documentation | 旧版需ActiveJDBC插桩；当前改用参数化JDBC/普通History对象，无需IDE插桩，见JAVA17_VALIDATION.md；原MySQL/IDE组合未复验。 |
 | [#74](https://github.com/DeemOpen/zkui/issues/74) | 0 | enhancement | 不采纳删除AuthFilter；匿名UI需独立角色/CSRF设计，当前仅显式匿名只读REST兼容。 |
 | [#72](https://github.com/DeemOpen/zkui/issues/72) | 6 | not-reproducible | 旧macOS/JDK/Jetty组合不完整，评论存在不同JDK经验；#18仅验证当前macOS14/JDK8组合。 |
 | [#71](https://github.com/DeemOpen/zkui/issues/71) | 1 | documentation | #18本地构建/非root/卷/运行说明；公共镜像发布未授权且未实施。 |
 | [#70](https://github.com/DeemOpen/zkui/issues/70) | 0 | fixed | *.sh LF规则及#18简化exec启动脚本/容器构建验证，消除CRLF解释器问题。 |
 | [#69](https://github.com/DeemOpen/zkui/issues/69) | 2 | fixed | #10增加独立zkAuthScheme/zkAuthCredentials；真实Digest UI/REST验证。 |
-| [#66](https://github.com/DeemOpen/zkui/issues/66) | 0 | documentation | Java10不是当前基线；使用完整JDK8，Java17迁移见DEPENDENCIES；不把旧404视为已复现。 |
+| [#66](https://github.com/DeemOpen/zkui/issues/66) | 0 | documentation | 当前要求Java17，Java10不是支持目标；旧环境404未复现，不能以现代基线代替原根因。 |
 | [#64](https://github.com/DeemOpen/zkui/issues/64) | 0 | fixed | #9 SyncConnected有界等待/会话复用；ConnectionReliabilityIT覆盖延迟及失败释放。 |
 | [#63](https://github.com/DeemOpen/zkui/issues/63) | 0 | deferred | MySQL5.7默认NULL主键DDL问题已确认；须独立方言/历史库迁移，不改已应用V1或删除元数据。 |
 | [#62](https://github.com/DeemOpen/zkui/issues/62) | 2 | fixed | #12显示有子节点的当前节点自身值，保留转义/角色遮蔽，TextAndNodeValuesIT。 |
 | [#61](https://github.com/DeemOpen/zkui/issues/61) | 2 | documentation | 缺/appconfig/hosts需明确初始化；OPERATIONS含示例和chroot/根说明，启动不自动补写。 |
-| [#60](https://github.com/DeemOpen/zkui/issues/60) | 3 | documentation | Java9不是当前基线；历史Jetty升级评论不能替代组合验证，JDK17任务仍未完成。 |
+| [#60](https://github.com/DeemOpen/zkui/issues/60) | 3 | documentation | 当前Java17/Jetty12 EE8整体实现见JAVA17_VALIDATION.md；Java9非支持目标，旧404未复现。 |
 | [#59](https://github.com/DeemOpen/zkui/issues/59) | 0 | fixed | 仅客户端认证部分：#10测试Digest访问；逐节点ACL编辑器尚未实现，作为增强留后续。 |
 | [#57](https://github.com/DeemOpen/zkui/issues/57) | 0 | not-reproducible | 原帖仅图片，缺可复制堆栈/具体配置与版本；记录端口/超时配置排查，不臆断具体值。 |
 | [#56](https://github.com/DeemOpen/zkui/issues/56) | 1 | documentation | BindException端口/进程/实际配置排查见OPERATIONS；不自动停止其他进程，原环境未访问。 |

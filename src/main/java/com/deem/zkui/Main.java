@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Collections;
 import javax.servlet.SessionTrackingMode;
 import java.util.Properties;
-import org.eclipse.jetty.annotations.AnnotationConfiguration;
+import org.eclipse.jetty.ee8.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -34,13 +34,18 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.webapp.Configuration.ClassList;
-import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.ee8.webapp.Configuration;
+import org.eclipse.jetty.ee8.webapp.WebInfConfiguration;
+import org.eclipse.jetty.ee8.webapp.WebXmlConfiguration;
+import org.eclipse.jetty.ee8.webapp.MetaInfConfiguration;
+import org.eclipse.jetty.ee8.webapp.FragmentConfiguration;
+import org.eclipse.jetty.ee8.webapp.JettyWebXmlConfiguration;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
+import org.eclipse.jetty.ee8.webapp.WebAppConfiguration;
 import org.slf4j.LoggerFactory;
 
 public class Main {
@@ -70,42 +75,56 @@ public class Main {
 
         String webFolder = "webapp";
         Server server = new Server();
+        Resource staticResources = ResourceFactory.of(server).newClassLoaderResource(webFolder);
 
         WebAppContext servletContextHandler = new WebAppContext();
         servletContextHandler.setContextPath(contextPath);
+        servletContextHandler.setThrowUnavailableOnStartupException(true);
+        servletContextHandler.setProtectedTargets(new String[]{"/WEB-INF", "/META-INF", "/template"});
         servletContextHandler.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
         servletContextHandler.getSessionHandler().setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
-        servletContextHandler.setResourceBase("src/main/resources/" + webFolder);
-        ClassList clist = ClassList.setServerDefault(server);
-        clist.addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
+        servletContextHandler.setBaseResource(staticResources);
+        // Explicit configuration also works in the assembled JAR, where service files may overlap.
+        servletContextHandler.setConfigurations(new Configuration[]{new WebAppConfiguration(), new WebInfConfiguration(),
+            new WebXmlConfiguration(), new MetaInfConfiguration(), new FragmentConfiguration(),
+            new AnnotationConfiguration(), new JettyWebXmlConfiguration()});
         servletContextHandler.setAttribute("org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern", ".*(/target/classes/|.*.jar)");
         servletContextHandler.setParentLoaderPriority(true);
         servletContextHandler.setInitParameter("useFileMappedBuffer", "false");
         servletContextHandler.setAttribute("globalProps", globalProps);
 
-        ResourceHandler staticResourceHandler = new ResourceHandler();
-        staticResourceHandler.setDirectoriesListed(false);
-        Resource staticResources = Resource.newClassPathResource(webFolder);
+        ResourceHandler staticResourceHandler = new ResourceHandler() {
+            @Override public boolean handle(org.eclipse.jetty.server.Request request,
+                    org.eclipse.jetty.server.Response response, org.eclipse.jetty.util.Callback callback)
+                    throws Exception {
+                String path = org.eclipse.jetty.server.Request.getPathInContext(request);
+                // Only assets bypass authentication, never templates or servlet paths.
+                if (!(path.startsWith("/css/") || path.startsWith("/js/")
+                        || path.startsWith("/images/") || path.startsWith("/fonts/"))) return false;
+                return super.handle(request, response, callback);
+            }
+        };
+        staticResourceHandler.setDirAllowed(false);
         staticResourceHandler.setBaseResource(staticResources);
         staticResourceHandler.setWelcomeFiles(new String[]{"html/index.html"});
 
         org.eclipse.jetty.server.handler.ContextHandler staticContext = new org.eclipse.jetty.server.handler.ContextHandler();
         staticContext.setContextPath(contextPath);
         staticContext.setHandler(staticResourceHandler);
-        Handler indexRedirect = new org.eclipse.jetty.server.handler.AbstractHandler() {
-            @Override public void handle(String target, org.eclipse.jetty.server.Request baseRequest,
-                    javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response)
-                    throws java.io.IOException {
-                String uri = request.getRequestURI();
+        Handler indexRedirect = new Handler.Abstract() {
+            @Override public boolean handle(org.eclipse.jetty.server.Request request,
+                    org.eclipse.jetty.server.Response response, org.eclipse.jetty.util.Callback callback)
+                    throws Exception {
+                String uri = request.getHttpURI().getPath();
                 if (uri.equals(urlPrefix + "/") || (!urlPrefix.isEmpty() && uri.equals(urlPrefix))
                         || uri.equals(urlPrefix + "/html/index.html")) {
-                    response.sendRedirect(urlPrefix + "/home");
-                    baseRequest.setHandled(true);
+                    org.eclipse.jetty.server.Response.sendRedirect(request, response, callback, urlPrefix + "/home");
+                    return true;
                 }
+                return false;
             }
         };
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{indexRedirect, staticContext, servletContextHandler});
+        Handler.Sequence handlers = new Handler.Sequence(indexRedirect, staticContext, servletContextHandler.get());
 
         server.setHandler(handlers);
         HttpConfiguration http_config = new HttpConfiguration();
@@ -114,7 +133,7 @@ public class Main {
         
         if ("true".equalsIgnoreCase(globalProps.getProperty("https", "false"))) {
             File keystoreFile = new File(globalProps.getProperty("keystoreFile"));
-            SslContextFactory sslContextFactory = new SslContextFactory();
+            SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
             sslContextFactory.setKeyStorePassword(globalProps.getProperty("keystorePwd"));
             sslContextFactory.setKeyManagerPassword(globalProps.getProperty("keystoreManagerPwd"));

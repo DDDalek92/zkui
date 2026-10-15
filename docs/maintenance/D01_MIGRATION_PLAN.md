@@ -1,5 +1,7 @@
 # D01：Java17 与历史数据库迁移验收方案
 
+> 后续实现：D01-A/B现已整体改为Java17/Jetty12 EE8及参数化JDBC，详见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。ActiveJDBC3.5-j11候选因旧H2缺getSchema失败，最终未采用。下文保存PR #20的原始测试设计和当时阻塞；跨版本H2/Flyway/MySQL矩阵仍未执行，不能以同驱动V1兼容测试替代。
+
 2026-10-15；审查基线 `cc231beb306e6a6871160f55ae5b239facfba797`。
 **这是待执行的测试设计，不是迁移工具、已通过报告或生产操作指令。**
 本次仅改文档，没有改依赖、V1、数据库文件或应用启动行为。

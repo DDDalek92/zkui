@@ -1,6 +1,6 @@
 # 自动化测试与 CI 规划
 
-> 当前已执行 JDK 8/Maven 构建、单元测试、隔离 ZooKeeper 操作及打包 JAR 的 HTTP 冒烟。Docker、真实浏览器、LDAP 和完整安全回归仍未执行。安全越权行为应定义为不允许并进行修复，而非固化为“正确的旧行为”。验证记录见 [BUILD_VALIDATION.md](BUILD_VALIDATION.md)。
+> 当前命令要求 JDK17，具体已执行范围见 [CURRENT_VALIDATION.md](CURRENT_VALIDATION.md)。下文保留最初 JDK8 测试策略及构建记录作为历史，不代表最新验收状态。测试只使用自建 loopback 服务、合成身份和临时数据库。
 
 ## 已实现的第一批测试
 
@@ -8,9 +8,9 @@
 - `ZooKeeperOperationsIT`：4 项集成用例，覆盖 CRUD、导出/搜索脱敏、导入覆盖策略和 ZooKeeper 只读 ACL 拒绝写入。
 - `PackagedApplicationIT`：1 项完整 HTTP 冒烟，启动真正的胖 JAR，验证匿名跳转、登录、首页树、节点创建/修改/删除、导出、历史落库及退出后的会话访问。
 - `mvnw` / `mvnw.cmd` 固定 Maven 3.9.9，并校验发行包 SHA-256；JUnit 4.13.2 与 Surefire/Failsafe 3.2.5 只负责测试。
-- CI 使用 JDK 8，执行 `./mvnw -B -ntp clean verify`，保留报告；测试数量为零将失败。CI 的远程运行状态应查看 PR 检查，不能以本地通过代替远程通过。
+- CI 使用 JDK17，执行 `./mvnw -B -ntp clean verify`，保留报告；测试数量为零将失败。CI 的远程运行状态应查看 PR 检查，不能以本地通过代替远程通过。
 
-运行：Linux/macOS `./mvnw clean verify`；Windows PowerShell `.\mvnw.cmd clean verify`。JDK 8 须自行安装，Wrapper 只负责 Maven。
+运行：Linux/macOS `./mvnw clean verify`；Windows PowerShell `.\mvnw.cmd clean verify`。JDK17 须自行安装，Wrapper 只负责 Maven；不再需要 ActiveJDBC 插桩。
 
 隔离：测试不接受外部 ZooKeeper 地址；嵌入式服务只绑定 `127.0.0.1`、随机端口，数据库和配置位于临时目录。测试进程在 finally 中退出。HTTP 用例使用模拟随机密码。已新增 `ImportAuthorizationIT` 的 6 项 HTTP 权限回归，覆盖 USER/未知角色拒绝、匿名跳转、解析及远程取文件前拒绝、ADMIN 正常操作。另有 `RestAccessIT` 的 10 项回归，覆盖默认/缺失/非法/旧配置、角色、匿名兼容、混合大小写密码字段、参数错误及精确路由。当前共 3 个单元测试、21 个集成测试。仍没有 MySQL、Digest/LDAP 或 CSRF 测试，不能据此宣称权限安全已验收。
 

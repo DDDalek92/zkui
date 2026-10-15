@@ -27,7 +27,7 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 阶段1已完成 #16；Java17/Jetty12与数据库迁移仍待实现；隔离/失败注入/回滚验收已拆为D01-A至E，见[D01_MIGRATION_PLAN.md](D01_MIGRATION_PLAN.md)；本轮执行环境中断，未新增代码验证 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #16阶段1完成；D01-A/B已实现Java17/Jetty12 EE8及JDBC替换旧ORM，见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)和对应Fork PR的准确head CI；D01-C/D/E历史数据库跨版本迁移/实际MySQL/审计仍待执行 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 待处理，不能用普通CRUD替代 |
@@ -36,18 +36,18 @@
 
 ## 上游 PR 逐项清单
 
-14项全部完成本轮差异/讨论审查并给出处置：8项整合，#41部分重写，#105部分重写；#93/#104/#103/#102延期。延期/部分采纳不等于全部功能修复，后续依赖工作仍在D01。；其他条目见逐项状态，预审见 PR_REVIEW.md。
+14项全部完成本轮差异/讨论审查并给出处置：8项整合，#41部分重写，#105日志/Jetty部分重写；#93/#104由Java17/Jetty12 EE8整体方案替代，#103/#102仍延期。替代/部分采纳/延期不等于全部功能修复，数据库与其余依赖工作仍在D01；见PR_REVIEW.md。
 
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
 | [#110](https://github.com/DeemOpen/zkui/pull/110) | table sorting | rewritten，chenws1012 原贡献；Fork PR #14，本地脚本及真实模板浏览器检查 |
 | [#109](https://github.com/DeemOpen/zkui/pull/109) | correctly display value with new lines | adopted，gouzhuang 原贡献；Fork PR #8，OutputSafetyIT |
 | [#107](https://github.com/DeemOpen/zkui/pull/107) | Add ldap auth | rewritten，zhangdong1015 原贡献；Fork PR #11 |
-| [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | rewritten（日志部分），Jetty/MySQL迁移deferred；Fork PR #16 |
-| [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | deferred，目标已EOL且需JDK11；改走Java17/Jetty12兼容迁移，D01 |
+| [#105](https://github.com/DeemOpen/zkui/pull/105) | Update pom.xml | rewritten（日志/Jetty部分），MySQL迁移仍deferred；#16及JAVA17_VALIDATION.md |
+| [#104](https://github.com/DeemOpen/zkui/pull/104) | Bump jetty-server from 9.4.26.v20200117 to 10.0.10 | superseded：Java17/Jetty12.1.14全部Core/EE8模块迁移，不采用已EOL的10.0.10；JAVA17_VALIDATION.md |
 | [#103](https://github.com/DeemOpen/zkui/pull/103) | Bump mysql-connector-java from 8.0.16 to 8.0.28 | deferred，待新驱动及真实MySQL/历史库验证，D01/V01 |
 | [#102](https://github.com/DeemOpen/zkui/pull/102) | Bump h2 from 1.3.174 to 2.1.210 | deferred，不直接打开旧库；导出/新建/导入和回滚验证，D01/V01 |
-| [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | deferred，javax/Jakarta及JDK兼容，目标已EOL；D01 |
+| [#93](https://github.com/DeemOpen/zkui/pull/93) | Bump jetty.version from 9.4.26.v20200117 to 11.0.1 | superseded：Java17/Jetty12 EE8保留javax，整体迁移代替已EOL的Jetty11；JAVA17_VALIDATION.md |
 | [#88](https://github.com/DeemOpen/zkui/pull/88) | solve chinese messy code | rewritten，vzardlloo 原贡献；Fork PR #12，US-ASCII JVM 端到端测试 |
 | [#87](https://github.com/DeemOpen/zkui/pull/87) | fix the format error in annotation of defaultAcl | rewritten，Fork PR #10，DigestAuthenticationIT/配置校验 |
 | [#86](https://github.com/DeemOpen/zkui/pull/86) | Support multiple ZooKeeper server addresses | rewritten，wupeixuan 原贡献；Fork PR #9 |
@@ -77,18 +77,18 @@
 | [#80](https://github.com/DeemOpen/zkui/issues/80) | 如果有的节点是digest,登录成功会报错,提示 /node has no auth | fixed；Digest访问场景由#10正确添加客户端身份；后端NoAuth仍返回403。 |
 | [#79](https://github.com/DeemOpen/zkui/issues/79) | 创建节点与目录是怎么区分的？ | documentation；节点数据/子节点并存及foo/bar占位说明见OPERATIONS；#12显示父节点值，未删除旧占位。 |
 | [#77](https://github.com/DeemOpen/zkui/issues/77) | docker 安装之后登录KeeperErrorCode = ConnectionLoss for / | not-reproducible；缺原docker-compose网络/版本证据；#18解释容器localhost，未采用评论的盲目降级。 |
-| [#76](https://github.com/DeemOpen/zkui/issues/76) | failed to determine Model class name, are you sure models have been instrumented? | documentation；ActiveJDBC需构建插桩；#2真实JAR历史读写通过；原MySQL/IDE组合未复验，现代JDK迁移仍待做。 |
+| [#76](https://github.com/DeemOpen/zkui/issues/76) | failed to determine Model class name, are you sure models have been instrumented? | documentation；旧插桩已由JDBC/普通History对象替代，见JAVA17_VALIDATION.md；原MySQL/IDE组合未复验。 |
 | [#74](https://github.com/DeemOpen/zkui/issues/74) | Disable login function without password | enhancement；不采纳删除AuthFilter；匿名UI需独立角色/CSRF设计，当前仅显式匿名只读REST兼容。 |
 | [#72](https://github.com/DeemOpen/zkui/issues/72) | mac环境下不能运行 | not-reproducible；旧macOS/JDK/Jetty组合不完整，评论存在不同JDK经验；#18仅验证当前macOS14/JDK8组合。 |
 | [#71](https://github.com/DeemOpen/zkui/issues/71) | docker support | documentation；#18本地构建/非root/卷/运行说明；公共镜像发布未授权且未实施。 |
 | [#70](https://github.com/DeemOpen/zkui/issues/70) | bootstrap.sh can't support Unix. | fixed；*.sh LF规则及#18简化exec启动脚本/容器构建验证，消除CRLF解释器问题。 |
 | [#69](https://github.com/DeemOpen/zkui/issues/69) | can it support zookeeper password settings? | fixed；#10增加独立zkAuthScheme/zkAuthCredentials；真实Digest UI/REST验证。 |
-| [#66](https://github.com/DeemOpen/zkui/issues/66) | Can Java 10 Run? | documentation；Java10不是当前基线；使用完整JDK8，Java17迁移见DEPENDENCIES；不把旧404视为已复现。 |
+| [#66](https://github.com/DeemOpen/zkui/issues/66) | Can Java 10 Run? | documentation；当前要求Java17，Java10非支持目标；旧环境404不视为已复现，见JAVA17_VALIDATION.md。 |
 | [#64](https://github.com/DeemOpen/zkui/issues/64) | Did not wait for the zk session caused every operation become very slow | fixed；#9 SyncConnected有界等待/会话复用；ConnectionReliabilityIT覆盖延迟及失败释放。 |
 | [#63](https://github.com/DeemOpen/zkui/issues/63) | All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead | deferred；MySQL5.7默认NULL主键DDL问题已确认；须独立方言/历史库迁移，不改已应用V1或删除元数据。 |
 | [#62](https://github.com/DeemOpen/zkui/issues/62) | 当某节点下有子节点时，其 value 在UI中不显示 | fixed；#12显示有子节点的当前节点自身值，保留转义/角色遮蔽，TextAndNodeValuesIT。 |
 | [#61](https://github.com/DeemOpen/zkui/issues/61) | KeeperErrorCode = NoNode for /appconfig/hosts  | documentation；缺/appconfig/hosts需明确初始化；OPERATIONS含示例和chroot/根说明，启动不自动补写。 |
-| [#60](https://github.com/DeemOpen/zkui/issues/60) | Can not work in JDK1.9 environment | documentation；Java9不是当前基线；历史Jetty升级评论不能替代组合验证，JDK17任务仍未完成。 |
+| [#60](https://github.com/DeemOpen/zkui/issues/60) | Can not work in JDK1.9 environment | documentation；当前Java17/Jetty12 EE8整体实现见JAVA17_VALIDATION.md；Java9非支持目标，旧404未复现。 |
 | [#59](https://github.com/DeemOpen/zkui/issues/59) | node's children with ACL setting cannot be listed. | fixed；仅客户端认证部分：#10测试Digest访问；逐节点ACL编辑器尚未实现，作为增强留后续。 |
 | [#57](https://github.com/DeemOpen/zkui/issues/57) | NumberFormatException while bringing up zkui on linux | not-reproducible；原帖仅图片，缺可复制堆栈/具体配置与版本；记录端口/超时配置排查，不臆断具体值。 |
 | [#56](https://github.com/DeemOpen/zkui/issues/56) | Exception in thread "main" java.net.BindException: Address already in use | documentation；BindException端口/进程/实际配置排查见OPERATIONS；不自动停止其他进程，原环境未访问。 |

@@ -19,11 +19,15 @@ package com.deem.zkui.dao;
 
 import com.deem.zkui.domain.History;
 import com.googlecode.flyway.core.Flyway;
-import java.util.Arrays;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.javalite.activejdbc.Base;
 import org.slf4j.LoggerFactory;
 
 public class Dao {
@@ -45,12 +49,14 @@ public class Dao {
     
     public int getHistoryLimit() { return historyLimit; }
 
-    public void open() {
-        Base.open(globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"), globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
-    }
-    
-    public void close() {
-        if (Base.hasConnection()) Base.close();
+    protected Connection openConnection() throws SQLException {
+        try {
+            Class.forName(globalProps.getProperty("jdbcClass"));
+        } catch (ClassNotFoundException ex) {
+            throw new SQLException("Configured JDBC driver is unavailable", ex);
+        }
+        return DriverManager.getConnection(globalProps.getProperty("jdbcUrl"),
+                globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd"));
     }
     
     public void checkNCreate() {
@@ -70,44 +76,55 @@ public class Dao {
     }
     
     public List<History> fetchHistoryRecords() {
-        try {
-            this.open();
-            List<History> history = History.findAll().orderBy("ID desc").limit(historyLimit);
-            history.size();
-            return history;
-        } finally {
-            this.close();
-        }
+        return fetchHistory(null, false);
     }
 
     public List<History> fetchHistoryRecordsByNode(String historyNode) {
-        try {
-            this.open();
-            List<History> history = History.where("CHANGE_SUMMARY like ?", historyNode).orderBy("ID desc").limit(historyLimit);
-            history.size();
+        return fetchHistory(historyNode, true);
+    }
+
+    private List<History> fetchHistory(String filter, boolean filtered) {
+        String sql = "SELECT ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP FROM histories"
+                + (filtered ? " WHERE CHANGE_SUMMARY LIKE ?" : "") + " ORDER BY ID DESC LIMIT ?";
+        try (Connection connection = openConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            int parameter = 1;
+            if (filtered) statement.setString(parameter++, filter);
+            statement.setInt(parameter, historyLimit);
+            List<History> history = new ArrayList<>();
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    History row = new History();
+                    row.setId(rows.getLong("ID"));
+                    row.setChangeUser(rows.getString("CHANGE_USER"));
+                    row.setChangeDate(rows.getTimestamp("CHANGE_DATE"));
+                    row.setChangeSummary(rows.getString("CHANGE_SUMMARY"));
+                    row.setChangeIp(rows.getString("CHANGE_IP"));
+                    history.add(row);
+                }
+            }
             return history;
-        } finally {
-            this.close();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("History query failed", ex);
         }
     }
 
     public void insertHistory(String user, String ipAddress, String summary) {
-        try {
-            this.open();
+        try (Connection connection = openConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "INSERT INTO histories (CHANGE_USER, CHANGE_IP, CHANGE_SUMMARY, CHANGE_DATE) VALUES (?, ?, ?, ?)")) {
             //To avoid errors due to truncation.
             if (summary.length() >= 500) {
                 summary = summary.substring(0, 500);
             }
-            History history = new History();
-            history.setChangeUser(user);
-            history.setChangeIp(ipAddress);
-            history.setChangeSummary(summary);
-            history.setChangeDate(new Date());
-            history.save();
+            statement.setString(1, user);
+            statement.setString(2, ipAddress);
+            statement.setString(3, summary);
+            statement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+            statement.executeUpdate();
         } catch (Exception ex) {
-            logger.error(Arrays.toString(ex.getStackTrace()));
-        } finally {
-            this.close();
+            // Preserve the existing best-effort audit policy; never log row values or credentials.
+            logger.error("History insert failed");
         }
         
     }
