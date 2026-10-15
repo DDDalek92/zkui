@@ -15,6 +15,7 @@
 - 本地稳定文本排序保留选择和编辑事件，键盘/aria-sort支持，不增加CDN。
 - 有界历史条数、缺失配置默认值、数据库异常连接关闭；日志替换为reload4j、上传组件升级，依赖清单与后续迁移队列明确。
 - 本地多阶段容器构建、固定Temurin摘要、非root运行、历史卷及直接环境覆盖；make默认只构建。
+- Java17编译/运行/CI/容器与Jetty12 EE8整体迁移；历史记录改用参数化JDBC，移除旧ORM和插桩。具体新基线验证见JAVA17_VALIDATION.md；H2/Flyway/V1没有升级或改写。
 
 ## 升级现有调用者时的变化
 
@@ -24,11 +25,12 @@
 4. 上传限制可能拒绝旧的大文件/长文件名头；远程导入需明确开启并列出完整可信URL。
 5. 环境变量以docker/Docker.md为准，旧第三方镜像变量不兼容。持久化历史卷和只读配置的权限需匹配容器UID10001。
 6. 历史默认50条，historyLimit为1–1000；非法配置启动失败。只有显式env=dev会使用旧清库模式，不要对保留数据使用它。
+7. 新构建要求JDK17，不再支持Java8或IDE ActiveJDBC插桩流程；仅css/js/images/fonts资产直接公开，模板/WEB-INF/META-INF不由静态处理器公开。
 
 ## 验证和放行状态
 
 [运行38698340364](https://github.com/DDDalek92/zkui/actions/runs/38698340364)：Linux/Windows/macOS各92项Java通过，Chrome3组通过，Docker构建/非root/登录/资源通过。具体版本、失败修正和限制见CURRENT_VALIDATION.md。
 
-正式发行仍阻塞于DEPENDENCIES.md中的Java17/Jetty12、历史H2/Flyway/MySQL迁移/恢复及其余老组件审计；还缺真实AD/LDAPS、双栈、nginx/TLS、Firefox真实登录和超大树验证。旧文本导出不是无损二进制备份，父节点数据导出/超大树工作量边界仍有缺口。46个Issue的文档/增强/延期/无法复现分类并不等于全部故障修复。
+Java17新基线与上述Java8历史结果分开，验收见JAVA17_VALIDATION.md。正式发行仍阻塞于DEPENDENCIES.md中的历史H2/Flyway/MySQL迁移/恢复及其余老组件审计；还缺真实AD/LDAPS、双栈、nginx/部署TLS、Firefox真实登录和超大树验证。旧文本导出不是无损二进制备份，父节点数据导出/超大树工作量边界仍有缺口。46个Issue的文档/增强/延期/无法复现分类并不等于全部故障修复。
 
 继续执行TASKS.md中的未完成项；新功能需求按增强队列处理，不以关闭上游Issue充当完成证据。

@@ -4,9 +4,9 @@
 
 ## 构建、JDK与数据库
 
-- #51：使用完整JDK8，JAVA_HOME指向JDK根，PATH能找到javac；用./mvnw --version核对实际工具链。只装JRE不能运行编译器。
-- #76：History继承ActiveJDBC Model，构建需要process-classes插桩。用./mvnw clean verify生成并运行带依赖JAR，避免从未插桩IDE目录直接启动。真实JAR历史持久化已测；原MySQL/IDE环境未复验，JDK17兼容仍见DEPENDENCIES.md。
-- #60/#66/#72：进程启动不等于Servlet注册正常。记录JDK、Jetty、打包方式、/login状态和启动日志；历史Jetty升级经验不代表所有组合已验。当前JDK8基线三平台已通过，JDK9/10不是新维护目标。
+- #51：当前使用完整JDK17，JAVA_HOME指向JDK根，PATH能找到javac；用./mvnw --version核对实际工具链。只装JRE不能运行编译器，Java8不再受支持。
+- #76：旧版History继承ActiveJDBC Model，曾需process-classes插桩。当前已改为参数化JDBC和普通History对象，移除该构建插件，无需IDE插桩。用./mvnw clean verify生成并验证带依赖JAR；原MySQL/IDE环境未复验，见JAVA17_VALIDATION.md。
+- #60/#66/#72：进程启动不等于Servlet注册正常。记录JDK、Jetty、打包方式、/login状态和启动日志；历史Jetty升级经验不代表所有组合已验。当前工具链要求JDK17，历史JDK8结果与现代基线分开记录，JDK9/10不是支持目标。
 - #95：初始化SQL位于src/main/resources/db/migration/V1__Core.sql，由Flyway启动迁移。env=dev会清库，只用于可丢弃数据；缺env默认生产行为。
 - #63：MySQL5.7不接受原id bigint default null auto_increment primary key，而MariaDB行为不同。不要删除schema_version或改写已应用V1；须单独提供空库/已有库的方言迁移、备份和恢复验证。H2通过不能替代MySQL。
 - H2跨大版本遵循原驱动导出、新库导入、核对和回滚路线，不把新驱动指向唯一旧库，不自动迁移用户数据。
@@ -48,7 +48,7 @@ ADMIN/CSRF/UTF-8/大小/整批路径校验同UI，成功302。JSON/纯文本新�
 ## 登录、代理、容器和功能边界
 
 - #90/#111/#70/#71：本地镜像、变量/凭据/卷及LF脚本见docker/Docker.md；其他镜像的ZKUI_ADMIN_PW不属于本项目，不保证公共zkui:latest存在。
-- #14/#100：baseURL与代理保留同一前缀，链接/表单/资源/cookie及nginx示例见README；真实nginx/TLS未运行。
+- #14/#100：baseURL与代理保留同一前缀，链接/表单/资源/cookie及nginx示例见README；本轮新增临时证书的应用HTTPS及显式代理头信任开关测试，真实nginx/部署TLS仍未运行。
 - #94：原Ubuntu18.04.5、具体Firefox/Chrome版本、Cookie/网络/控制台证据缺失；当前Chrome检查不等于Firefox真实登录已验。
 - #52/#106：LDAP身份、精确角色、DN模板、超时、LDAPS信任见README。隔离LDAP已测，原AD/证书链未访问，#106无正文环境。
 - #74：保留UI登录和ADMIN/CSRF；匿名只读REST兼容不提供匿名UI写入，不采纳删除过滤器。

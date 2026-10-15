@@ -58,4 +58,16 @@ public class ContextPathIT {
         target(app.post("/logout", "", cookie), "/zkui/login");
         target(app.get("/home", cookie), "/zkui/login");
     }
+
+    @Test public void onlyPublicAssetsBypassAuthenticationAndTemplatesStayPrivate() throws Exception {
+        String cookie = app.login("test-admin");
+        for (String path : new String[]{"/template/login.ftl.html", "/WEB-INF/web.xml", "/META-INF/MANIFEST.MF"}) {
+            assertEquals(path, 404, app.get(path, cookie).status);
+            assertNotEquals(path, 200, app.get(path, null).status);
+        }
+        for (String path : new String[]{"/css/", "/js/", "/images/", "/fonts/", "/css/../template/login.ftl.html"}) {
+            assertNotEquals("No directory listing or template traversal: " + path, 200, app.get(path, cookie).status);
+        }
+        assertEquals(200, app.get("/fonts/glyphicons-halflings-regular.woff", null).status);
+    }
 }

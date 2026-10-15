@@ -21,6 +21,7 @@ final class TestApplication extends ExternalResource {
     private final String password = UUID.randomUUID().toString();
     private IsolatedZooKeeper server;
     private Process process;
+    private javax.net.ssl.SSLContext testTls;
     ZooKeeper observer;
     String base;
 
@@ -54,6 +55,10 @@ final class TestApplication extends ExternalResource {
             for (int i = 0; i < overrides.length; i += 2) {
                 if (overrides[i + 1] == null) config.remove(overrides[i]);
                 else config.setProperty(overrides[i], overrides[i + 1]);
+            }
+            if (Boolean.parseBoolean(config.getProperty("testHttps", "false"))) {
+                configureTestTls(config, work);
+                base = base.replace("http:", "https:");
             }
             String context = config.getProperty("baseURL", "/");
             if (!"/".equals(context)) base += context.endsWith("/") ? context.substring(0, context.length() - 1) : context;
@@ -118,6 +123,33 @@ final class TestApplication extends ExternalResource {
 
     private String user(String username, String role) {
         return "{\"username\":\"" + username + "\",\"password\":\"" + password + "\",\"role\":\"" + role + "\"}";
+    }
+
+    private void configureTestTls(Properties config, File work) throws Exception {
+        File keystore = new File(work, "test-tls.p12");
+        File keytoolLog = new File(work, "keytool.log");
+        Process keytool = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/keytool").getAbsolutePath(),
+                "-genkeypair", "-alias", "zkui-test", "-keyalg", "RSA", "-keysize", "2048", "-validity", "2",
+                "-dname", "CN=localhost", "-ext", "SAN=IP:127.0.0.1,DNS:localhost", "-storetype", "PKCS12",
+                "-keystore", keystore.getAbsolutePath(), "-storepass", password, "-keypass", password, "-noprompt")
+                .redirectErrorStream(true).redirectOutput(keytoolLog).start();
+        if (!keytool.waitFor(30, TimeUnit.SECONDS)) {
+            keytool.destroyForcibly();
+            keytool.waitFor(5, TimeUnit.SECONDS);
+            throw new AssertionError("Timed out generating isolated TLS fixture");
+        }
+        if (keytool.exitValue() != 0) throw new AssertionError("Failed generating isolated TLS fixture");
+        java.security.KeyStore trust = java.security.KeyStore.getInstance("PKCS12");
+        try (InputStream in = new FileInputStream(keystore)) { trust.load(in, password.toCharArray()); }
+        javax.net.ssl.TrustManagerFactory managers = javax.net.ssl.TrustManagerFactory.getInstance(
+                javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm());
+        managers.init(trust);
+        testTls = javax.net.ssl.SSLContext.getInstance("TLS");
+        testTls.init(null, managers.getTrustManagers(), null);
+        config.setProperty("https", "true");
+        config.setProperty("keystoreFile", keystore.getAbsolutePath());
+        config.setProperty("keystorePwd", password);
+        config.setProperty("keystoreManagerPwd", password);
     }
 
     void create(String path, String value) throws Exception {
@@ -187,6 +219,9 @@ final class TestApplication extends ExternalResource {
 
     Reply requestWithToken(String path, String body, String cookie, String contentType, String token) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(base + path).openConnection();
+        if (testTls != null) {
+            ((javax.net.ssl.HttpsURLConnection) connection).setSSLSocketFactory(testTls.getSocketFactory());
+        }
         connection.setConnectTimeout(1000);
         connection.setReadTimeout(5000);
         connection.setInstanceFollowRedirects(false);

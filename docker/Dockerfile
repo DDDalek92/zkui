@@ -1,10 +1,10 @@
-FROM eclipse-temurin:8-jdk-jammy@sha256:a42a161e0edc7f0d3815bcfa22ce6d969fb48f69d0d17d4a1affd9800b455385 AS build
+FROM eclipse-temurin:17-jdk-jammy@sha256:43f4431cc895d37ceb115e2e1f160545ec45caee9c1cb4246fc6bb879d58aeda AS build
 RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY . .
 RUN ./mvnw -B -ntp -DskipTests package
 
-FROM eclipse-temurin:8-jre-jammy@sha256:bbd3fa148819097f0bd441524ef72cf730341faa89d137059252581dbcc58ab0
+FROM eclipse-temurin:17-jre-jammy@sha256:8993f1aed8b25fcea7a7047a7949c1866fa558fc6830d938c22c4f13b26be9d7
 WORKDIR /var/app
 RUN mkdir -p /var/app/data && chown -R 10001:10001 /var/app
 COPY --from=build --chown=10001:10001 /build/target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar /var/app/zkui.jar
