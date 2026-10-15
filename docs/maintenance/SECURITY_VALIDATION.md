@@ -123,3 +123,7 @@ baseURL配置规范化为本地路径前缀（默认/，支持尾斜杠）；拒
 容器改为从仓库根多阶段构建、Temurin8运行时、UID/GID10001、/var/app/data历史卷；不发布镜像。Make默认只build，publish需明确镜像目标。启动脚本LF/exec，不在运行时sed用户配置。Main统一读取ZK_SERVER/USER_SET/LOGIN_MESSAGE/ZKUI_BASEURL，允许只读config挂载，测试进程默认剥离宿主这些变量防止连到非测试服务。
 
 EnvironmentOverridesIT用与文件刻意冲突的合成环境身份、真实loopback ZK和上下文验证优先级、中文/HTML转义、写入；配置单元覆盖斜杠/反斜杠/JSON原值。完整本地Java8 verify92项（16单元+76集成）通过，sh/Python语法检查通过。本机没有Docker命令；新增CI容器构建/非root/前缀登录和资源冒烟、Java8 Windows2022/macOS14/Linux完整回归，结果须以各平台CI为准。不能将Linux本地通过写成全部平台已通过；尚无真实数据库迁移/LDAPS或镜像漏洞扫描结果。
+
+## 跨平台和容器CI最终结果（Fork #18）
+
+运行38698340364：Ubuntu24.04/Temurin8、Windows2022/Temurin8、macOS14/Zulu8各自16单元+76集成=92项，0失败/错误/跳过；Linux Chrome3组通过。Docker从固定Temurin镜像摘要构建，检查UID/GID10001及合成身份/环境/前缀登录/资源均通过。第一次macOS因Temurin8 ARM包不可用停止在安装阶段，改Zulu；Docker缺unzip导致Wrapper取tar.gz与ZIP校验值不匹配，补unzip并保持校验。没有关闭失败检查或绕过校验。完整范围见CURRENT_VALIDATION.md，数据库迁移/真实AD与LDAPS/双栈/原历史性能环境仍未验。

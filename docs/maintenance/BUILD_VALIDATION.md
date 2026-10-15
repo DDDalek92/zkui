@@ -1,6 +1,6 @@
 # 构建和首批测试验证记录
 
-> 后续进度：文档 PR #1、测试基线 PR #2、导入权限 PR #3 已审查合并；SEC-01/02 的复现和修复详见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md)。下文 8 项测试及未验证列表记录初始构建基线，不代表当前全部进度。
+> 当前三平台/Chrome/容器结果见 [CURRENT_VALIDATION.md](CURRENT_VALIDATION.md)；本页保留最初基线。后续进度：文档 PR #1、测试基线 PR #2、导入权限 PR #3 已审查合并；SEC-01/02 的复现和修复详见 [SECURITY_VALIDATION.md](SECURITY_VALIDATION.md)。下文 8 项测试及未验证列表记录初始构建基线，不代表当前全部进度。
 
 日期：2026-10-15（Asia/Singapore）。上游应用基线 `1b3e7c133ab76a26c9c5b3653679d77d0cd6358d`；承接 Fork 文档分支 `maintenance/baseline` 的 `c4d0292dcc198ee776ab129bcb2254e55cad4c42`。本轮分支：`maintenance/test-baseline`。
 
