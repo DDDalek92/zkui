@@ -1,5 +1,11 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前接续：结构与约束预演
+
+#30已核对最终head `9a07fe869e9b7b5a979b87ed5284641847968e8c` 的[运行38771117277](https://github.com/DDDalek92/zkui/actions/runs/38771117277)六job成功后合并，三平台各119项、Chrome3组、容器/MySQL/旧ZK检查通过；master现为 `1f8058befd2e4602c592bf92d27d99635336f436`。下方“尚待#30组合验证/本地环境不可用”为当时快照，不再是当前状态。
+
+本地执行环境已恢复，基于该最新master的隔离检出补齐H2历史表语义结构、PK/索引、可空性、自增及实际约束/边界探测，新增行不变而DDL变宽的拒绝用例，见[H2_SCHEMA_VALIDATION.md](H2_SCHEMA_VALIDATION.md)。本地clean verify返回0，完整JUnit XML/Failsafe汇总为16单元+104集成=120项，0失败/错误/跳过；文本日志尾部截断，不据此声称完整日志已保存。准确head六job仍须独立核验。当前master的push运行38771830646也已查询为success（不是将PR专用查询的空列表当作无CI）。未切换运行时H2/Flyway，完整应用及锁/中断/不可写/差量恢复仍未完成。
+
 ## 2026-10-15 接续说明
 
 Fork #31已由准确head `c93dcfffba4de65539fe8f634190ba3f81d1d4ac`、[运行38745592386](https://github.com/DDDalek92/zkui/actions/runs/38745592386)六job成功后合并，三平台各117项。hosts初始化默认关闭；显式覆盖采用观察到的ZK版本号，不具备ZK/JDBC共享事务。

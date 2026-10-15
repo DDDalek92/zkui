@@ -1,5 +1,7 @@
 # H2 旧库隔离迁移预演（不是应用驱动升级）
 
+> 后续增量：Flyway桥接见[FLYWAY_BRIDGE_REHEARSAL.md](FLYWAY_BRIDGE_REHEARSAL.md)；固定V1的语义结构/PK/索引/可空性/自增与约束执行、DDL漂移拒绝见[H2_SCHEMA_VALIDATION.md](H2_SCHEMA_VALIDATION.md)。下文100项及待办是首批预演历史，完整应用/驱动切换和故障/差量恢复仍未完成。
+
 2026-10-15；基线Fork #21，`f1dee98e642f2d1a8dbd61585886b5e1fcdaaf0b`。
 这是D01-C的第一组可重复实验，不是生产迁移工具，也不是全部迁移矩阵通过。
 运行时仍H2 1.3.174/Flyway2.2.1，V1未改。上游#102仍deferred。
