@@ -1,19 +1,13 @@
-NAME = zkui
-VERSION=2.0-SNAPSHOT
+IMAGE ?= zkui:local
 
 .PHONY: all build publish
-
-all: build publish
+all: build
 
 build:
-	mvn clean install
-	cp config.cfg docker
-	cp target/$(NAME)-*-jar-with-dependencies.jar docker
-	docker build -t $(NAME):$(VERSION) --no-cache --rm docker
-	rm docker/$(NAME)-*.jar
-	rm docker/config.cfg
+	docker build -f docker/Dockerfile -t "$(IMAGE)" .
 
+# Publishing is an explicit operator action; no guessed registry or implicit push.
 publish:
-	docker tag $(NAME):$(VERSION) $(NAME):$(VERSION)
-	docker tag $(NAME):$(VERSION) $(NAME):latest
-	docker push $(NAME)
+	@test -n "$(PUBLISH_IMAGE)" || { echo 'Set PUBLISH_IMAGE=registry/namespace/zkui:tag'; exit 2; }
+	docker tag "$(IMAGE)" "$(PUBLISH_IMAGE)"
+	docker push "$(PUBLISH_IMAGE)"

@@ -6,3 +6,5 @@ zkui.iml
 *.log
 
 /node_modules/
+
+__pycache__/

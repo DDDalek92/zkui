@@ -1,0 +1,6 @@
+.git
+.idea
+node_modules
+target
+*.log
+*.h2.db

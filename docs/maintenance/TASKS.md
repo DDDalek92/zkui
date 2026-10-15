@@ -29,7 +29,7 @@
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
 | D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | 阶段1已完成 #16（日志/上传/依赖树），Java17/Jetty12和数据库迁移仍待实现；见DEPENDENCIES.md |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 待处理 |
-| V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | 待处理，不能用 Linux/JDK8 结果替代 |
+| V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | Fork PR #18新增容器与三平台CI；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
 | V02 | 验收维护版、已知限制和发布说明 | 待处理 |
 
 ## 上游 PR 逐项清单
@@ -60,7 +60,7 @@
 | 上游 | 标题 | 状态/最终证据 |
 | --- | --- | --- |
 | [#112](https://github.com/DeemOpen/zkui/issues/112) | 连接带有户名和密码的zk | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
-| [#111](https://github.com/DeemOpen/zkui/issues/111) | Unable to find image 'zkui:latest' locally | 待处理 |
+| [#111](https://github.com/DeemOpen/zkui/issues/111) | Unable to find image 'zkui:latest' locally | documentation/fixed本地构建链路，Fork PR #18；不声称已发布公共镜像 |
 | [#108](https://github.com/DeemOpen/zkui/issues/108) | Does zkui support ipv4/ipv6? | 待处理 |
 | [#106](https://github.com/DeemOpen/zkui/issues/106) | LDAP 无法正常登录 | not-reproducible，原 Issue 无正文和环境，不能声称已复现；排查说明见 Fork PR #11 |
 | [#100](https://github.com/DeemOpen/zkui/issues/100) | How to change base url | fixed，Fork PR #17，ContextPathIT/带前缀浏览器页面 |
@@ -69,7 +69,7 @@
 | [#95](https://github.com/DeemOpen/zkui/issues/95) | 没有看见初始化表结构的sql | 待处理 |
 | [#94](https://github.com/DeemOpen/zkui/issues/94) | Login not working on Firefox, works on Chrome | 待处理 |
 | [#92](https://github.com/DeemOpen/zkui/issues/92) | Log in successfully and report an error | 待处理 |
-| [#90](https://github.com/DeemOpen/zkui/issues/90) | 请教密码是多少？为甚么我死活登录不上去？ | 待处理 |
+| [#90](https://github.com/DeemOpen/zkui/issues/90) | 请教密码是多少？为甚么我死活登录不上去？ | documentation，Fork PR #18；本项目USER_SET及sample admin/manager，非第三方镜像变量 |
 | [#85](https://github.com/DeemOpen/zkui/issues/85) | The execution time of the zk.getChildren() method in Windos is 9s, but in Linux it is 1s | 待处理 |
 | [#84](https://github.com/DeemOpen/zkui/issues/84) | 在windos环境下启动服务查看节点时的响应速度比linux环境下启动服务查看节点的响应速度慢了好几倍,大概(9s:1s) | 待处理 |
 | [#80](https://github.com/DeemOpen/zkui/issues/80) | 如果有的节点是digest,登录成功会报错,提示 /node has no auth | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
@@ -78,8 +78,8 @@
 | [#76](https://github.com/DeemOpen/zkui/issues/76) | failed to determine Model class name, are you sure models have been instrumented? | 待处理 |
 | [#74](https://github.com/DeemOpen/zkui/issues/74) | Disable login function without password | 待处理 |
 | [#72](https://github.com/DeemOpen/zkui/issues/72) | mac环境下不能运行 | 待处理 |
-| [#71](https://github.com/DeemOpen/zkui/issues/71) | docker support | 待处理 |
-| [#70](https://github.com/DeemOpen/zkui/issues/70) | bootstrap.sh can't support Unix. | 待处理 |
+| [#71](https://github.com/DeemOpen/zkui/issues/71) | docker support | documentation，Fork PR #18；本地构建/运行/非root，公共镜像发布deferred |
+| [#70](https://github.com/DeemOpen/zkui/issues/70) | bootstrap.sh can't support Unix. | fixed，LF规则及简化exec启动脚本，Fork PR #18，容器CI |
 | [#69](https://github.com/DeemOpen/zkui/issues/69) | can it support zookeeper password settings? | fixed（Digest 客户端身份/ACL 配置），Fork PR #10 |
 | [#66](https://github.com/DeemOpen/zkui/issues/66) | Can Java 10 Run? | 待处理 |
 | [#64](https://github.com/DeemOpen/zkui/issues/64) | Did not wait for the zk session caused every operation become very slow | fixed，Fork PR #9，ConnectionReliabilityIT |
