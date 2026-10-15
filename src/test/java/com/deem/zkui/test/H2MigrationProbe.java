@@ -7,7 +7,7 @@ import java.util.*;
 
 /** Child-process helper for synthetic fixtures only, deliberately independent of JUnit and the application. */
 public final class H2MigrationProbe {
-    private static final long HIGH_ID = 9007199254740993L;
+    static final long HIGH_ID = 9007199254740993L;
     private static Path fixtureRoot;
     private static String ownershipNonce;
 
@@ -39,15 +39,18 @@ public final class H2MigrationProbe {
             case "accept-partial-import": acceptPartialImport(root); break;
             case "create-readonly-target": createReadonlyTarget(root); break;
             case "readonly-import": readonlyImport(root); break;
+            case "delta-prepare": case "delta-export": case "delta-restore": case "delta-conflict":
+            case "delta-change-base": case "delta-delete-base":
+                H2AuditDeltaProbe.run(mode, root, ownershipNonce); break;
             default: throw new AssertionError("Unknown test mode");
         }
     }
 
-    private static String url(Path root, String directory) {
+    static String url(Path root, String directory) {
         return "jdbc:h2:" + root.resolve(directory).resolve("history").toAbsolutePath();
     }
     private static String literal(Path path) { return "'" + path.toString().replace('\\', '/').replace("'", "''") + "'"; }
-    private static Connection connect(String url, String version) throws Exception {
+    static Connection connect(String url, String version) throws Exception {
         Connection connection = DriverManager.getConnection(url, "sa", "");
         if (!connection.getMetaData().getDatabaseProductVersion().startsWith(version + " ")) {
             connection.close();
@@ -73,6 +76,8 @@ public final class H2MigrationProbe {
             insert.setLong(1, HIGH_ID + 10); insert.setString(4, "x".repeat(500)); insert.executeUpdate();
             Files.writeString(root.resolve("expected-rows"), snapshot(connection));
             Files.writeString(root.resolve("expected-stable"), stableSnapshot(connection));
+            Files.writeString(root.resolve("expected-base-history"), snapshotRows(connection, "SELECT * FROM histories ORDER BY ID"));
+            Files.writeString(root.resolve("expected-base-metadata"), snapshotRows(connection, "SELECT * FROM \"schema_version\""));
             Files.writeString(root.resolve("expected-schema"), historySchema(connection));
             assertSchemaAndConstraints(root, connection);
         }
@@ -83,7 +88,7 @@ public final class H2MigrationProbe {
         System.out.println("OLD_FIXTURE_SEALED_AND_EXPORTED");
     }
 
-    private static void copyClosedDatabase(Path from, Path to) throws Exception {
+    static void copyClosedDatabase(Path from, Path to) throws Exception {
         Files.createDirectory(to); // Existing targets are rejected, never overwritten.
         try (var files = Files.list(from)) {
             for (Path file : files.toList()) {
@@ -361,7 +366,7 @@ public final class H2MigrationProbe {
         return shape;
     }
 
-    private static void assertSchemaAndConstraints(Path root, Connection connection) throws Exception {
+    static void assertSchemaAndConstraints(Path root, Connection connection) throws Exception {
         if (!Files.readString(root.resolve("expected-schema")).equals(historySchema(connection)))
             throw new AssertionError("History schema differs from original engine");
         String before = snapshot(connection);
@@ -525,7 +530,7 @@ public final class H2MigrationProbe {
         return history + metadata;
     }
 
-    private static String snapshotRows(Connection connection, String sql) throws Exception {
+    static String snapshotRows(Connection connection, String sql) throws Exception {
         List<String> values = new ArrayList<>();
         try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {
             while (rows.next()) {
@@ -552,11 +557,11 @@ public final class H2MigrationProbe {
             if (rows.getLong(1) <= HIGH_ID + 10 || rows.getInt(2) != 4) throw new AssertionError("Identity continuation");
         }
     }
-    private static void assertSnapshot(Path root, Connection connection) throws Exception {
+    static void assertSnapshot(Path root, Connection connection) throws Exception {
         if (!Files.readString(root.resolve("expected-rows")).equals(snapshot(connection)))
             throw new AssertionError("History rows or Flyway metadata differ");
     }
-    private static String snapshot(Connection connection) throws Exception {
+    static String snapshot(Connection connection) throws Exception {
         List<String> values = new ArrayList<>();
         for (String sql : List.of("SELECT * FROM histories ORDER BY ID", "SELECT * FROM \"schema_version\"")) {
             try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {

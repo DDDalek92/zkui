@@ -1,5 +1,11 @@
 # 当前维护验证快照
 
+## 2026-10-15 当前入口：仅追加审计差量恢复
+
+#34准确head `8a3157d6fa8e84a22ee3baaceaceef4a4caa8c21` 的[PR运行38787905991](https://github.com/DDDalek92/zkui/actions/runs/38787905991)及push运行38787853716全部六job成功后审查合并，三平台各123项、Chrome3组与容器/MySQL/旧ZK通过，基线为498fe7f。下方#34待CI为提交时快照，不是当前阻塞。
+
+本次从该最新远程基线隔离继续仅追加审计差量预演，见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)：候选新增行精确恢复到旧驱动副本、相同快照重复回放、ID继续/重开、基线修改删除拒绝、冲突整批回滚及载荷完整性拒绝。本地最终clean verify返回0，16单元+111集成=127项XML/汇总报告零失败/错误/跳过，含13项迁移预演；文本日志止于assembly，不冒充完整文本日志。不是通用降级工具，不改变运行H2/Flyway；完整新版应用Main/HTTP及实际磁盘/权限等仍未完成。准确head六job及完整日志仍须独立核验；基线498fe7f的push运行38788556538已查询success。
+
 ## 2026-10-15 当前入口：原生导入中断与只读目标
 
 #33已在准确head `69d367fc832ad4679314a492df01d98c9ca48dbe` 的[PR运行38781568897](https://github.com/DDDalek92/zkui/actions/runs/38781568897)及[push运行38781523517](https://github.com/DDDalek92/zkui/actions/runs/38781523517)全部六job成功后审查合并：三平台各121项，Chrome3组、容器/MySQL/旧ZK通过。master现为4eff9d8，其push运行38782275556也已查询success。下方#33“新head待验收”为提交时快照，已由对应PR最终准确head审查完成，不是当前阻塞。

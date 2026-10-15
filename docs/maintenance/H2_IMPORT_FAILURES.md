@@ -20,6 +20,8 @@
 
 ## 验证门槛及继续入口
 
+Fork [#34](https://github.com/DDDalek92/zkui/pull/34)已审查合并：准确head `8a3157d6fa8e84a22ee3baaceaceef4a4caa8c21` 的[PR运行38787905991](https://github.com/DDDalek92/zkui/actions/runs/38787905991)及push运行38787853716全部成功。完整PR日志：Ubuntu116604577567/macOS116604577560/Windows116604577199各16单元+107集成=123项、0失败/错误/跳过；迁移9项、Linux Chrome3组、container116604577556、mysql116604577285、zk-legacy116604576864通过。下文待CI为提交时记录。后续有限差量预演见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)。
+
 本地OpenJDK17.0.20/Linux定向9项迁移预演通过；最终完整clean verify为BUILD SUCCESS，16单元+107集成=123项，0失败/错误/跳过，完整文本日志及JUnit XML/Failsafe汇总相符。本轮没有再以截断文本代替完整日志。本机未执行Chrome、Docker、MySQL/旧ZK容器。准确PR head六项远程CI/完整日志仍须独立核验；最终结果以对应Fork PR准确head的Checks/审查记录为准，提交时待CI不是永久阻塞，也不能用#33旧绿灯替代。
 
 没有更改已应用V1（blob仍 `fadfd7e9462b348131965f855949529ac6ceaa39`）或删除Flyway记录，没有操作用户数据库、生产服务或唯一旧库，没有发布镜像/Release或修改上游状态。

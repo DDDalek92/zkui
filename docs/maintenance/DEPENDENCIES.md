@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> D01-C有限追加差量预演见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)：旧驱动只开封存副本，记录逐字段恢复/冲突拒绝，不改迁移元数据；不是在线/通用降级工具。完整新版H2/Flyway应用及MySQL旧API/checksum兼容仍需独立实现验收。
+
 > D01-C故障预演接续：受控原生RUNSCRIPT中断后的半成品拒绝、显式只读目标导入拒绝见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。运行H2/Flyway未升级，实际文件系统不可写/磁盘故障、完整应用及差量恢复仍未完成。
 
 > D01-C接续：隔离预演新增固定V1的语义表结构/PK/索引/可空性/自增和实际约束探测，见[H2_SCHEMA_VALIDATION.md](H2_SCHEMA_VALIDATION.md)。候选H2/Flyway仍仅测试隔离使用；不改变运行包，不代表完整应用迁移或任意历史库验收完成。
