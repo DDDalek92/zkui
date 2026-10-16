@@ -1,56 +1,30 @@
-# 依赖维护状态与执行顺序
+# 当前依赖与审计状态
 
-> #39及合并master六job已核对通过，三平台各149项，运行Flyway2已移除。当前只补旧Flyway2+MySQL独立方言资源的副本桥接/现代Main路径，见[MYSQL_DIALECT_HISTORY.md](MYSQL_DIALECT_HISTORY.md)，运行图/POM/V1不改，新head仍须全CI。更多时间精度/故障及SBOM/漏洞/许可证审计未完成。
+更新：2026-10-16。旧版本和逐次候选实验见 Git 历史及各迁移专题；本文只列当前状态。
 
-实际运行图见[MODERN_RUNTIME_DEPENDENCY_TREE.txt](MODERN_RUNTIME_DEPENDENCY_TREE.txt)，固定dependency-plugin3.8.1/runtime tree导出，含core/mysql13.10.3且无运行com.googlecode Flyway；旧图保留为历史。图不是SBOM/CVE/许可证通过报告。
+| 组件 | 当前运行版本 | 验证 |
+| --- | --- | --- |
+| Java / Jetty EE8 | 17 / 12.1.14 | 三平台、真实 JAR、直接 HTTPS、上下文路径；保留 javax Servlet 4 |
+| H2 / Flyway | 2.5.252 / core 13.10.3 | 新建、有限旧 V1 副本桥接、Main/重启及拒绝矩阵 |
+| MySQL | Connector/J 26.7.0 / Flyway mysql 13.10.3；服务 8.4+ | 原 V1 与独立方言旧格式生成/桥接、VERIFY_IDENTITY TLS、Main/重启 |
+| ZooKeeper / Netty | 3.9.6 / 4.1.137.Final | 当前隔离服务及 owned 3.5.7 兼容检查 |
+| FreeMarker / Commons IO / FileUpload | 2.3.35 / 2.22.0 / 1.6.0 | 模板、编码、输出、上传边界回归 |
+| SLF4J / reload4j | 2.0.20 / 1.2.27 | 单一日志 provider；无运行 Log4j 1 |
+| json-simple | 1.1 | 仍为旧库；运行查询无匹配不意味着维护活跃 |
 
-> 当前现代MySQL增量：org.flywaydb core/mysql13.10.3进入运行包，com.googlecode Flyway2从运行依赖移除；旧2/4仅隔离历史夹具。assembly聚合服务注册，同时保留H2/MySQL插件。范围/待验收见[MODERN_MYSQL_RUNTIME.md](MODERN_MYSQL_RUNTIME.md)，准确新head全部CI成功后才准入；下方“MySQL仍运行旧引擎”为历史快照。SBOM/漏洞/许可证审计仍未完成。
+旧 H2 1.3.174、Flyway 2.2.1/4.2.0、Connector 8.0.16 仅在 migration-drivers 下由测试子进程隔离使用，不进入应用运行依赖图。旧 ZooKeeper/MySQL 容器仅用于隔离兼容夹具。
 
-> MySQL接续（2026-10-15）：#37及合并master六job已验证，三平台各149项。现增加独立副本上的旧Flyway2先校验/官方Flyway4转换/现代Flyway13+MySQL模块预演，见[MYSQL_FLYWAY_BRIDGE.md](MYSQL_FLYWAY_BRIDGE.md)。`flyway-mysql:13.10.3` 仅复制测试jar，未加入运行依赖图；应用MySQL仍保留Flyway2，实际新head MySQL CI未完成前不称桥接通过，更不能称运行旧引擎已移除。
+## 可重复的运行审计
 
-> 当前H2运行时增量：H2 2.5.252 / 开源Flyway13.10.3，独立新建方言及原V1桥接Main/HTTP/重启/拒绝验证，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)。MySQL仍使用旧Flyway2及既有checksum路径，现代API/module迁移和旧引擎移除是下一项；Flyway的H2厂商验证上限警告未屏蔽。下方“候选仅测试/运行H2未升级”为历史快照，不代表本增量源码。最终准入仍依准确head全部CI。
+见 [RUNTIME_AUDIT.md](RUNTIME_AUDIT.md)。`audit` Maven profile 固定 CycloneDX 2.9.1，输出 runtime-bom.json/xml；脚本核对实际解析 JAR 集合与 SBOM 的 SHA-256，提取带组件命名空间的 LICENSE/NOTICE/COPYING，查询 OSV 全部分页。网络错误、响应缺失、重复分页或清单/哈希不一致均失败；不添加漏洞忽略项。
 
-本增量实际运行依赖图见[MODERN_H2_DEPENDENCY_TREE.txt](MODERN_H2_DEPENDENCY_TREE.txt)，由固定dependency-plugin3.8.1的runtime tree生成：H22.5.252与org.flywaydb13.10.3进入运行包，H21.3/Flyway4不在运行图，com.googlecode Flyway2.2.1因MySQL仍保留。此图不是SBOM/CVE/许可证审核通过报告；原DEPENDENCY_TREE.txt留作旧阶段快照。
+本地实测 54 个 runtime 组件，OSV 零条匹配，61 条嵌入法律文件，37 个组件无可提取的法律文件。所有组件均有 POM 许可证元数据；不能将此称为许可证兼容或再分发验收通过。新 profile 本地执行成功；准确 head CI 仍须独立核验。
 
-> D01-C新增实际应用本地文件格式保护，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)：复现旧驱动忽略新版文件而建立旁路空库，现于连接/迁移/dev清库前拒绝；不改变运行H2/Flyway或已应用V1，完整新版Main/HTTP仍未完成。
+## 仍需完成
 
-> D01-C有限追加差量预演见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)：旧驱动只开封存副本，记录逐字段恢复/冲突拒绝，不改迁移元数据；不是在线/通用降级工具。完整新版H2/Flyway应用及MySQL旧API/checksum兼容仍需独立实现验收。
+- 补齐缺失法律文件与版权归属、核对 MySQL Universal FOSS Exception / H2 等具体分发要求，并确定发行包如何随附通知。
+- 前端 vendored jQuery/Bootstrap/字体/图片、构建插件、测试历史引擎、npm 开发依赖、容器基础 OS 另行审计；它们不在本 runtime SBOM 查询范围。
+- SEC-05 默认样例凭据和 SEC-10 转发地址信任仍需修复；已有安全回归不代表这些边界完成。
+- 非 UTC/精度、更广历史库、真实权限/磁盘失败和部署矩阵继续按 TASKS.md 执行。
 
-> D01-C故障预演接续：受控原生RUNSCRIPT中断后的半成品拒绝、显式只读目标导入拒绝见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。运行H2/Flyway未升级，实际文件系统不可写/磁盘故障、完整应用及差量恢复仍未完成。
-
-> D01-C接续：隔离预演新增固定V1的语义表结构/PK/索引/可空性/自增和实际约束探测，见[H2_SCHEMA_VALIDATION.md](H2_SCHEMA_VALIDATION.md)。候选H2/Flyway仍仅测试隔离使用；不改变运行包，不代表完整应用迁移或任意历史库验收完成。
-
-> 当前更新：#28已完成Connector/J26.7.0、MySQL8.4+方言和真实旧库逻辑迁移/TLS/启动验证；#29已完成ZK3.9.6（Netty4.1.137.Final）、FreeMarker2.3.35及CommonsIO2.22，六个CI job通过。见MYSQL_VALIDATION.md和CLIENT_TEMPLATE_UPGRADE.md。下文旧版本/待办描述保留历史；H2/Flyway运行时、JSON库、SBOM/漏洞/许可证及其余部署验证仍未完成。
-
-
-> 后续更新：Fork #23已合并。启动迁移失败/历史列不可读时停止HTTP启动，显式启用旧Flyway校验；历史写入失败明确返回503并提示先核对已执行的ZK变更。见DATABASE_READINESS.md及PR #23的105项/三平台CI。下文关于原先“吞错继续”的描述为历史基线，不再代表当前策略。驱动/Flyway跨版本迁移仍未放行。
-
-2026-10-15。依赖清单由固定工具 `org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree` 实取，见 DEPENDENCY_TREE.txt；不等于 CVE 扫描。
-
-已实现阶段（Fork PR #16）：SLF4J 1.7.36、显式 reload4j 1.2.27，排除 ZK 传递的 Log4j 1/旧绑定；Commons FileUpload 1.6.0、512字节part头上限，原有32parts/1MiB/2MiB等限制仍有效。组装包检查及86项Java回归通过。日志格式兼容现有 log4j.properties，不使用网络Appender。
-
-尚未完成的执行队列：
-
-1. Java17及Jetty12：本分支整体迁移到Jetty12.1.14 EE8（保留javax Servlet4.0），编译/CI/容器统一Java17；历史ORM改为参数化JDBC，移除ActiveJDBC及插桩。旧插件反射故障、旧Jetty扫描Java17字节码失败、新ActiveJDBC调用旧H2未实现getSchema均已实际观察；没有靠--add-opens或直接升级H2绕过。回归范围/CI准入见[JAVA17_VALIDATION.md](JAVA17_VALIDATION.md)。
-2. H2/Flyway历史迁移：生成含中文/旧历史/元数据的1.3库副本，用原驱动SCRIPT导出；新版本只打开新路径数据库，RUNSCRIPT并核对行数/内容/ID/版本记录；重复启动、失败回滚、完整恢复测试。保留原库与原应用可回退组合，禁止新驱动直接打开唯一旧库。V1__Core.sql不改写，不删schema_version。
-3. MySQL：独立核对当前驱动坐标/JDBC URL/TLS/时区，使用一次性实际服务验证新建及已有历史迁移。#63的MySQL5.7主键DDL差异不能由H2通过代替，更不能按原帖建议删除Flyway记录。没有真实数据库副本前不自动迁移用户数据。
-4. ZK3.5.7及Netty4.1.45、FreeMarker2.3.8、JSON库、Flyway2.2.1、旧MySQL及Protobuf都仍需逐项替换与回归；ActiveJDBC及javalite-common已移除。构建插件依赖也在后续审计范围。
-5. 完成 SBOM/漏洞扫描、许可证核对及可部署包检查后再评估维护版发布；当前不创建正式Release或发布公共镜像。
-
-版本依据（已核对官方资料）：
-
-- [Jetty下载及Java/Servlet支持表](https://jetty.org/download.html)：当前支持12系，9/10/11已EOL。
-- [Jetty支持策略](https://jetty.org/support.html)：2026-01-01起旧系列修复二进制不再发布到Maven Central。
-- [SLF4J手册](https://www.slf4j.org/manual.html)：1.7.36的旧log4j12坐标迁移到reload4j绑定。
-- [SLF4J发布说明](https://www.slf4j.org/news.html)：本分支为Jetty12改用API/provider同版本2.0.20，reload4j仍为1.2.27，打包检查排除旧StaticLoggerBinder和多provider。
-- [reload4j官方](https://reload4j.qos.ch/)及Maven Central发布元数据：当前选用1.2.27。
-- [FileUpload发布说明](https://commons.apache.org/proper/commons-fileupload/changes.html)、[安全说明](https://commons.apache.org/proper/commons-fileupload/security.html)：1.6.0支持Java8并提供part头上限。
-- [H2官方迁移流程](https://www.h2database.com/html/migration-to-v2.html)：原版本导出SQL，新版本创建新库后导入。
-
-没有把上游历史Dependabot目标版本当作当前安全版本；延期项目仍是执行任务，不是已修复。
-
-## D01 实现前验收细化
-
-后续D01-C首批隔离预演见[H2_MIGRATION_REHEARSAL.md](H2_MIGRATION_REHEARSAL.md)：测试专用2.5.252驱动不在运行包中；原1.3.174导出在普通模式因DATETIME/50004失败，LEGACY有限夹具通过。应用默认H2/Flyway/V1仍未升级，不能把预演绿灯当作完整应用迁移放行。
-
-见 [D01_MIGRATION_PLAN.md](D01_MIGRATION_PLAN.md)：保留原方案及Java17实现后的差异；H2跨版本合成夹具、独立驱动/目录、逐字段/生成ID/Flyway元数据校验及失败回滚矩阵仍未完整执行。Dao仍保留原迁移/插入错误的日志后继续策略，不能把进程存活或登录成功作为数据库迁移通过证据。当前只验证同一旧H2驱动/V1上的JDBC兼容，不代表历史库跨版本迁移完成。
+不使用扫描无匹配作为正式 Release 或公共镜像自动发布条件。
