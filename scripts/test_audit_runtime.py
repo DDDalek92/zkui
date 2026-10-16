@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+import zipfile
 
 spec = importlib.util.spec_from_file_location("audit_runtime", Path(__file__).with_name("audit_runtime.py"))
 audit = importlib.util.module_from_spec(spec)
@@ -9,6 +10,61 @@ spec.loader.exec_module(audit)
 
 
 class AuditFailureTests(unittest.TestCase):
+    def legal_fixture(self, directory, entries, name="fixture"):
+        jar = directory / (name + ".jar")
+        with zipfile.ZipFile(jar, "w") as archive:
+            for path, content in entries:
+                archive.writestr(path, content)
+        component = {"group": "test", "name": name, "version": "1", "purl": "pkg:maven/test/" + name + "@1",
+                     "hashes": [{"alg": "SHA-256", "content": audit.digest(jar.read_bytes())}],
+                     "licenses": [{"license": {"id": "MIT"}}]}
+        return component, {("test", name, "1", ""): jar}
+
+    def test_legal_documents_are_not_license_package_classes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            documents = [("META-INF/LICENSE", b"first original\r\n"),
+                         ("META-INF/NOTICE.md", b"original notice"),
+                         ("META-INF/license/LICENSE.boringssl.txt", b"nested original")]
+            component, jars = self.legal_fixture(path, documents + [
+                ("org/example/license/LicenseProvider.class", b"\xca\xfe\xba\xbe"),
+                ("com/example/Notice.class", b"\xca\xfe\xba\xbe"),
+                ("org/example/license/helper.txt", b"not a legal document")])
+            rows = audit.inventory({"components": [component]}, jars, path)
+            prefix = "test/fixture/1/main/"
+            self.assertEqual([prefix + name for name, _ in documents], rows[0]["legal_entries"])
+            with zipfile.ZipFile(path / "third-party-notices.zip") as archive:
+                self.assertEqual(rows[0]["legal_entries"], archive.namelist())
+                for name, content in documents:
+                    self.assertEqual(content, archive.read(prefix + name))
+
+    def test_binary_only_jar_still_has_no_embedded_legal_documents(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            component, jars = self.legal_fixture(path, [("package/license/Provider.class", b"binary"),
+                                                       ("package/Notice.class", b"binary")])
+            self.assertEqual([], audit.inventory({"components": [component]}, jars, path)[0]["legal_entries"])
+
+    def test_same_document_names_from_distinct_jars_retain_original_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            first, jars = self.legal_fixture(path, [("LICENSE", b"first\r\n\xff")], "first")
+            second, more = self.legal_fixture(path, [("LICENSE", b"second\n")], "second")
+            jars.update(more)
+            rows = audit.inventory({"components": [first, second]}, jars, path)
+            self.assertEqual(2, sum(len(row["legal_entries"]) for row in rows))
+            with zipfile.ZipFile(path / "third-party-notices.zip") as archive:
+                self.assertEqual(b"first\r\n\xff", archive.read("test/first/1/main/LICENSE"))
+                self.assertEqual(b"second\n", archive.read("test/second/1/main/LICENSE"))
+
+    def test_unsafe_and_duplicate_legal_paths_are_rejected(self):
+        for entries in [[("../LICENSE", b"unsafe")], [("LICENSE", b"first"), ("LICENSE", b"second")]]:
+            with self.subTest(entries=entries), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory)
+                component, jars = self.legal_fixture(path, entries)
+                with self.assertRaises(ValueError):
+                    audit.inventory({"components": [component]}, jars, path)
+
     def test_follows_pagination_without_losing_first_page_findings(self):
         requests = []
 
