@@ -19,16 +19,15 @@ validation are mandatory. Java 8 is no longer supported.
 Setup
 ====================
 1. `./mvnw clean verify` (Windows PowerShell: `.\mvnw.cmd clean verify`).
-2. Copy the config.cfg to the folder with the jar file. Modify it to point to the zookeeper instance. Multiple addresses are comma separated, e.g. server1:2181,server2:2181; the first address need not be the leader.
+2. Copy config.cfg to the folder with the jar. Configure ZooKeeper and replace both sample web credentials before startup. Multiple addresses are comma separated, e.g. server1:2181,server2:2181; the first address need not be the leader.
 3. Run the jar. ( nohup java -jar zkui-2.0-SNAPSHOT-jar-with-dependencies.jar & )
 4. <a href="http://localhost:9090">http://localhost:9090</a> 
 
 Login Info
 ====================
-username: admin, pwd: manager (Admin privileges, CRUD operations supported)
-username: appconfig, pwd: appconfig (Readonly privileges, Read operations supported)
+The sample config contains admin/manager (ADMIN) and appconfig/appconfig (USER). Startup refuses these pairs by default. Replace both with your own nonempty credentials in `userSet`, or supply `USER_SET`. Empty/malformed users, blank passwords and duplicate usernames also refuse startup before database initialization or HTTP. LDAP mode uses its own authentication.
 
-You can change this in the config.cfg
+For an isolated local demo only, `allowSampleUsers=true` explicitly enables sample pairs and emits a warning. Keep the default false for deployment. Configure HTTPS or a trusted TLS reverse proxy; local web passwords remain configuration secrets.
 
 Development checks
 ====================
@@ -292,7 +291,7 @@ Use the Name/Value headings on the home table or Path/Name/Value on search resul
 
 History configuration
 ---------------------
-`historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Modern H2 never automatically cleans history, even with `env=dev`; the legacy MySQL path still retains its destructive dev-clean behavior, so use `prod` for retained data. H2 connections explicitly use LEGACY compatibility mode for identity continuity; keep the source/target/application timezone consistent during migration. History connections close even after database errors. Property values retain their original whitespace.
+`historyLimit` controls the maximum records returned by both history queries (default 50, integer 1–1000); invalid values fail startup. The heading reflects the configured maximum. Omitted `https` and `X-Forwarded-For` flags default to false, and an omitted `env` defaults to production behavior. Modern H2 never automatically cleans history, even with `env=dev`; modern MySQL also disables automatic dev cleanup. H2 connections explicitly use LEGACY compatibility mode for identity continuity; keep the source/target/application timezone consistent during migration. History connections close even after database errors. Property values retain their original whitespace.
 
 Reverse proxy and context path
 ------------------------------
@@ -303,10 +302,15 @@ location /zkui/ {
     proxy_pass http://127.0.0.1:9090;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Forwarded "";
+    proxy_set_header X-Forwarded-Host "";
+    proxy_set_header X-Forwarded-Server "";
+    proxy_set_header X-Proxied-Https "";
 }
 ```
 
-The `proxy_pass` here has no trailing URI slash, so nginx keeps `/zkui/` upstream. Visit `/zkui/`; do not strip the prefix upstream while configuring zkui with it. Only enable `X-Forwarded-For=true` when requests reach zkui exclusively through a trusted proxy. Direct application/context behavior is tested; deployment-specific nginx/TLS settings still require verification.
+The `proxy_pass` here has no trailing URI slash, so nginx keeps `/zkui/` upstream. Visit `/zkui/`; do not strip the prefix upstream while configuring zkui with it. To trust this single local proxy, set `X-Forwarded-For=true` and `trustedProxyAddresses=127.0.0.1`. Enabled forwarding without an explicit IP-literal peer list refuses startup. The actual TCP peer must match; headers from other peers are ignored for scheme, cookies and client address. No wildcard, DNS or CIDR is accepted. The proxy must overwrite forwarding metadata, clearing client-supplied alternatives; also clear `X-Forwarded-Port`, `X-Forwarded-Ssl`, `Proxy-ssl-id` and `Proxy-auth-cert` if your proxy passes them. For a proxy chain, normalize the metadata at the immediate trusted proxy; arbitrary untrusted chains are not inferred. Direct application/context behavior is tested; deployment-specific nginx/TLS settings still require verification.
 
 Docker build and environment
 ----------------------------

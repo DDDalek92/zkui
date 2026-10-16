@@ -163,11 +163,8 @@ public enum ServletUtil {
 
     //Using X-Forwarded-For to capture IP addresses coming via load balancer.
     public String getRemoteAddr(HttpServletRequest request) {
-        String remoteAddr = request.getHeader("X-Forwarded-For");
-        if (remoteAddr == null) {
-            remoteAddr = request.getRemoteAddr();
-        }
-        return remoteAddr;
+        // Jetty only rewrites this for an explicitly trusted transport peer.
+        return request.getRemoteAddr();
     }
 
 }

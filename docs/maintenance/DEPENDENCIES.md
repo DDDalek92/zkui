@@ -24,7 +24,7 @@
 
 - 补齐缺失法律文件与版权归属、核对 MySQL Universal FOSS Exception / H2 等具体分发要求，并确定发行包如何随附通知。
 - 前端 vendored jQuery/Bootstrap/字体/图片、构建插件、测试历史引擎、npm 开发依赖、容器基础 OS 另行审计；它们不在本 runtime SBOM 查询范围。
-- SEC-05 默认样例凭据和 SEC-10 转发地址信任仍需修复；已有安全回归不代表这些边界完成。
+- SEC-05 默认样例凭据和 SEC-10 转发地址信任已在独立增量实现，验收见 PROXY_STARTUP_SECURITY.md；不由运行扫描通过代替。
 - 非 UTC/精度、更广历史库、真实权限/磁盘失败和部署矩阵继续按 TASKS.md 执行。
 
 不使用扫描无匹配作为正式 Release 或公共镜像自动发布条件。

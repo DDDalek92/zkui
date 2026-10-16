@@ -65,6 +65,13 @@ public class Main {
         }
 
         com.deem.zkui.utils.EnvironmentConfig.apply(globalProps, System.getenv());
+        if (com.deem.zkui.utils.StartupSecurity.validateUsers(globalProps)) {
+            logger.warn("Sample web credentials enabled for an isolated demo; replace before deployment");
+        }
+        org.eclipse.jetty.server.HttpConfiguration.Customizer forwarding = null;
+        if ("true".equalsIgnoreCase(globalProps.getProperty("X-Forwarded-For", "false"))) {
+            forwarding = new com.deem.zkui.utils.TrustedProxyCustomizer(globalProps);
+        }
         com.deem.zkui.utils.TreeWork.configureBuffer(globalProps);
         String contextPath = com.deem.zkui.utils.WebPaths.context(globalProps.getProperty("baseURL", "/"));
         String urlPrefix = "/".equals(contextPath) ? "" : contextPath;
@@ -135,6 +142,7 @@ public class Main {
         HttpConfiguration http_config = new HttpConfiguration();
         http_config.setSecureScheme("https");
         http_config.setSecurePort(Integer.parseInt(globalProps.getProperty("serverPort")));
+        if (forwarding != null) http_config.addCustomizer(forwarding);
         
         if ("true".equalsIgnoreCase(globalProps.getProperty("https", "false"))) {
             File keystoreFile = new File(globalProps.getProperty("keystoreFile"));
@@ -149,9 +157,6 @@ public class Main {
             https.setPort(Integer.parseInt(globalProps.getProperty("serverPort")));
             server.setConnectors(new Connector[]{https});
         } else {
-            if("true".equalsIgnoreCase(globalProps.getProperty("X-Forwarded-For", "false"))) {
-                http_config.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
-            }
             ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(http_config));
             http.setPort(Integer.parseInt(globalProps.getProperty("serverPort")));
             server.setConnectors(new Connector[]{http});
