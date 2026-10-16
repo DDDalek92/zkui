@@ -104,6 +104,25 @@ jobs:
             -e USER_SET='{"users":[{"username":"container-test","password":"synthetic-container-only","role":"ADMIN"}]}' zkui:ci
           python3 src/test/docker/smoke.py
 
+  storage-faults:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - name: Build owned storage fixture image
+        run: docker build -f docker/Dockerfile -t zkui:storage-ci .
+      - name: Actual filesystem permission, ENOSPC and restart recovery matrix
+        env:
+          ZKUI_OWNED_STORAGE_FIXTURE: 'true'
+        run: python3 src/test/docker/storage_faults.py
+      - name: Save owned failure and recovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: storage-failure-evidence
+          path: target/storage-evidence/
+          retention-days: 30
+
   mysql:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
