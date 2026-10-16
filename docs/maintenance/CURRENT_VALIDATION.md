@@ -13,6 +13,12 @@ PR #40 准确 head `c837c55012f8162e6855e0c1adc81d1659fa460e` 的 PR [3883696727
 现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后独立本地 clean verify 32 单元+118 集成=150 项零失败/错误/跳过；准确 head `2e5fffaf` 的 PR38838235899 六项 CI 全成功，三平台各150项、Chrome3组、Docker/MySQL/旧ZK标记已逐日志核实。PR #41 已合并为 `15a281d`。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
 
 
+## 本轮运行审计
+
+PR #42 head `52f61f1` 的 PR38838883132 七项CI全成功并逐日志核对后合并为 `7be066b`：三平台各150项、Chrome3组及原有服务检查通过；runtime-audit含54组件/哈希一致/OSV零匹配/6项失败处理测试。37组件缺嵌入法律文件仍作为许可证分发缺口。
+
+现在接续示例用户启动保护及可信代理边界，见 PROXY_STARTUP_SECURITY.md；最终本地及准确head结果待更新。
+
 ## 当前已验收基础
 
 - Java 17 / Jetty 12.1.14 EE8；JDBC 审计 DAO，H2 2.5.252、Flyway core/mysql 13.10.3、MySQL Connector/J 26.7.0。

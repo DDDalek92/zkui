@@ -130,6 +130,7 @@ public class H2FileFormatIT {
         try (InputStream input = new FileInputStream(System.getProperty("zkui.test.config"))) { application.load(input); }
         application.putAll(props);
         application.setProperty("env", "dev");
+        application.setProperty("userSet", "{\"users\":[{\"username\":\"format-fixture\",\"password\":\"synthetic-only\",\"role\":\"ADMIN\"}]}");
         application.setProperty("jdbcUrl", "jdbc:h2:./history");
         int port;
         try (ServerSocket socket = new ServerSocket(0, 0, InetAddress.getLoopbackAddress())) { port = socket.getLocalPort(); }

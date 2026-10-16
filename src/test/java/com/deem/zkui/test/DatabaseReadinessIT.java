@@ -79,6 +79,7 @@ public class DatabaseReadinessIT {
         props.setProperty("jdbcUrl", "jdbc:unsupported:" + marker);
         props.setProperty("jdbcPwd", marker);
         props.setProperty("env", "prod");
+        props.setProperty("userSet", "{\"users\":[{\"username\":\"readiness-fixture\",\"password\":\"synthetic-only\",\"role\":\"ADMIN\"}]}");
         try (OutputStream out = new FileOutputStream(new File(work, "config.cfg"))) { props.store(out, "Owned fixture"); }
         File log = new File(work, "startup.log");
         ProcessBuilder builder = new ProcessBuilder(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath(),
