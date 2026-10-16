@@ -2,7 +2,6 @@ package com.deem.zkui.test;
 
 import com.deem.zkui.dao.Dao;
 import com.deem.zkui.domain.History;
-import com.googlecode.flyway.core.Flyway;
 import java.io.*;
 import java.net.*;
 import java.net.http.*;
@@ -22,12 +21,13 @@ public final class MySqlMigrationSmoke {
     public static void main(String[] args) throws Exception {
         if (!"true".equals(System.getenv("ZKUI_OWNED_MYSQL_FIXTURE"))) throw new AssertionError("Owned CI fixture required");
         if ("seed".equals(args[0])) seed();
+        else if ("unbridged".equals(args[0])) unbridged();
         else if ("verify".equals(args[0])) verify();
         else throw new AssertionError("Unknown fixture mode");
     }
 
     private static Properties config(String database, boolean seed) {
-        if (!Set.of("zkui_fixture", "zkui_fresh", "zkui_unknown").contains(database)) throw new AssertionError();
+        if (!Set.of("zkui_fixture", "zkui_app_bridge", "zkui_fresh", "zkui_unknown", "zkui_future", "zkui_drift").contains(database)) throw new AssertionError();
         Properties props = new Properties();
         props.setProperty("env", "prod");
         props.setProperty("jdbcClass", "com.mysql.cj.jdbc.Driver");
@@ -50,10 +50,11 @@ public final class MySqlMigrationSmoke {
             require(connection.getMetaData().getDatabaseProductVersion().startsWith("5.6."), "Old fixture server mismatch");
             require(connection.getMetaData().getDriverVersion().contains("8.0.16"), "Old fixture driver mismatch");
         }
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(props.getProperty("jdbcUrl"), "root", PASSWORD);
-        flyway.setValidateOnMigrate(true);
-        flyway.migrate(); // Genuine original V1 and original Flyway2 metadata on old MySQL.
+        Class<?> type = Class.forName("com.googlecode.flyway.core.Flyway");
+        Object flyway = type.getConstructor().newInstance();
+        type.getMethod("setDataSource", String.class, String.class, String.class).invoke(flyway, props.getProperty("jdbcUrl"), "root", PASSWORD);
+        type.getMethod("setValidateOnMigrate", boolean.class).invoke(flyway, true);
+        type.getMethod("migrate").invoke(flyway); // Genuine isolated original engine and V1.
         try (Connection connection = connect(props);
                 PreparedStatement insert = connection.prepareStatement("INSERT INTO histories (ID, CHANGE_USER, CHANGE_DATE, CHANGE_SUMMARY, CHANGE_IP) VALUES (?, ?, ?, ?, ?)")) {
             insert.setLong(1, 41); insert.setString(2, null); insert.setTimestamp(3, null);
@@ -66,7 +67,7 @@ public final class MySqlMigrationSmoke {
         System.out.println("MYSQL56_ORIGINAL_V1_ROWS_AND_METADATA_SEEDED");
     }
 
-    private static String snapshot(Connection connection) throws Exception {
+    static String snapshot(Connection connection) throws Exception {
         return rows(connection, "SELECT * FROM histories ORDER BY id") + rows(connection, "SELECT * FROM schema_version ORDER BY installed_rank");
     }
 
@@ -93,8 +94,8 @@ public final class MySqlMigrationSmoke {
     }
 
     private static void verify() throws Exception {
-        Properties restored = config("zkui_fixture", false);
-        String expected = Files.readString(Path.of("target/mysql-original-snapshot.txt"));
+        Properties restored = config("zkui_app_bridge", false);
+        String expected = Files.readString(Path.of("target/mysql-bridge-app-snapshot.txt"));
         Dao dao = new Dao(restored);
         try (Connection connection = connect(restored)) {
             require(connection.getMetaData().getDriverVersion().contains("26.7.0"), "Modern driver mismatch");
@@ -105,6 +106,7 @@ public final class MySqlMigrationSmoke {
             require(expected.equals(snapshot(connection)), "Logical restore changed original rows/metadata");
         }
         dao.checkNCreate();
+        restored.setProperty("env", "dev"); // Never permission to erase history on either modern backend.
         new Dao(restored).checkNCreate();
         try (Connection connection = connect(restored)) { require(expected.equals(snapshot(connection)), "Application startup changed historical data/metadata"); }
         List<History> old = dao.fetchHistoryRecords();
@@ -126,20 +128,39 @@ public final class MySqlMigrationSmoke {
         }
 
         packagedHistoryPage(restored);
+        String afterWrite;
+        try (Connection c = connect(restored)) { afterWrite = snapshot(c); }
+        packagedHistoryPage(restored); // Actual second Main process, same database, not DAO-only restart.
+        try (Connection c = connect(restored)) { require(afterWrite.equals(snapshot(c)), "Main restart changed rows or metadata"); }
         Path untrusted = Files.createTempFile("zkui-owned-untrusted-", ".p12");
         try {
             java.security.KeyStore trust = java.security.KeyStore.getInstance("PKCS12");
             trust.load(null, "synthetic-untrusted".toCharArray());
             try (OutputStream out = Files.newOutputStream(untrusted)) { trust.store(out, "synthetic-untrusted".toCharArray()); }
-            Properties rejectedTls = config("zkui_fixture", false);
+            Properties rejectedTls = config("zkui_app_bridge", false);
             rejectedTls.setProperty("jdbcUrl", rejectedTls.getProperty("jdbcUrl")
                     + "&trustCertificateKeyStoreUrl=" + URLEncoder.encode(untrusted.toUri().toString(), StandardCharsets.UTF_8)
                     + "&trustCertificateKeyStorePassword=synthetic-untrusted&trustCertificateKeyStoreType=PKCS12&fallbackToSystemTrustStore=false");
             refused(rejectedTls);
         } finally { Files.delete(untrusted); }
-        Properties wrongPassword = config("zkui_fixture", false);
+        Properties wrongPassword = config("zkui_app_bridge", false);
         wrongPassword.setProperty("jdbcPwd", "wrong-synthetic-fixture-password");
         refused(wrongPassword);
+        for (String database : List.of("zkui_future", "zkui_drift")) {
+            Properties negative = config(database, false);
+            try (Connection c = connect(negative); Statement s = c.createStatement()) {
+                s.execute("CREATE TABLE histories LIKE zkui_fresh.histories");
+                s.execute("INSERT INTO histories SELECT * FROM zkui_fresh.histories");
+                s.execute("CREATE TABLE schema_version LIKE zkui_fresh.schema_version");
+                s.execute("INSERT INTO schema_version SELECT * FROM zkui_fresh.schema_version");
+                if ("zkui_future".equals(database)) s.executeUpdate("INSERT INTO schema_version SELECT 2, '2', description, type, script, checksum, installed_by, installed_on, execution_time, success FROM schema_version WHERE version='1'");
+                else s.execute("ALTER TABLE histories MODIFY change_summary VARCHAR(501)");
+            }
+            String before;
+            try (Connection c = connect(negative)) { before = snapshot(c); }
+            negative.setProperty("env", "dev"); refused(negative);
+            try (Connection c = connect(negative)) { require(before.equals(snapshot(c)), "Refusal erased negative fixture evidence"); }
+        }
         try (Connection connection = connect(fresh); Statement statement = connection.createStatement()) {
             require(statement.executeUpdate("UPDATE schema_version SET checksum=123 WHERE version='1'") == 1, "V1 fixture missing");
         }
@@ -155,6 +176,17 @@ public final class MySqlMigrationSmoke {
         }
         refused(unknown);
         System.out.println("MYSQL84_TLS_LEGACY_RESTORE_FRESH_DIALECT_IDS_RESTART_PACKAGED_HISTORY_AND_FAILURES_OK");
+        System.out.println("MYSQL84_MODERN_APP_BRIDGED_MAIN_RESTART_DEV_PRESERVE_FUTURE_SCHEMA_DRIFT_REFUSALS_OK");
+    }
+
+    private static void unbridged() throws Exception {
+        Properties p = config("zkui_fixture", false);
+        String before;
+        try (Connection c = connect(p)) { before = snapshot(c); }
+        require(before.equals(Files.readString(Path.of("target/mysql-original-snapshot.txt"))), "Original restore changed rows/metadata");
+        p.setProperty("env", "dev"); refused(p); packagedHistoryPage(p, true);
+        try (Connection c = connect(p)) { require(before.equals(snapshot(c)), "Unbridged refusal converted or erased original metadata"); }
+        System.out.println("MYSQL84_MODERN_APP_UNBRIDGED_REFUSED_NO_CONVERSION_OR_DEV_CLEAN");
     }
 
     private static void refused(Properties props) {
@@ -165,6 +197,10 @@ public final class MySqlMigrationSmoke {
     }
 
     private static void packagedHistoryPage(Properties database) throws Exception {
+        packagedHistoryPage(database, false);
+    }
+
+    private static void packagedHistoryPage(Properties database, boolean expectRefusal) throws Exception {
         Path work = Files.createTempDirectory("zkui-owned-mysql-http-");
         Properties props = new Properties();
         try (InputStream in = Files.newInputStream(Path.of("config.cfg"))) { props.load(in); }
@@ -187,6 +223,13 @@ public final class MySqlMigrationSmoke {
         try {
             String base = "http://127.0.0.1:" + port + "/mysql-fixture";
             HttpClient admin = client();
+            if (expectRefusal) {
+                require(process.waitFor(20, TimeUnit.SECONDS) && process.exitValue() != 0, "Unbridged Main must exit before HTTP");
+                require(Files.readString(work.resolve("app.log")).contains("History database initialization failed"), "Expected sanitized startup refusal");
+                try { get(admin, base + "/login"); throw new AssertionError("Refused Main exposed HTTP"); }
+                catch (IOException expected) { /* Owned port is not listening. */ }
+                return;
+            }
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
             boolean ready = false;
             while (process.isAlive() && System.nanoTime() < deadline) {

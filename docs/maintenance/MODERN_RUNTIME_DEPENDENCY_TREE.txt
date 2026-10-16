@@ -1,0 +1,55 @@
+com.deem:zkui:jar:2.0-SNAPSHOT
++- commons-io:commons-io:jar:2.22.0:compile
++- org.flywaydb:flyway-core:jar:13.10.3:compile
+|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.22:compile
++- org.eclipse.jetty.ee8:jetty-ee8-webapp:jar:12.1.14:compile
+|  +- org.eclipse.jetty:jetty-xml:jar:12.1.14:compile
+|  |  \- org.eclipse.jetty:jetty-util:jar:12.1.14:compile
+|  +- org.eclipse.jetty.ee:jetty-ee-webapp:jar:12.1.14:compile
+|  \- org.eclipse.jetty.ee8:jetty-ee8-servlet:jar:12.1.14:compile
+|     +- org.eclipse.jetty.ee8:jetty-ee8-nested:jar:12.1.14:compile
+|     |  \- org.eclipse.jetty:jetty-session:jar:12.1.14:compile
+|     \- org.eclipse.jetty.ee8:jetty-ee8-security:jar:12.1.14:compile
++- org.eclipse.jetty.ee8:jetty-ee8-annotations:jar:12.1.14:compile
+|  +- jakarta.annotation:jakarta.annotation-api:jar:1.3.5:compile
+|  +- org.eclipse.jetty:jetty-annotations:jar:12.1.14:compile
+|  +- org.eclipse.jetty:jetty-plus:jar:12.1.14:compile
+|  |  \- org.eclipse.jetty:jetty-security:jar:12.1.14:compile
+|  +- org.eclipse.jetty.ee8:jetty-ee8-plus:jar:12.1.14:compile
+|  |  +- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:compile
+|  |  \- org.eclipse.jetty:jetty-jndi:jar:12.1.14:compile
+|  +- org.eclipse.jetty.toolchain:jetty-servlet-api:jar:4.0.9:compile
+|  +- org.ow2.asm:asm:jar:9.10.1:compile
+|  \- org.ow2.asm:asm-commons:jar:9.10.1:compile
+|     \- org.ow2.asm:asm-tree:jar:9.10.1:compile
++- org.eclipse.jetty:jetty-server:jar:12.1.14:compile
+|  +- org.eclipse.jetty:jetty-http:jar:12.1.14:compile
+|  \- org.eclipse.jetty:jetty-io:jar:12.1.14:compile
++- org.slf4j:slf4j-api:jar:2.0.20:compile
++- org.slf4j:slf4j-reload4j:jar:2.0.20:compile
++- ch.qos.reload4j:reload4j:jar:1.2.27:compile
++- com.h2database:h2:jar:2.5.252:compile
++- com.googlecode.json-simple:json-simple:jar:1.1:compile
++- org.apache.zookeeper:zookeeper:jar:3.9.6:compile
+|  +- org.apache.zookeeper:zookeeper-jute:jar:3.9.6:compile
+|  +- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+|  +- io.netty:netty-handler:jar:4.1.137.Final:compile
+|  |  +- io.netty:netty-common:jar:4.1.137.Final:compile
+|  |  +- io.netty:netty-resolver:jar:4.1.137.Final:compile
+|  |  +- io.netty:netty-buffer:jar:4.1.137.Final:compile
+|  |  +- io.netty:netty-transport:jar:4.1.137.Final:compile
+|  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.137.Final:compile
+|  |  \- io.netty:netty-codec:jar:4.1.137.Final:compile
+|  +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.137.Final:compile
+|  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.137.Final:compile
+|  \- io.netty:netty-tcnative-boringssl-static:jar:2.0.81.Final:compile
+|     +- io.netty:netty-tcnative-classes:jar:2.0.81.Final:compile
+|     +- io.netty:netty-tcnative-boringssl-static:jar:linux-x86_64:2.0.81.Final:compile
+|     +- io.netty:netty-tcnative-boringssl-static:jar:linux-aarch_64:2.0.81.Final:compile
+|     +- io.netty:netty-tcnative-boringssl-static:jar:osx-x86_64:2.0.81.Final:compile
+|     +- io.netty:netty-tcnative-boringssl-static:jar:osx-aarch_64:2.0.81.Final:compile
+|     \- io.netty:netty-tcnative-boringssl-static:jar:windows-x86_64:2.0.81.Final:compile
++- commons-fileupload:commons-fileupload:jar:1.6.0:compile
++- org.flywaydb:flyway-mysql:jar:13.10.3:compile
++- com.mysql:mysql-connector-j:jar:26.7.0:compile
+\- org.freemarker:freemarker:jar:2.3.35:compile

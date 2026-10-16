@@ -21,7 +21,7 @@
         <!-- Embedded-server helpers only; not shipped with the ZooKeeper client application. -->
         <dependency><groupId>io.dropwizard.metrics</groupId><artifactId>metrics-core</artifactId><version>4.2.37</version><scope>test</scope></dependency>
         <dependency><groupId>org.xerial.snappy</groupId><artifactId>snappy-java</artifactId><version>1.1.10.12</version><scope>test</scope></dependency>
-        <!-- Modern H2 runtime. Legacy Flyway below is retained only for MySQL compatibility. -->
+        <!-- Historical engines are isolated fixture jars only. -->
         <dependency>
             <groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>13.10.3</version>
         </dependency>
@@ -107,9 +107,9 @@
             <version>1.6.0</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.flyway</groupId>
-            <artifactId>flyway-core</artifactId>
-            <version>2.2.1</version>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+            <version>13.10.3</version>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
@@ -213,9 +213,7 @@
                             <mainClass>com.deem.zkui.Main</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors><descriptor>src/assembly/runtime.xml</descriptor></descriptors>
                 </configuration>
                 <executions>
                     <execution>

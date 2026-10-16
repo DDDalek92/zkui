@@ -18,7 +18,6 @@
 package com.deem.zkui.dao;
 
 import com.deem.zkui.domain.History;
-import com.googlecode.flyway.core.Flyway;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -69,19 +68,7 @@ public class Dao {
             if ("org.h2.Driver".equals(globalProps.getProperty("jdbcClass"))) {
                 ModernH2History.migrate(globalProps);
             } else {
-                // Preserve the separately validated MySQL engine/checksum path in this increment.
-                Flyway flyway = new Flyway();
-                flyway.setValidateOnMigrate(true);
-                flyway.setDataSource(new com.googlecode.flyway.core.util.jdbc.DriverDataSource(
-                        globalProps.getProperty("jdbcClass"), globalProps.getProperty("jdbcUrl"),
-                        globalProps.getProperty("jdbcUser"), globalProps.getProperty("jdbcPwd")));
-                try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
-                // Historical explicit dev-clean behavior remains only on this legacy backend.
-                if ("dev".equals(globalProps.getProperty("env", "prod"))) {
-                    flyway.clean();
-                }
-                try (Connection connection = openConnection()) { HistoryMigrations.configure(flyway, connection); }
-                flyway.migrate();
+                HistoryMigrations.migrate(globalProps);
             }
             // A migration record alone does not prove the application table is usable.
             try (Connection connection = openConnection();
