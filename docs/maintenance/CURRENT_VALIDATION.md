@@ -17,9 +17,11 @@ PR #40 准确 head `c837c55012f8162e6855e0c1adc81d1659fa460e` 的 PR [3883696727
 
 PR #42 head `52f61f1` 的 PR38838883132 七项CI全成功并逐日志核对后合并为 `7be066b`：三平台各150项、Chrome3组及原有服务检查通过；runtime-audit含54组件/哈希一致/OSV零匹配/6项失败处理测试。37组件缺嵌入法律文件仍作为许可证分发缺口。
 
-PR #43 最终 head b9e464e 的 PR38839636106 七项成功，三平台各153项/重叠union标记、Chrome/MySQL/审计日志已核实，合并4da68f3。PR #44 最终 head696552bd 的PR38839670737七项成功，三平台各158项及cookie/审计/REST可信边界、MySQL/审计通过，合并dc446d1。中断的本地最终运行缺完整日志/XML，不计为成功；上述CI是有效验收证据。组合master七项CI仍需核实。
+PR #43 最终 head b9e464e 的 PR38839636106 七项成功，三平台各153项/重叠union标记、Chrome/MySQL/审计日志已核实，合并4da68f3。PR #44 最终 head696552bd 的PR38839670737七项成功，三平台各158项及cookie/审计/REST可信边界、MySQL/审计通过，合并dc446d1。中断的本地最终运行缺完整日志/XML，不计为成功；上述CI是有效验收证据。组合master dc446d1 的运行38852677978已成功；没有丢失#43/#44的组合改动。
 
-当前接续真实权限/空间耗尽及同路径恢复，见 STORAGE_FAILURE_MATRIX.md；本地无Docker，实际动态结果须由准确head新增job给出。
+PR #45 head2746b29 / PR38853032997八项全成功，三平台各161项、真实权限/实际ENOSPC/同路径重启历史保全全部标记核实后合并0d51bb1，见STORAGE_FAILURE_MATRIX.md。
+
+当前移除旧前端JS依赖，并补实际Chrome/Firefox HTTPS登录/编辑/角色/退出流程，见 LIVE_BROWSER_VALIDATION.md。新head动态CI尚待验收；不把移除JS叫作整个Bootstrap样式升级。
 
 ## 当前已验收基础
 

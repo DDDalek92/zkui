@@ -5,6 +5,18 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class DependencyPackagingIT {
+    @Test public void obsoleteFrontendPluginRuntimesAreNotShipped() throws Exception {
+        try (JarFile jar = new JarFile(System.getProperty("zkui.test.jar"))) {
+            assertNull(jar.getEntry("webapp/js/jquery-1.10.2.min.js"));
+            assertNull(jar.getEntry("webapp/js/bootstrap.min.js"));
+            assertNotNull(jar.getEntry("webapp/js/home.js"));
+            try (java.io.InputStream in = jar.getInputStream(jar.getEntry("webapp/template/common/include.ftl.html"))) {
+                String html = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                assertFalse(html.contains("jquery"));
+                assertFalse(html.contains("bootstrap.min.js"));
+            }
+        }
+    }
     @Test public void assembledJarContainsOnlyTheSelectedLoggingBindingAndReplacement() throws Exception {
         try (JarFile jar = new JarFile(System.getProperty("zkui.test.jar"))) {
             assertNull(jar.getEntry("META-INF/maven/log4j/log4j/pom.properties"));

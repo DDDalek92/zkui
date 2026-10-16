@@ -20,3 +20,7 @@ CI 日志必须包含三个 STORAGE_*_OK 标记，报告保存 storage-failure-e
 ## 边界
 
 此项是 Linux/POSIX/tmpfs 的真实权限和空间耗尽，不代表 Windows ACL、物理硬盘断电、块设备坏页或任意用户历史库普遍恢复。现有旧库导出/桥接/差量演练分别保留范围；MySQL权限、只读服务端和网络中断也不由 H2/tmpfs 结果代替。原Windows9s:1s、真实AD/LDAPS、许可证缺口和未实现增强仍在 TASKS.md。
+
+## 最终准确 head 结果
+
+PR #45 head2746b294916c25ce322da09f95f80c2d02b1120f 的PR38853032997八项CI全成功，三平台36单元+125集成=161项、Chrome3组及MySQL/旧ZK/运行审计通过。storage-faults三个必需标记全部在日志中出现，包含真实权限、实际ENOSPC和同一宿主挂载上清理/重启后的历史保全。逐日志审查后已合并为0d51bb1。没有本地Docker验证的冒称；上文待验收是提交时记录。物理介质/Windows/MySQL故障及更广历史范围仍开放。
