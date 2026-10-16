@@ -1,48 +1,41 @@
 # 当前维护验证快照
 
-## 2026-10-16 最新接续
+更新：2026-10-16。Fork DDDalek92/zkui，主分支 master。以下是当前事实；中间失败和过时的待CI快照保存在专题文档及Git历史，不能当作新结论。
 
-#43初始heada8203c22的本地clean verify于02:15:19 UTC BUILD SUCCESS：32单元+121集成=153项零失败/错误/跳过。最终再补祖先扫描逐段deadline检查并合入最新master7be066b（#42运行库存改动全部保留）；组合head须重新定向/全部CI验收，不能沿用初始head结果。#43只纠正重叠预算计数，不代表D01或原Windows问题完成。
+## 最近已合并
 
-重叠计数纠正后的定向回归于02:10:25 UTC完成BUILD SUCCESS：7单元+9集成=16项零失败/错误/跳过，包括原六项大树及三项新边界。完整clean verify与准确新head六项CI仍分别待验收；不以定向或旧head绿灯替代。
+| PR | 内容 | 准确head / PR CI | 结果 |
+| --- | --- | --- | --- |
+| #40 | 旧MySQL独立方言V1桥接/Main | c837c550 /38836967274 | 6job、三平台149项；旧库损坏/保全/重启标记 |
+| #41 | 跨根广度优先删除预检 | 2e5fffaf /38838235899 | 6job、三平台150项；旧实现确定性判红 |
+| #42 | SBOM/哈希/OSV/法律文件库存 | 52f61f1 /38838883132 | 7job、54运行组件/零匹配/6项扫描失败处理测试 |
+| #43 | 重叠选择并集预算及缺失后代拒绝 | b9e464e /38839636106 | 7job、三平台153项；9999并集/顺序/重复/前缀边界 |
+| #44 | 示例账号默认拒绝/可信TCP代理 | 696552bd /38839670737 | 7job、三平台158项；cookie/审计IP/REST实际边界 |
+| #45 | POSIX/ENOSPC/同路径恢复 | 2746b294 /38853032997 | 8job、三平台161项；实际权限、空间耗尽、503/ZK状态、重启历史保全 |
+| #46 | 去除旧前端JS/真实ChromeFirefox | 0cddf648 /38853654000 | 9job、三平台162项、Chrome静态4组、实际双浏览器HTTPS全流程 |
 
-#41已合并为15a281d9571255de01bb1dd7d4fd59837590328a，其准确head2e5fffaf的PR38838235899/push38838222625均六项成功；但独立审查新边界于02:06:21 UTC确定性判红：9998子节点根+其中两个显式孩子，实际9999节点被重复计为10001而误拒绝。现从该最新master独立纠正，保留共享广度优先预检，加入分段祖先合并、原始缺失选择拒绝及顺序/重复/相似前缀回归，见[DELETE_OVERLAP_ACCOUNTING.md](DELETE_OVERLAP_ACCOUNTING.md)。新head完整回归/全部CI须重新验收；旧绿灯不覆盖此问题。下方#41待验为提交时快照。
+#46已合并为8098559。主分支组合持续核对；CI有效结果不等于所有原用户环境复现。#44最终本地运行因中断缺日志/XML，未计为成功；本地#46非clean产物含旧资源被正确拒绝，clean定向8项通过，均未伪称完整浏览器验收。
 
-PR #40 准确 head `c837c55012f8162e6855e0c1adc81d1659fa460e` 的 PR [38836967274](https://github.com/DDDalek92/zkui/actions/runs/38836967274) 与 push [38836958256](https://github.com/DDDalek92/zkui/actions/runs/38836958256) 均六项 CI 成功；三平台各 32 单元 +117 集成，MySQL 日志含旧方言 seed/损坏 checksum 拒绝/桥接保全/现代 Main 重启全部新标记。源码审查后合并为 `d3a45f0a83b31cd95cfbe85cefb60729038e44ab`。
+## 当前接续
 
-现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后独立本地 clean verify 32 单元+118 集成=150 项零失败/错误/跳过；准确 head `2e5fffaf` 的 PR38838235899 六项 CI 全成功，三平台各150项、Chrome3组、Docker/MySQL/旧ZK标记已逐日志核实。PR #41 已合并为 `15a281d`。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
+实际IPv4/IPv6服务、地址回退/chroot、UI/REST及同一Session的HTTP双栈，见 IP_STACK_VALIDATION.md。本地clean4单元+2集成通过；与最新主分支合并后的准确head三平台完整CI待验收。仅改变测试夹具。
 
+## 维护基础已具备的能力
 
-## 本轮运行审计
+- Java17/Jetty12 EE8/JDBC；H2 2.5.252、Flyway core/mysql13.10.3、Connector/J26.7.0，旧引擎只在测试子进程。
+- 授权、REST遮蔽、会话轮换、CSRF、导入URL/上传边界、输出保护、Digest/LDAP基础、UTF-8、上下文、根路径和离线排序。
+- H2旧V1副本导出/桥接/现代Main、差量恢复及部分锁/中断/结构/格式拒绝；MySQL原V1和独立方言V1的副本桥接/TLS/Main/重启。
+- 有界大树浏览/遍历和删除预检；真实POSIX/tmpfs故障；Chrome/Firefox实际HTTPS登录/写入/角色/退出。
+- 14上游PR/46Issue逐项审查分类；延期、增强、无法复现与已修复明确区分，不更改上游状态。
 
-PR #42 head `52f61f1` 的 PR38838883132 七项CI全成功并逐日志核对后合并为 `7be066b`：三平台各150项、Chrome3组及原有服务检查通过；runtime-audit含54组件/哈希一致/OSV零匹配/6项失败处理测试。37组件缺嵌入法律文件仍作为许可证分发缺口。
+## 仍未完成
 
-PR #43 最终 head b9e464e 的 PR38839636106 七项成功，三平台各153项/重叠union标记、Chrome/MySQL/审计日志已核实，合并4da68f3。PR #44 最终 head696552bd 的PR38839670737七项成功，三平台各158项及cookie/审计/REST可信边界、MySQL/审计通过，合并dc446d1。中断的本地最终运行缺完整日志/XML，不计为成功；上述CI是有效验收证据。组合master dc446d1 的运行38852677978已成功；没有丢失#43/#44的组合改动。
-
-PR #45 head2746b29 / PR38853032997八项全成功，三平台各161项、真实权限/实际ENOSPC/同路径重启历史保全全部标记核实后合并0d51bb1，见STORAGE_FAILURE_MATRIX.md。
-
-当前移除旧前端JS依赖，并补实际Chrome/Firefox HTTPS登录/编辑/角色/退出流程，见 LIVE_BROWSER_VALIDATION.md。新head动态CI尚待验收；不把移除JS叫作整个Bootstrap样式升级。
-
-## 当前已验收基础
-
-- Java 17 / Jetty 12.1.14 EE8；JDBC 审计 DAO，H2 2.5.252、Flyway core/mysql 13.10.3、MySQL Connector/J 26.7.0。
-- ADMIN 导入授权、REST 角色遮蔽、会话轮换、CSRF、导入大小与 URL 白名单、输出转义、Digest/ACL、LDAP 基础、上下文路径和离线排序已有回归。
-- H2 原 1.3/Flyway 2 的独立副本导出/桥接/现代 Main、差量恢复及部分锁/中断/格式漂移拒绝已验收；MySQL 原 V1 和独立 MySQL 方言 V1 的独立副本桥接、TLS、现代 Main/重启已验收。
-- 已验收的是合成夹具和明确版本组合；不得原地打开唯一旧库、删除迁移记录或宣称任意历史库普遍兼容。
-- 上游 14 PR/46 Issue 已逐项审查分类，见 PR_REVIEW.md / ISSUE_TRIAGE.md。deferred/enhancement/not-reproducible 不等于已修复；不更改上游状态。
-
-## 未完成验收
-
-1. 跨根删除与重叠计数、默认示例账号和代理信任已由#41/#43/#44验证合并；组合主分支CI持续核验。
-2. 运行 SBOM、CVE 查询、第三方许可证与打包通知；构建/测试依赖、前端 vendored 资源、容器底层另列范围。
-3. 真正文件系统权限/磁盘空间故障、非 UTC 与时间精度、更广历史方言与备份恢复矩阵。
-4. 真实受信 LDAPS/AD、IPv6 双栈、Firefox 和反向代理 HTTPS；已通过的 Chrome、直接 HTTPS、三平台与 Docker 不覆盖这些环境。
-5. 剩余增强：逐节点 ACL 编辑、左栏属性、新导入协议、Kerberos；hosts 可选初始化已合并 #31，默认关闭。
-6. 原 Windows 9s:1s 性能环境无法获得；正式 Release/公共镜像尚未发布。
+1. 许可证再分发：37运行组件缺嵌入法律文件，字体/图片等历史资源来源待核；构建插件/npm开发依赖/测试旧引擎/容器OS的独立审计。运行OSV零匹配不覆盖这些范围。
+2. 非UTC/时间精度、更广历史方言及原用户库兼容；MySQL故障矩阵、Windows ACL和物理介质故障不由H2/tmpfs代替。唯一旧库不可原地试迁移。
+3. 真实AD/受信LDAPS、反向代理TLS、生产IPv6网络和原Windows9s:1s环境；已有合成/回环结果不冒充这些证据。
+4. 增强：逐节点ACL编辑、左栏属性、新导入协议、Kerberos/每用户ZK身份与描述功能；hosts显式可选初始化已完成并默认关闭。
+5. 正式发行：上述门槛未满足，未发布Release或公共镜像。当前是可验证的维护基线，不称全部问题修复。
 
 ## 证据入口
 
-- Java/HTTP/跨平台：JAVA17_VALIDATION.md、SECURITY_VALIDATION.md、OPERATIONS.md。
-- 历史迁移：MODERN_H2_RUNTIME.md、MODERN_MYSQL_RUNTIME.md、MYSQL_DIALECT_HISTORY.md、H2_AUDIT_DELTA.md。
-- 大树：LARGE_TREE_VALIDATION.md。
-- 早期中间状态与失败原始记录保存在本文件提交历史（至 PR #40）；此快照替代重复的“当前入口”，避免将历史待办误读为现状。
+TASKS.md；SECURITY_VALIDATION.md；PROXY_STARTUP_SECURITY.md；STORAGE_FAILURE_MATRIX.md；LIVE_BROWSER_VALIDATION.md；IP_STACK_VALIDATION.md；RUNTIME_AUDIT.md；MODERN_H2_RUNTIME.md；MODERN_MYSQL_RUNTIME.md；MYSQL_DIALECT_HISTORY.md；H2_AUDIT_DELTA.md。

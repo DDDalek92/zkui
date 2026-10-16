@@ -13,16 +13,23 @@ import org.apache.zookeeper.server.ZooKeeperServer;
 final class IsolatedZooKeeper implements AutoCloseable {
     private final ZooKeeperServer server;
     private final NIOServerCnxnFactory factory;
+    private final String bindHost;
 
     IsolatedZooKeeper(File directory) throws Exception {
         this(directory, 0);
     }
 
     IsolatedZooKeeper(File directory, int port) throws Exception {
+        this(directory, port, "127.0.0.1");
+    }
+
+    IsolatedZooKeeper(File directory, int port, String host) throws Exception {
+        if (!"127.0.0.1".equals(host) && !"::1".equals(host)) throw new AssertionError("Owned loopback addresses only");
+        bindHost = host;
         server = new ZooKeeperServer(directory, directory, 2000);
         factory = new NIOServerCnxnFactory();
         try {
-            factory.configure(new InetSocketAddress("127.0.0.1", port), 20);
+            factory.configure(new InetSocketAddress(bindHost, port), 20);
             factory.startup(server);
         } catch (Exception e) {
             close();
@@ -43,7 +50,7 @@ final class IsolatedZooKeeper implements AutoCloseable {
     }
 
     String address() {
-        return "127.0.0.1:" + factory.getLocalPort();
+        return (bindHost.contains(":") ? "[" + bindHost + "]" : bindHost) + ":" + factory.getLocalPort();
     }
 
     ZooKeeper connect() throws Exception {

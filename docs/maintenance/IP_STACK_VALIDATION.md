@@ -1,0 +1,9 @@
+# IPv4 / IPv6 真实回环验收
+
+2026-10-16。此项只改测试夹具，不改应用连接、地址解析或网络绑定策略。
+
+新增可选的test-only ::1 ZooKeeper监听，所有夹具只允许127.0.0.1/::1并使用OS分配端口。Ipv6ApplicationIT同时运行真实IPv4与IPv6服务，应用使用失效IPv4地址+有效目标的多地址连接与/appconfig chroot，通过真实JAR UI/REST核对中文节点值；另外使用同一Session分别经HTTP IPv4与IPv6回环访问同一个应用。
+
+本地clean定向验证于2026-10-16 13:04:02 +08:00完成：4单元+2集成，零失败/错误/跳过；两个IPV4_IPV6_*_OK标记均已出现。不是parser-only测试，不通过跳过或IPv4回退伪装IPv6：服务端分别明确bind ::1/127.0.0.1，端点断言保留。三平台准确head完整CI仍须通过后才合并。
+
+范围仅当前JDK/CI操作系统的回环双栈、ZooKeeper传输、多地址/chroot和HTTP/REST。没有外网路由、DNS AAAA优选、链路本地scope ID、容器IPv6网络、生产防火墙或上游原部署环境的验证。上游#108因此增加可重复的当前组合证据，不能声称全部IPv6网络环境普遍兼容。

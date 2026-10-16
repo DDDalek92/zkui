@@ -30,3 +30,7 @@ LiveBrowserSmoke 需要 ZKUI_OWNED_BROWSER_FIXTURE=true，并向 Node 子进程�
 本地定向首次未clean构建触发新增打包断言：target/classes仍留有此前拷贝的旧jQuery文件，组装包因此被拒绝。没有删除断言；改用项目规定的clean verify重新生成全部资源。源码已删除不代表旧构建目录产物已清理，交付与验收必须核对真正打包内容。
 
 本地最终clean定向验证于2026-10-16 13:00:26 +08:00完成BUILD SUCCESS：4单元+BrowserPagesIT/DependencyPackagingIT共4集成，零失败/错误/跳过。旧脚本不在新组装包、真实Main渲染夹具成功；此8项不冒充完整162项或实际浏览器运行。Chrome/Firefox和完整回归仍以准确headCI为准。
+
+## 最终远程结果
+
+PR #46 head0cddf648bb047458ccd6e25b002bcbf2fc24a6e9 的PR38853654000九项CI全部通过，三平台各36单元+126集成=162项，Chrome渲染检查4组；真实Chrome/Firefox job含两个LIVE_BROWSER_*_PASSED及Java独立ZK核对总标记。原storage/MySQL/旧ZK/运行审计也通过。审查合并为8098559。上述准确head证据替代提交时待CI状态，未扩张到原客户环境或CSS/字体许可证批准。
