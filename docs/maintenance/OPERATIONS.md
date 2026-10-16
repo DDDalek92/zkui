@@ -53,3 +53,7 @@ ADMIN/CSRF/UTF-8/大小/整批路径校验同UI，成功302。JSON/纯文本新�
 - #52/#106：LDAP身份、精确角色、DN模板、超时、LDAPS信任见README。隔离LDAP已测，原AD/证书链未访问，#106无正文环境。
 - #74：保留UI登录和ADMIN/CSRF；匿名只读REST兼容不提供匿名UI写入，不采纳删除过滤器。
 - #18：zkRootPath可限制专用命名空间，配合ACL保护HA；Kerberos/KDC/JAAS/SASL及每用户独立ZK身份仍未实现或验证。
+
+## 运行依赖证据（2026-10-16）
+
+`./mvnw -Paudit verify` 生成 runtime SBOM；CI 的 runtime-audit 另保存 SHA-256 库存、OSV 查询和按组件命名的 third-party-notices.zip，见 RUNTIME_AUDIT.md。下载证据后核对同一提交，不能将别的提交的无匹配查询当作当前版本结论。通知 ZIP 仅提取 JAR 已带文件，存在缺失清单，尚不是可直接发行的完整法律通知包。此流程不会读取业务配置或连接用户数据库。

@@ -2,13 +2,15 @@
 
 ## 2026-10-16 最新接续
 
+#43初始heada8203c22的本地clean verify于02:15:19 UTC BUILD SUCCESS：32单元+121集成=153项零失败/错误/跳过。最终再补祖先扫描逐段deadline检查并合入最新master7be066b（#42运行库存改动全部保留）；组合head须重新定向/全部CI验收，不能沿用初始head结果。#43只纠正重叠预算计数，不代表D01或原Windows问题完成。
+
 重叠计数纠正后的定向回归于02:10:25 UTC完成BUILD SUCCESS：7单元+9集成=16项零失败/错误/跳过，包括原六项大树及三项新边界。完整clean verify与准确新head六项CI仍分别待验收；不以定向或旧head绿灯替代。
 
 #41已合并为15a281d9571255de01bb1dd7d4fd59837590328a，其准确head2e5fffaf的PR38838235899/push38838222625均六项成功；但独立审查新边界于02:06:21 UTC确定性判红：9998子节点根+其中两个显式孩子，实际9999节点被重复计为10001而误拒绝。现从该最新master独立纠正，保留共享广度优先预检，加入分段祖先合并、原始缺失选择拒绝及顺序/重复/相似前缀回归，见[DELETE_OVERLAP_ACCOUNTING.md](DELETE_OVERLAP_ACCOUNTING.md)。新head完整回归/全部CI须重新验收；旧绿灯不覆盖此问题。下方#41待验为提交时快照。
 
 PR #40 准确 head `c837c55012f8162e6855e0c1adc81d1659fa460e` 的 PR [38836967274](https://github.com/DDDalek92/zkui/actions/runs/38836967274) 与 push [38836958256](https://github.com/DDDalek92/zkui/actions/runs/38836958256) 均六项 CI 成功；三平台各 32 单元 +117 集成，MySQL 日志含旧方言 seed/损坏 checksum 拒绝/桥接保全/现代 Main 重启全部新标记。源码审查后合并为 `d3a45f0a83b31cd95cfbe85cefb60729038e44ab`。
 
-现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后本地和准确 head 全 CI 待验收。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
+现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后独立本地 clean verify 32 单元+118 集成=150 项零失败/错误/跳过；准确 head `2e5fffaf` 的 PR38838235899 六项 CI 全成功，三平台各150项、Chrome3组、Docker/MySQL/旧ZK标记已逐日志核实。PR #41 已合并为 `15a281d`。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
 
 
 ## 当前已验收基础

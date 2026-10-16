@@ -16,6 +16,10 @@ After collection and before any mutation, every original selected path must appe
 
 ## Regression scope
 
+After merging #42, the final required workflow has seven jobs, including runtime-audit. All seven and both exact-head runs must be reviewed before merge; earlier six-job language describes the initial baseline only.
+
+Initial PR head a8203c22 completed local clean verify at2026-10-16 02:15:19 UTC:32 unit+121 integration=153, zero failures/errors/skips, BUILD SUCCESS. This predates the final per-ancestor deadline check and merge of latest master7be066b (#42 runtime inventory). All #42 changes are preserved. Final combined head needs its own focused/full CI; do not substitute the initial head's result. The ancestor loop now checks the original operation deadline at every segment.
+
 Focused corrected verification completed2026-10-16 02:10:25 UTC:7 unit+9 integration=16, zero failures/errors/skips, BUILD SUCCESS. This includes all existing six LargeTreeIT cases and three new overlap-accounting cases. Full clean verify and exact-head CI remain pending at this snapshot; local environment has no Docker/MySQL/Chrome and cannot validate those jobs.
 
 New DeleteOverlapAccountingIT:9999-node union accepted at discovery in both root/child orders and with duplicates, deliberately interrupted at first descendant read before deletes; missing selected descendants preserve ancestor/child in both orders; two6000-child roots with similar text prefixes still refuse with data intact. Existing LargeTreeIT keeps actual overlapping deletion, early4-read cap, HTTP413,312763 children and depth/byte checks. Full clean verify and all six exact-head CI jobs/logs are separate merge gates.

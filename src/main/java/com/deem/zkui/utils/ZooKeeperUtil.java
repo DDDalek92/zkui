@@ -445,6 +445,7 @@ public enum ZooKeeperUtil {
             boolean covered = !"/".equals(root) && selected.contains("/");
             for (int slash = root.lastIndexOf('/'); !covered && slash > 0;
                     slash = root.lastIndexOf('/', slash - 1)) {
+                budget.checkTime();
                 covered = selected.contains(root.substring(0, slash));
             }
             if (!covered) disjointRoots.add(root);
