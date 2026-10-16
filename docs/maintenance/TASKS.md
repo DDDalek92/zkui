@@ -19,7 +19,8 @@
 - 本轮 D01 运行依赖库存已实现，见 RUNTIME_AUDIT.md：54组件 SBOM/实际JAR哈希一致、OSV零匹配、61条法律文件/37组件缺嵌入通知；新增CI与6项失败处理测试，PR #42 head52f61f1 的PR38838883132七项全成功后已审查合并为7be066b。许可证分发、前端/构建/容器扫描仍开放。
 - #43 重叠选择计数最终head b9e464e / PR38839636106七项CI全成功，三平台各153项，已合并4da68f3。
 - #44 默认示例账号/可信代理最终head696552bd / PR38839670737七项CI全成功，三平台各158项，已合并dc446d1；本地中断报告不计成功。
-- 当前：真实权限/启动ENOSPC/运行审计失败与同路径恢复矩阵，见 STORAGE_FAILURE_MATRIX.md；准确head新增storage-faults尚待执行。
+- #45 head2746b29 / PR38853032997八项成功，三平台各161项，真实权限/ENOSPC/503/同路径重启保全标记齐全，已合并0d51bb1；见STORAGE_FAILURE_MATRIX.md。
+- 当前：退出旧jQuery/Bootstrap JS、保留现有原生交互，并补真实Chrome/Firefox HTTPS全流程，见LIVE_BROWSER_VALIDATION.md；准确新headCI待验收。
 - 下一项：许可证缺口与范围外依赖审计，随后实际权限/磁盘失败、更多时区夹具与部署验收。无法获得的原用户环境必须明确列为阻塞；分类/延期不冒充修复。
 
 ## 有序工作队列

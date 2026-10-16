@@ -1,0 +1,83 @@
+{
+  "scope": "actual shipped static assets after obsolete JS removal; no legal clearance or CVE-free assertion",
+  "assets": [
+    {
+      "path": "src/main/resources/webapp/css/bootstrap.min.css",
+      "sha256": "4e7de6206e96ad197e25cfb002e2719d9828c49d8e89c534e8e98fcf3edd7f3c",
+      "bytes": 104665,
+      "scope": "Bootswatch 3.1.1 / Bootstrap style / normalize, MIT header retained"
+    },
+    {
+      "path": "src/main/resources/webapp/css/zkacd.css",
+      "sha256": "0949f60db7a21278c54d98fa2a5a8c928c651516b53e70bbf8e39ff8f1d399b0",
+      "bytes": 2113,
+      "scope": "project source"
+    },
+    {
+      "path": "src/main/resources/webapp/js/home.js",
+      "sha256": "e8c93d058a63ad1891d055a744f45187d08f8fc03d6fccadd4862a17a4462bb7",
+      "bytes": 5720,
+      "scope": "project source"
+    },
+    {
+      "path": "src/main/resources/webapp/js/table-sort.js",
+      "sha256": "e56d57af321b9c161f79b8bc0e823788ee8ce4db44ea6ad193b0e7e04e36ff25",
+      "bytes": 1674,
+      "scope": "project source"
+    },
+    {
+      "path": "src/main/resources/webapp/fonts/glyphicons-halflings-regular.eot",
+      "sha256": "62fcbc4796f99217282f30c654764f572d9bfd9df7de9ce1e37922fa3caf8124",
+      "bytes": 20290,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/fonts/glyphicons-halflings-regular.svg",
+      "sha256": "b7ec6b4408a5e06d5077bc89fc65ca8d280851994661cb06973bfeaeb1e0766c",
+      "bytes": 65531,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/fonts/glyphicons-halflings-regular.ttf",
+      "sha256": "e27b969ef04fed3b39000b7b977e602d6e6a2b1c8c0d618bebf6dd875243ea3c",
+      "bytes": 41236,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/fonts/glyphicons-halflings-regular.woff",
+      "sha256": "63faf0af44a428f182686f0d924bb30e369a9549630c7b98a969394f58431067",
+      "bytes": 23292,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/images/construction.gif",
+      "sha256": "199b4f36d67568618f847bc0dedcde04e6c73001a793500a4d6a3be7da23ccc3",
+      "bytes": 9884,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/images/error.gif",
+      "sha256": "c05eefc1e4e68bf3d12064cf09a84a787e31ce8579028459c8f24fba9a23813c",
+      "bytes": 10075,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/images/loading.gif",
+      "sha256": "254a9e81e32a66be0cf1c19b03d75bc3494603a406bfa9ff4a4194aab1e37a45",
+      "bytes": 5340,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/images/zookeeper.ico",
+      "sha256": "5b532b0010235de0a1509ca5b7ae09e5e2a75e0359a7d77d5db053d8db43c615",
+      "bytes": 173442,
+      "scope": "historical binary provenance and attribution review remains open"
+    },
+    {
+      "path": "src/main/resources/webapp/images/zookeeper.png",
+      "sha256": "def1b21a5c288d9d1015c7c87278b6c39b84222d7dfa719eced05fdc86ff5f4e",
+      "bytes": 2266,
+      "scope": "historical binary provenance and attribution review remains open"
+    }
+  ]
+}

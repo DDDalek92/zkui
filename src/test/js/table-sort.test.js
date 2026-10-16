@@ -87,3 +87,25 @@ test('readonly page retains password masking after sorting', async () => {
     assert.deepEqual(failures, []);
   } finally { await page.close(); }
 });
+
+test('native modal traps focus, dismisses with Escape and restores the trigger', async () => {
+  const { page, failures } = await pageFor('home');
+  try {
+    assert.equal(await page.evaluate(() => typeof window.jQuery), 'undefined');
+    const trigger = page.locator('#addPropertyBtn');
+    await trigger.click();
+    const modal = page.locator('#addPropertyModal');
+    await modal.waitFor({ state: 'visible' });
+    assert.equal(await modal.getAttribute('aria-hidden'), 'false');
+    assert.equal(await page.locator('#newProperty').getAttribute('readonly'), null);
+    await page.keyboard.press('Shift+Tab');
+    assert.equal(await page.locator('#savePropertyBtn').evaluate(el => el === document.activeElement), true);
+    await page.keyboard.press('Tab');
+    assert.equal(await modal.locator('button.close').evaluate(el => el === document.activeElement), true);
+    await page.keyboard.press('Escape');
+    await modal.waitFor({ state: 'hidden' });
+    assert.equal(await trigger.evaluate(el => el === document.activeElement), true);
+    assert.equal(await page.locator('.modal-backdrop').count(), 0);
+    assert.deepEqual(failures, []);
+  } finally { await page.close(); }
+});

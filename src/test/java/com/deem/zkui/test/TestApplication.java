@@ -257,6 +257,7 @@ final class TestApplication extends ExternalResource {
     }
 
     String zkAddress() { return server.address(); }
+    String browserFixturePassword() { return password; }
 
     java.util.Set<Long> sessions() { return server.sessions(); }
 
