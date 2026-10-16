@@ -1,6 +1,6 @@
 zkui - Zookeeper UI Dashboard
 
-Maintenance compatibility: **Java17+**, H2 **2.5.252** with Flyway **13.10.3**; optional MySQL history storage requires **MySQL8.4+** with Connector/J26.7.0. Earlier database versions are offline migration sources, not in-place upgrade targets. Read [modern H2 runtime and mandatory migration boundaries](docs/maintenance/MODERN_H2_RUNTIME.md) and [MySQL scope](docs/maintenance/MYSQL_VALIDATION.md). MySQL still uses the legacy Flyway engine; final release/security audit remains pending. Large parents are browsed in100-node pages, and whole-tree operations have explicit work limits; see [large-tree scope](docs/maintenance/LARGE_TREE_VALIDATION.md).
+Maintenance compatibility: **Java17+**, H2 **2.5.252** and optional **MySQL8.4+** (Connector/J26.7.0), both using Flyway **13.10.3**. Earlier database versions and Flyway2 metadata are offline migration sources, not in-place upgrade targets. Read [H2 migration boundaries](docs/maintenance/MODERN_H2_RUNTIME.md) and [modern MySQL scope](docs/maintenance/MODERN_MYSQL_RUNTIME.md). Old Flyway engines are isolated test artifacts only; final release/security audit remains pending. Large parents are browsed in100-node pages with explicit whole-tree work limits; see [large-tree scope](docs/maintenance/LARGE_TREE_VALIDATION.md).
 
 ====================
 A UI dashboard that allows CRUD operations on Zookeeper.

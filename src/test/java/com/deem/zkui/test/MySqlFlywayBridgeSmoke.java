@@ -84,6 +84,7 @@ public final class MySqlFlywayBridgeSmoke {
         validatedBridge("zkui_bridge");
         try (Connection c = connect("zkui_bridge", true)) { require(converted.equals(snapshot(c, ROWS) + snapshot(c, ALL)), "Repeated bridge changed data"); }
         Files.writeString(EVIDENCE, converted, StandardCharsets.UTF_8);
+        try (Connection c = connect("zkui_bridge", true)) { Files.writeString(Path.of("target/mysql-bridge-app-snapshot.txt"), MySqlMigrationSmoke.snapshot(c)); }
         try (Connection c = connect("zkui_fixture", true)) { require(sealed.equals(snapshot(c, ROWS) + snapshot(c, ALL)), "Original database changed"); }
         System.out.println("MYSQL56_FLYWAY4_SUPPORTED_COPY_BRIDGE_ROWS_RETAINED_FIELDS_CHECKSUM_REPEAT_OK");
     }

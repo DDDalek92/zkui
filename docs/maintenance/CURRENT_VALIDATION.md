@@ -1,5 +1,15 @@
 # 当前维护验证快照
 
+## 2026-10-16 UTC 当前入口：MySQL现代运行路径
+
+最终源码完整clean verify于2026-10-16 00:48:32 UTC完成BUILD SUCCESS：32单元+117集成=149项零失败/错误/跳过，Failsafe timeout=false。包括最后的同名VIEW拒绝预检及真实Main负向helper修订；本机未运行MySQL/Docker/Chrome。组装测试证明无旧Flyway类、H2/MySQL provider并存；实际运行图已导出MODERN_RUNTIME_DEPENDENCY_TREE.txt。原V1 blob仍fadfd7e9462b348131965f855949529ac6ceaa39。此前中间149项不代替最终源码结果；新head真实MySQL及所有CI仍须独立核对。
+
+#38准确head `8af4efcb55b8baaceda70389cd151386e9cf36dc` 的PR38825255619/push38825243961六job均成功并逐日志审查后已合并；master `3e5873d5091429788cbde5bc28b9b12586addd24` 的[38825828726](https://github.com/DDDalek92/zkui/actions/runs/38825828726)六job也成功。三平台各149项零失败/错误/跳过、Chrome3组、容器/旧ZK/MySQL均通过；MySQL日志包含原引擎损坏checksum转换前拒绝、官方转换/保留字段/重复运行、现代模块重开/高ID/新建/坏checksum拒绝全部标记。master树286006b与已验head一致。下方#38待CI为历史快照。
+
+从该远程最新基线隔离继续：MySQL改为现代core/mysql13.10.3、移除运行Flyway2，使用assembly服务合并保留H2/MySQL插件；启动前拒绝旧格式、未知版本/非空库及schema/checksum异常，所有后端禁止dev自动清库。真实MySQL应用及负向矩阵见[MODERN_MYSQL_RUNTIME.md](MODERN_MYSQL_RUNTIME.md)，准确新head全CI仍须独立核验，不能把本地H2通过称为MySQL成功。首次离线构建因新环境缺Failsafe缓存而未执行，使用正常配置代理恢复下载，不关闭校验。
+
+Fork无其他未完成PR，上游仍14开放PR/46开放Issue且编号集合无新增。原V1未改，未接触用户库；D01整体、安全/许可证/SBOM、更广历史/故障与部署矩阵仍未完成。
+
 ## 2026-10-15 当前入口：MySQL Flyway 独立副本桥接
 
 #37准确head `1c4f50a00910190c42aed15267cf6c7fc2a5f16b` 的PR38819046224/push38819038419全部六job成功并逐日志审查后已合并；master `5182459ee6e8500268e65ec589124749590a0762` 的[运行38819831969](https://github.com/DDDalek92/zkui/actions/runs/38819831969)也六job success，Ubuntu/macOS/Windows各32单元+117集成=149项零失败/错误/跳过、Chrome3组、容器/MySQL/旧ZK均通过。master树 `4d334515b41594bb86e1e68611984fe690b5ecc9` 与已验证head一致；下方#37待CI是提交时快照。

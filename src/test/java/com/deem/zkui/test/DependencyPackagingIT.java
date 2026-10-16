@@ -37,10 +37,14 @@ public class DependencyPackagingIT {
         try (JarFile jar = new JarFile(System.getProperty("zkui.test.jar"))) {
             assertNull(jar.getEntry("org/javalite/activejdbc/Model.class"));
             assertEquals("13.10.3", version(jar, "org.flywaydb/flyway-core"));
-            // MySQL's modern module is a copied, isolated rehearsal artifact, not runtime yet.
-            assertNull(jar.getEntry("org/flywaydb/database/mysql/MySQLDatabase.class"));
-            // Legacy Flyway remains only for the separately validated MySQL path in this increment.
-            assertEquals("2.2.1", version(jar, "com.googlecode.flyway/flyway-core"));
+            assertEquals("13.10.3", version(jar, "org.flywaydb/flyway-mysql"));
+            assertNotNull(jar.getEntry("org/flywaydb/database/mysql/MySQLDatabase.class"));
+            assertNull(jar.getEntry("com/googlecode/flyway/core/Flyway.class"));
+            try (java.io.InputStream in = jar.getInputStream(jar.getEntry("META-INF/services/org.flywaydb.core.extensibility.Plugin"))) {
+                String providers = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                assertTrue(providers.contains("org.flywaydb.core.internal.database.h2.H2DatabaseType"));
+                assertTrue(providers.contains("org.flywaydb.database.mysql.MySQLDatabaseType"));
+            }
             try (java.net.URLClassLoader isolated = new java.net.URLClassLoader(
                     new java.net.URL[]{new java.io.File(jar.getName()).toURI().toURL()}, ClassLoader.getPlatformClassLoader())) {
                 Class<?> constants = isolated.loadClass("org.h2.engine.Constants");
