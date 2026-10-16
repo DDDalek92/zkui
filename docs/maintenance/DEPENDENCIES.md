@@ -1,5 +1,7 @@
 # 依赖维护状态与执行顺序
 
+> #39及合并master六job已核对通过，三平台各149项，运行Flyway2已移除。当前只补旧Flyway2+MySQL独立方言资源的副本桥接/现代Main路径，见[MYSQL_DIALECT_HISTORY.md](MYSQL_DIALECT_HISTORY.md)，运行图/POM/V1不改，新head仍须全CI。更多时间精度/故障及SBOM/漏洞/许可证审计未完成。
+
 实际运行图见[MODERN_RUNTIME_DEPENDENCY_TREE.txt](MODERN_RUNTIME_DEPENDENCY_TREE.txt)，固定dependency-plugin3.8.1/runtime tree导出，含core/mysql13.10.3且无运行com.googlecode Flyway；旧图保留为历史。图不是SBOM/CVE/许可证通过报告。
 
 > 当前现代MySQL增量：org.flywaydb core/mysql13.10.3进入运行包，com.googlecode Flyway2从运行依赖移除；旧2/4仅隔离历史夹具。assembly聚合服务注册，同时保留H2/MySQL插件。范围/待验收见[MODERN_MYSQL_RUNTIME.md](MODERN_MYSQL_RUNTIME.md)，准确新head全部CI成功后才准入；下方“MySQL仍运行旧引擎”为历史快照。SBOM/漏洞/许可证审计仍未完成。

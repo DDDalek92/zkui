@@ -27,10 +27,10 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #21的Java17/Jetty12 EE8/JDBC、#23的启动/审计失败策略、#28的MySQL8.4/Connector26.7/真实旧库导出与TLS、#29的ZK/Netty/模板/IO已完成。#32–#36补齐有限副本结构/锁/导入中断/差量恢复及文件格式保护。本增量实现H2 2.5.252/Flyway13.10.3运行时与旧V1桥接的真实Main/HTTP/审计ID/重启，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准入以准确新head全CI为准。本增量实现现代MySQL API/module与运行Flyway2移除，见MODERN_MYSQL_RUNTIME.md，仍待准确head全CI准入；实际权限/磁盘失败、更广历史/时区夹具与安全/许可证/SBOM审计未完成；不等于D01或任意旧库迁移全完成。 |
+| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #21的Java17/Jetty12 EE8/JDBC、#23的启动/审计失败策略、#28的MySQL8.4/Connector26.7/真实旧库导出与TLS、#29的ZK/Netty/模板/IO已完成。#32–#36补齐有限副本结构/锁/导入中断/差量恢复及文件格式保护。本增量实现H2 2.5.252/Flyway13.10.3运行时与旧V1桥接的真实Main/HTTP/审计ID/重启，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准入以准确新head全CI为准。现代MySQL API/module与运行Flyway2移除已由#39准确head和master六job验证，见MODERN_MYSQL_RUNTIME.md；本次继续旧MySQL方言历史副本路径，准入见MYSQL_DIALECT_HISTORY.md；实际权限/磁盘失败、更广历史/时区夹具与安全/许可证/SBOM审计未完成；不等于D01或任意旧库迁移全完成。 |
 | I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
 | V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
-| I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
+| I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；本轮本地批量删除预检曾读取超时、原样定向复跑通过，根因未确定，见CURRENT_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
 | E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | hosts显式初始化/幂等/单独覆盖开关已由#31准确head六job验证并合并，默认关闭，见HOSTS_BOOTSTRAP.md；其他增强尚未实现 |
 | V02 | 验收维护版、已知限制和发布说明 | 维护预览说明和验证报告已准备，Fork PR #19；正式发行仍受D01/历史DB与部署验证阻塞，未发布 |
 
@@ -109,6 +109,9 @@
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | deferred；312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
 
 ## 本轮接续与优先队列（2026-10-15）
+
+- #39准确headc0971059的PR38831718747/push38831710330全六job成功后已审查合并；master3574b45的38832294886也六job成功，三平台各149项。H2/MySQL统一现代Flyway、运行旧引擎移除及现代Main有限验收完成；下方“待新head/运行Flyway2未移除”为历史。
+- 当前首个接续项：旧Flyway2先应用MySQL独立方言V1的正常/损坏副本，匹配location校验/官方桥接/现代Main重启，见[MYSQL_DIALECT_HISTORY.md](MYSQL_DIALECT_HISTORY.md)。仅测试/文档，运行实现/POM/两个V1不改，新head全CI仍是准入门槛。5.6仅旧格式生成器，不是扩大应用支持基线。后续继续时间精度/实际权限磁盘恢复与安全依赖审计，再推进I02原环境及部署/增强。
 
 - #38已在准确head8af4efc的PR38825255619/push38825243961全六job成功并审查合并，master3e5873d的38825828726也六job成功；三平台各149项、真实MySQL桥接/拒绝全部标记通过。现从该最新远程基线隔离继续现代MySQL实际应用bootstrap、服务注册合并与运行Flyway2移除，见[MODERN_MYSQL_RUNTIME.md](MODERN_MYSQL_RUNTIME.md)，本增量准确head全CI仍须独立核验。
 - 下一项仍为更广历史方言/时间精度与时区/失败恢复/安全依赖审计，再推进I02原环境及部署/增强矩阵。现代应用有限验收不等于任意用户旧库迁移放行，D01及全部issue不能标为完成。

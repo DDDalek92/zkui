@@ -27,7 +27,7 @@ public final class MySqlMigrationSmoke {
     }
 
     private static Properties config(String database, boolean seed) {
-        if (!Set.of("zkui_fixture", "zkui_app_bridge", "zkui_fresh", "zkui_unknown", "zkui_future", "zkui_drift").contains(database)) throw new AssertionError();
+        if (!Set.of("zkui_fixture", "zkui_app_bridge", "zkui_fresh", "zkui_unknown", "zkui_future", "zkui_drift", "zkui_dialect_source").contains(database)) throw new AssertionError();
         Properties props = new Properties();
         props.setProperty("env", "prod");
         props.setProperty("jdbcClass", "com.mysql.cj.jdbc.Driver");
@@ -45,7 +45,16 @@ public final class MySqlMigrationSmoke {
     }
 
     private static void seed() throws Exception {
-        Properties props = config("zkui_fixture", true);
+        seed("zkui_fixture", "db/migration", "target/mysql-original-snapshot.txt");
+        System.out.println("MYSQL56_ORIGINAL_V1_ROWS_AND_METADATA_SEEDED");
+    }
+
+    static void seedDialect() throws Exception {
+        seed("zkui_dialect_source", "db/mysql-migration", "target/mysql-dialect-original-snapshot.txt");
+    }
+
+    private static void seed(String database, String location, String evidence) throws Exception {
+        Properties props = config(database, true);
         try (Connection connection = connect(props)) {
             require(connection.getMetaData().getDatabaseProductVersion().startsWith("5.6."), "Old fixture server mismatch");
             require(connection.getMetaData().getDriverVersion().contains("8.0.16"), "Old fixture driver mismatch");
@@ -53,6 +62,7 @@ public final class MySqlMigrationSmoke {
         Class<?> type = Class.forName("com.googlecode.flyway.core.Flyway");
         Object flyway = type.getConstructor().newInstance();
         type.getMethod("setDataSource", String.class, String.class, String.class).invoke(flyway, props.getProperty("jdbcUrl"), "root", PASSWORD);
+        type.getMethod("setLocations", String[].class).invoke(flyway, (Object) new String[]{location});
         type.getMethod("setValidateOnMigrate", boolean.class).invoke(flyway, true);
         type.getMethod("migrate").invoke(flyway); // Genuine isolated original engine and V1.
         try (Connection connection = connect(props);
@@ -62,16 +72,15 @@ public final class MySqlMigrationSmoke {
             insert.setLong(1, HIGH_ID); insert.setString(2, "旧用户");
             insert.setTimestamp(3, new Timestamp(1700000000000L)); insert.setString(4, TEXT); insert.setString(5, "127.0.0.1"); insert.executeUpdate();
             insert.setLong(1, HIGH_ID + 10); insert.setString(4, "x".repeat(500)); insert.executeUpdate();
-            Files.writeString(Path.of("target/mysql-original-snapshot.txt"), snapshot(connection));
+            Files.writeString(Path.of(evidence), snapshot(connection));
         }
-        System.out.println("MYSQL56_ORIGINAL_V1_ROWS_AND_METADATA_SEEDED");
     }
 
     static String snapshot(Connection connection) throws Exception {
         return rows(connection, "SELECT * FROM histories ORDER BY id") + rows(connection, "SELECT * FROM schema_version ORDER BY installed_rank");
     }
 
-    private static String rows(Connection connection, String sql) throws Exception {
+    static String rows(Connection connection, String sql) throws Exception {
         StringBuilder result = new StringBuilder(sql);
         try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {
             while (rows.next()) {
@@ -200,7 +209,7 @@ public final class MySqlMigrationSmoke {
         packagedHistoryPage(database, false);
     }
 
-    private static void packagedHistoryPage(Properties database, boolean expectRefusal) throws Exception {
+    static void packagedHistoryPage(Properties database, boolean expectRefusal) throws Exception {
         Path work = Files.createTempDirectory("zkui-owned-mysql-http-");
         Properties props = new Properties();
         try (InputStream in = Files.newInputStream(Path.of("config.cfg"))) { props.load(in); }
