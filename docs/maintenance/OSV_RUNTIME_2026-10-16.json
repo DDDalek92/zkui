@@ -1,0 +1,297 @@
+{
+  "status": "no_matches",
+  "queried_at": "2026-10-16T02:07:24.654790+00:00",
+  "scope": "resolved Maven runtime only; not frontend, test/build plugins or container OS",
+  "source_commit": "15a281d9571255de01bb1dd7d4fd59837590328a",
+  "source_tree_dirty": true,
+  "bom_sha256": "a4f77b6222bf64e59c644f0403272679c33b6352da9af69f5539bad9b1e5c0e1",
+  "components": 54,
+  "queries": [
+    {
+      "package": "ch.qos.reload4j:reload4j",
+      "version": "1.2.27",
+      "vulnerabilities": []
+    },
+    {
+      "package": "com.fasterxml.jackson.core:jackson-annotations",
+      "version": "2.22",
+      "vulnerabilities": []
+    },
+    {
+      "package": "com.googlecode.json-simple:json-simple",
+      "version": "1.1",
+      "vulnerabilities": []
+    },
+    {
+      "package": "com.h2database:h2",
+      "version": "2.5.252",
+      "vulnerabilities": []
+    },
+    {
+      "package": "com.mysql:mysql-connector-j",
+      "version": "26.7.0",
+      "vulnerabilities": []
+    },
+    {
+      "package": "commons-fileupload:commons-fileupload",
+      "version": "1.6.0",
+      "vulnerabilities": []
+    },
+    {
+      "package": "commons-io:commons-io",
+      "version": "2.22.0",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-buffer",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-codec",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-common",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-handler",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-resolver",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-tcnative-boringssl-static",
+      "version": "2.0.81.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-tcnative-classes",
+      "version": "2.0.81.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-transport",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-transport-classes-epoll",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-transport-native-epoll",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "io.netty:netty-transport-native-unix-common",
+      "version": "4.1.137.Final",
+      "vulnerabilities": []
+    },
+    {
+      "package": "jakarta.annotation:jakarta.annotation-api",
+      "version": "1.3.5",
+      "vulnerabilities": []
+    },
+    {
+      "package": "jakarta.transaction:jakarta.transaction-api",
+      "version": "1.3.3",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.apache.yetus:audience-annotations",
+      "version": "0.12.0",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.apache.zookeeper:zookeeper",
+      "version": "3.9.6",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.apache.zookeeper:zookeeper-jute",
+      "version": "3.9.6",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-annotations",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-nested",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-plus",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-security",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-servlet",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee8:jetty-ee8-webapp",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.ee:jetty-ee-webapp",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty.toolchain:jetty-servlet-api",
+      "version": "4.0.9",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-annotations",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-http",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-io",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-jndi",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-plus",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-security",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-server",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-session",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-util",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-xml",
+      "version": "12.1.14",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.flywaydb:flyway-core",
+      "version": "13.10.3",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.flywaydb:flyway-mysql",
+      "version": "13.10.3",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.freemarker:freemarker",
+      "version": "2.3.35",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.ow2.asm:asm",
+      "version": "9.10.1",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.ow2.asm:asm-commons",
+      "version": "9.10.1",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.ow2.asm:asm-tree",
+      "version": "9.10.1",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.slf4j:slf4j-api",
+      "version": "2.0.20",
+      "vulnerabilities": []
+    },
+    {
+      "package": "org.slf4j:slf4j-reload4j",
+      "version": "2.0.20",
+      "vulnerabilities": []
+    }
+  ],
+  "legal_entries": 61,
+  "missing_embedded_legal": [
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-webapp@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-xml@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-util@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee/jetty-ee-webapp@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-servlet@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-nested@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-session@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-security@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-annotations@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-annotations@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-plus@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-security@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-plus@12.1.14?type=jar",
+    "pkg:maven/jakarta.transaction/jakarta.transaction-api@1.3.3?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-jndi@12.1.14?type=jar",
+    "pkg:maven/org.ow2.asm/asm@9.10.1?type=jar",
+    "pkg:maven/org.ow2.asm/asm-commons@9.10.1?type=jar",
+    "pkg:maven/org.ow2.asm/asm-tree@9.10.1?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-server@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-http@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-io@12.1.14?type=jar",
+    "pkg:maven/com.h2database/h2@2.5.252?type=jar",
+    "pkg:maven/com.googlecode.json-simple/json-simple@1.1?type=jar",
+    "pkg:maven/org.apache.zookeeper/zookeeper@3.9.6?type=jar",
+    "pkg:maven/org.apache.zookeeper/zookeeper-jute@3.9.6?type=jar",
+    "pkg:maven/io.netty/netty-handler@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-common@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-resolver@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-buffer@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport-native-unix-common@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-codec@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport-native-epoll@4.1.137.Final?classifier=linux-x86_64&type=jar",
+    "pkg:maven/io.netty/netty-transport-classes-epoll@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?type=jar",
+    "pkg:maven/io.netty/netty-tcnative-classes@2.0.81.Final?type=jar",
+    "pkg:maven/org.flywaydb/flyway-mysql@13.10.3?type=jar"
+  ],
+  "license_status": "metadata_inventory_only; redistribution review is separate"
+}

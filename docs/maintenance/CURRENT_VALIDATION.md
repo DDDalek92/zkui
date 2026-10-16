@@ -4,7 +4,7 @@
 
 PR #40 准确 head `c837c55012f8162e6855e0c1adc81d1659fa460e` 的 PR [38836967274](https://github.com/DDDalek92/zkui/actions/runs/38836967274) 与 push [38836958256](https://github.com/DDDalek92/zkui/actions/runs/38836958256) 均六项 CI 成功；三平台各 32 单元 +117 集成，MySQL 日志含旧方言 seed/损坏 checksum 拒绝/桥接保全/现代 Main 重启全部新标记。源码审查后合并为 `d3a45f0a83b31cd95cfbe85cefb60729038e44ab`。
 
-现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后本地和准确 head 全 CI 待验收。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
+现在独立修复跨根删除的深度优先预检低效路径，见 [LARGE_TREE_VALIDATION.md](LARGE_TREE_VALIDATION.md)。新增确定性回归在旧实现判红；修复后独立本地 clean verify 32 单元+118 集成=150 项零失败/错误/跳过；准确 head `2e5fffaf` 的 PR38838235899 六项 CI 全成功，三平台各150项、Chrome3组、Docker/MySQL/旧ZK标记已逐日志核实。PR #41 已合并为 `15a281d`。历史超时、真实环境缺口及其余 D01/E01/V01/V02 继续保留。
 
 
 ## 当前已验收基础
