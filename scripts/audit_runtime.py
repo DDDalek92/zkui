@@ -80,6 +80,17 @@ def resolved_jars(path):
     return jars
 
 
+def is_legal_document(name):
+    """Match the document's basename, never a parent Java package named license."""
+    basename = PurePosixPath(name).name
+    if not re.fullmatch(r"(?:LICENSE|NOTICE|COPYING)(?:[._-][A-Za-z0-9][A-Za-z0-9._-]*)?", basename, re.I):
+        return False
+    # In particular, com/mysql/.../Notice.class is executable code, not a notice.
+    return PurePosixPath(basename).suffix.lower() not in {
+        ".class", ".java", ".jar", ".zip", ".gz", ".so", ".dll", ".exe",
+        ".png", ".jpg", ".jpeg", ".gif", ".woff", ".woff2", ".ttf", ".ico"}
+
+
 def inventory(bom, jars, output):
     components = bom.get("components", [])
     if not components:
@@ -105,12 +116,14 @@ def inventory(bom, jars, output):
             legal = []
             with zipfile.ZipFile(jar) as source:
                 for item in source.infolist():
-                    if item.is_dir() or not re.search(r"(^|/)(LICENSE|NOTICE|COPYING)([._/-]|$)", item.filename, re.I):
+                    if item.is_dir() or not is_legal_document(item.filename):
                         continue
                     name = PurePosixPath(item.filename)
                     if name.is_absolute() or ".." in name.parts:
                         raise ValueError("Unsafe legal entry path")
                     entry = "/".join((*key[:3], classifier or "main", item.filename))
+                    if entry in legal:
+                        raise ValueError("Duplicate legal entry path: " + item.filename)
                     notices.writestr(entry, source.read(item))
                     legal.append(entry)
             rows.append({"purl": component["purl"], "sha256": sha, "licenses": component["licenses"], "legal_entries": legal})

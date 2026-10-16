@@ -1,0 +1,911 @@
+{
+  "source_commit": "b8b24db597e37d239f80d2b025fa67ffa4850130",
+  "source_tree_dirty": true,
+  "bom_sha256": "e301fd3b87af0032094e75db6d6cb3f9f37307be5bb1b99534b6d8d3bc5c2936",
+  "components": 54,
+  "status": "no_matches",
+  "legal_entries": 44,
+  "missing_embedded_legal": [
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-webapp@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-xml@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-util@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee/jetty-ee-webapp@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-servlet@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-nested@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-session@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-security@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-annotations@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-annotations@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-plus@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-security@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-plus@12.1.14?type=jar",
+    "pkg:maven/jakarta.transaction/jakarta.transaction-api@1.3.3?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-jndi@12.1.14?type=jar",
+    "pkg:maven/org.ow2.asm/asm@9.10.1?type=jar",
+    "pkg:maven/org.ow2.asm/asm-commons@9.10.1?type=jar",
+    "pkg:maven/org.ow2.asm/asm-tree@9.10.1?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-server@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-http@12.1.14?type=jar",
+    "pkg:maven/org.eclipse.jetty/jetty-io@12.1.14?type=jar",
+    "pkg:maven/com.h2database/h2@2.5.252?type=jar",
+    "pkg:maven/com.googlecode.json-simple/json-simple@1.1?type=jar",
+    "pkg:maven/org.apache.zookeeper/zookeeper@3.9.6?type=jar",
+    "pkg:maven/org.apache.zookeeper/zookeeper-jute@3.9.6?type=jar",
+    "pkg:maven/io.netty/netty-handler@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-common@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-resolver@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-buffer@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport-native-unix-common@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-codec@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-transport-native-epoll@4.1.137.Final?classifier=linux-x86_64&type=jar",
+    "pkg:maven/io.netty/netty-transport-classes-epoll@4.1.137.Final?type=jar",
+    "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?type=jar",
+    "pkg:maven/io.netty/netty-tcnative-classes@2.0.81.Final?type=jar",
+    "pkg:maven/org.flywaydb/flyway-mysql@13.10.3?type=jar"
+  ],
+  "scope": "Corrected embedded runtime legal-document inventory only; no redistribution clearance",
+  "previous_incorrect_legal_entries": 61,
+  "excluded_code_entries": 17,
+  "python_tests": 16,
+  "inventory_sha256": "a31119d1f821328aa2d9c388458c59decab955a9111f1626d6723a6a8d49fe9f",
+  "notice_zip_sha256": "aa8e8a862c1d5b01a213951449e0f5652677bcc88dd68cc02339d3ef445f85ef",
+  "components_inventory": [
+    {
+      "purl": "pkg:maven/commons-io/commons-io@2.22.0?type=jar",
+      "sha256": "2b9a7b1f726fb86216dbd2c8321eabe0221dbd5b1be81c18e1cb53811b104758",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "commons-io/commons-io/2.22.0/main/META-INF/LICENSE.txt",
+        "commons-io/commons-io/2.22.0/main/META-INF/NOTICE.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.flywaydb/flyway-core@13.10.3?type=jar",
+      "sha256": "eb38d49092c423aa421fab351df5fd093e2bc07449b100a7ace4aca9efbb9f3c",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.flywaydb/flyway-core/13.10.3/main/META-INF/LICENSE.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.22?type=jar",
+      "sha256": "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "com.fasterxml.jackson.core/jackson-annotations/2.22/main/META-INF/LICENSE",
+        "com.fasterxml.jackson.core/jackson-annotations/2.22/main/META-INF/NOTICE"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-webapp@12.1.14?type=jar",
+      "sha256": "1c772083535fc8a1cce1cfb3d4de26cb5a6cbe1aae49f96985ec00c27abf5d29",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-xml@12.1.14?type=jar",
+      "sha256": "111ee67bbd31b18081d7efbae91a804e8f5485ae5d90cd40445e2228710b0fd3",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-util@12.1.14?type=jar",
+      "sha256": "deb2a47bb9659c69076da1020d058c0ededba61dcd1aebccf83fce4719164adc",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee/jetty-ee-webapp@12.1.14?type=jar",
+      "sha256": "d333fb32fbbd19429ac848b4f94e8b0f688dd9748a5ab59eae707699556274b3",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-servlet@12.1.14?type=jar",
+      "sha256": "75104e5c4adb6ca091023d09d56c6f255a66d86e9909229706754ab26b0306c4",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-nested@12.1.14?type=jar",
+      "sha256": "efcf298c279b3bf8f12d2bfa92314333786f0ca0f81b41cd454d6b32e86f6866",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-session@12.1.14?type=jar",
+      "sha256": "5b091e6132ba30a56ce872e07cdc0de263163e46f88d5dea99310d3a6d00899a",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-security@12.1.14?type=jar",
+      "sha256": "803ed433bbd52c16b0912216e664765b1cbeb1ac6219a38f0176459c33682b56",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-annotations@12.1.14?type=jar",
+      "sha256": "6da1d77860c44ae42debb03e8ac4d491833de22943684376c3aac4811111a262",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/jakarta.annotation/jakarta.annotation-api@1.3.5?type=jar",
+      "sha256": "85fb03fc054cdf4efca8efd9b6712bbb418e1ab98241c4539c8585bbc23e1b8a",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-with-classpath-exception"
+          }
+        }
+      ],
+      "legal_entries": [
+        "jakarta.annotation/jakarta.annotation-api/1.3.5/main/META-INF/LICENSE.md",
+        "jakarta.annotation/jakarta.annotation-api/1.3.5/main/META-INF/NOTICE.md"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-annotations@12.1.14?type=jar",
+      "sha256": "7077b6a7b5f066e836b43f2c3f8c32a84c82f85b25b66abee69874b549ae27fe",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-plus@12.1.14?type=jar",
+      "sha256": "c7d3b1056f892139747dca846bdb83f3adbc72c084d2cea4f41dacf582ac39ee",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-security@12.1.14?type=jar",
+      "sha256": "62d4a246b978adee64d081025546466a05ee7b57b1dd6293d93953a80ba4cbe7",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.ee8/jetty-ee8-plus@12.1.14?type=jar",
+      "sha256": "6e487b107dfda10809d0a6215613892290eb992ac8ea14c27f86d9914c6b6b52",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/jakarta.transaction/jakarta.transaction-api@1.3.3?type=jar",
+      "sha256": "0b02a194dd04ee2e192dc9da9579e10955dd6e8ac707adfc91d92f119b0e67ab",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "GPL-2.0-with-classpath-exception"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-jndi@12.1.14?type=jar",
+      "sha256": "e753b115b199bc7cec512a10dc650c97118c931176e187a284352e242a4adda6",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty.toolchain/jetty-servlet-api@4.0.9?type=jar",
+      "sha256": "89916c0360ad8be8b0b6bab41d9f0d5d03b742abb5e13aeeac06817c14fdf037",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "EPL-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.eclipse.jetty.toolchain/jetty-servlet-api/4.0.9/main/META-INF/LICENSE.md",
+        "org.eclipse.jetty.toolchain/jetty-servlet-api/4.0.9/main/META-INF/NOTICE.md"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.ow2.asm/asm@9.10.1?type=jar",
+      "sha256": "ed825d10ab1399c8c0cb669e688cf0c8c82629b4c8399b58352b68e92ca10fcb",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "url": "https://opensource.org/licenses/BSD-3-Clause"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.ow2.asm/asm-commons@9.10.1?type=jar",
+      "sha256": "6d0abefb7cbf972ea16edb37ec14835372505063a45f976ab7ea889ed9497895",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "url": "https://opensource.org/licenses/BSD-3-Clause"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.ow2.asm/asm-tree@9.10.1?type=jar",
+      "sha256": "3dfb0d5b6a106cd40b5b250e39935fbf2f927f4477546a5369a3ac609cf0506b",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "url": "https://opensource.org/licenses/BSD-3-Clause"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-server@12.1.14?type=jar",
+      "sha256": "62a2c691ecb3b60178e7b1a64d498261d31bcef76dd19147b89dcb2c6f784f30",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-http@12.1.14?type=jar",
+      "sha256": "a898f3dad99c2505409047d849cac7f652eced5853f9dad711395a26cd681e13",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.eclipse.jetty/jetty-io@12.1.14?type=jar",
+      "sha256": "9a41452f362f5bd96e017f16d6b66d19d2d60a5981eafd3729367c1d535eb5e9",
+      "licenses": [
+        {
+          "license": {
+            "id": "EPL-2.0",
+            "url": "https://www.eclipse.org/legal/epl-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.slf4j/slf4j-api@2.0.20?type=jar",
+      "sha256": "7e1446499b359675d8aabe6af2de86b85e72ae8a2a932c0b40d0e5ba57097439",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/license/mit/"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.slf4j/slf4j-api/2.0.20/main/META-INF/LICENSE.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.slf4j/slf4j-reload4j@2.0.20?type=jar",
+      "sha256": "194277130731fe0ef2a7237759f31a71dc62c116aa4fce26effeb371576ee85b",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/license/mit/"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.slf4j/slf4j-reload4j/2.0.20/main/META-INF/LICENSE.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/ch.qos.reload4j/reload4j@1.2.27?type=jar",
+      "sha256": "1caff35eed8ae949034b8723543b34c96e1785041d1096ab8dfc3b43fd63503d",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "ch.qos.reload4j/reload4j/1.2.27/main/META-INF/LICENSE",
+        "ch.qos.reload4j/reload4j/1.2.27/main/META-INF/NOTICE"
+      ]
+    },
+    {
+      "purl": "pkg:maven/com.h2database/h2@2.5.252?type=jar",
+      "sha256": "90b11dc413da82070ef15fc943282c1408e6ffd34fa68998335fea8603b5ff20",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "name": "EPL 1.0",
+            "url": "https://opensource.org/licenses/eclipse-1.0.php"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/com.googlecode.json-simple/json-simple@1.1?type=jar",
+      "sha256": "2d9484f4c649f708f47f9a479465fc729770ee65617dca3011836602264f6439",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.apache.zookeeper/zookeeper@3.9.6?type=jar",
+      "sha256": "09bdf93be7c0b5b7cd9fe51bee6abe424796cd5aaf75cf0c10bbd6f1273562ee",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.apache.zookeeper/zookeeper-jute@3.9.6?type=jar",
+      "sha256": "74f9cb1e4ba899ecc4b816201b4afd1c63c256705bd9176393fac4071597c75f",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/org.apache.yetus/audience-annotations@0.12.0?type=jar",
+      "sha256": "ffb101fc066360ff3c77457c927fd7967fb096a6ee9e046ab7071447d8208efc",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.apache.yetus/audience-annotations/0.12.0/main/META-INF/LICENSE",
+        "org.apache.yetus/audience-annotations/0.12.0/main/META-INF/NOTICE"
+      ]
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-handler@4.1.137.Final?type=jar",
+      "sha256": "d0e4c6ee4779f59f6ab2fb5d388e4f57147c82270164b37945764bb9bda96a44",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-common@4.1.137.Final?type=jar",
+      "sha256": "d31926b01adcc07af86f5e27b81b6d6c115df17d366e835d1fc3f5a1924e7e52",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-resolver@4.1.137.Final?type=jar",
+      "sha256": "b4cf2aeedd9fc7c8c439bbfe574f63cfe5b83392e88bbc07ca0e8424b7cff955",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-buffer@4.1.137.Final?type=jar",
+      "sha256": "f474b14c7734f15e0540394cb6f39d67777b7581a42919e4ac89d253d4efd929",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-transport@4.1.137.Final?type=jar",
+      "sha256": "6251adc2a2921572382732a2db188d4f4f2251fd6ebb49c5d44bbf33d6bfb1a7",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-transport-native-unix-common@4.1.137.Final?type=jar",
+      "sha256": "8056e7637f9948f953314894cf995ab664711b66c73c4cd5b593ae84f0b1048c",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-codec@4.1.137.Final?type=jar",
+      "sha256": "9987b6a660b0a6b1f0d791485dae33180b3d1c63687c006fe6d3fd025e9e3798",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-transport-native-epoll@4.1.137.Final?classifier=linux-x86_64&type=jar",
+      "sha256": "185db6053e0e9573d36fa4eb6567b26139afaa4daa7bf5a068e661568304542b",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-transport-classes-epoll@4.1.137.Final?type=jar",
+      "sha256": "55049554b799dc8e53bf234fffa36e001f7b5b65c32994b9bd59fc6356f1c52f",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?type=jar",
+      "sha256": "d22dfe44e11aab6f9cc36c83b621e9b925a830e15fce2fa40483079d748207a9",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-classes@2.0.81.Final?type=jar",
+      "sha256": "b317bff5c41fea5a2c2eefebcc25c5ee486726c93e580200bc4c9ec7fc33e1f2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?classifier=linux-x86_64&type=jar",
+      "sha256": "9c7ce1e5965a9cd2a9bc57c602f3917e3994279e9c701953e8f6c6aefb76f431",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-x86_64/META-INF/LICENSE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-x86_64/META-INF/NOTICE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-x86_64/META-INF/license/LICENSE.boringssl.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-x86_64/META-INF/license/LICENSE.mvn-wrapper.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-x86_64/META-INF/license/LICENSE.tomcat-native.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?classifier=linux-aarch_64&type=jar",
+      "sha256": "2b1a88756257580f6526611376313d4cb7a28f4a0f2533f2efee088c65f5e27b",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-aarch_64/META-INF/LICENSE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-aarch_64/META-INF/NOTICE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-aarch_64/META-INF/license/LICENSE.boringssl.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-aarch_64/META-INF/license/LICENSE.mvn-wrapper.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/linux-aarch_64/META-INF/license/LICENSE.tomcat-native.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?classifier=osx-x86_64&type=jar",
+      "sha256": "09497e2ac9b752076e8e53798dc1faa3f8b4a89d6cdafc58d15a9689b1dc4858",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-x86_64/META-INF/LICENSE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-x86_64/META-INF/NOTICE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-x86_64/META-INF/license/LICENSE.boringssl.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-x86_64/META-INF/license/LICENSE.mvn-wrapper.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-x86_64/META-INF/license/LICENSE.tomcat-native.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?classifier=osx-aarch_64&type=jar",
+      "sha256": "821cb6b8c61b4d6a45d1c834675ca34252da92a6892ca4bc7e5ee433502bc23d",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-aarch_64/META-INF/LICENSE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-aarch_64/META-INF/NOTICE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-aarch_64/META-INF/license/LICENSE.boringssl.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-aarch_64/META-INF/license/LICENSE.mvn-wrapper.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/osx-aarch_64/META-INF/license/LICENSE.tomcat-native.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/io.netty/netty-tcnative-boringssl-static@2.0.81.Final?classifier=windows-x86_64&type=jar",
+      "sha256": "62e2f26901d2d61a24d81e549fdf3833228fa8f861ba0abfdaf15af1451dab47",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/windows-x86_64/META-INF/LICENSE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/windows-x86_64/META-INF/NOTICE.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/windows-x86_64/META-INF/license/LICENSE.boringssl.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/windows-x86_64/META-INF/license/LICENSE.mvn-wrapper.txt",
+        "io.netty/netty-tcnative-boringssl-static/2.0.81.Final/windows-x86_64/META-INF/license/LICENSE.tomcat-native.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/commons-fileupload/commons-fileupload@1.6.0?type=jar",
+      "sha256": "9383272c93569afeabedb16923a94a6dc8a5bd7a2f9f83bf326af4ee68434629",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "commons-fileupload/commons-fileupload/1.6.0/main/META-INF/LICENSE.txt",
+        "commons-fileupload/commons-fileupload/1.6.0/main/META-INF/NOTICE.txt"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.flywaydb/flyway-mysql@13.10.3?type=jar",
+      "sha256": "678b40aa911d92eb334a1a14ca9a82b6b3dab47a6469e27f7b6b5380b15570d0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": []
+    },
+    {
+      "purl": "pkg:maven/com.mysql/mysql-connector-j@26.7.0?type=jar",
+      "sha256": "69084713593a4aa8d07c383619b9639276f08bccf8faf1c562178147d389b1e1",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only"
+          }
+        }
+      ],
+      "legal_entries": [
+        "com.mysql/mysql-connector-j/26.7.0/main/LICENSE"
+      ]
+    },
+    {
+      "purl": "pkg:maven/org.freemarker/freemarker@2.3.35?type=jar",
+      "sha256": "0fac87dddd78f1223139e8ef88e819c7f483c0a3835cdf5982ad5e4576d1d896",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "legal_entries": [
+        "org.freemarker/freemarker/2.3.35/main/META-INF/LICENSE"
+      ]
+    }
+  ]
+}
