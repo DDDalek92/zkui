@@ -1,0 +1,249 @@
+{
+  "recorded_at": "2026-10-16T05:25:27.166341+00:00",
+  "source_base": "252f794fee506e19daa1ea8daa7cd2d7fe31c483",
+  "source_tree_dirty": true,
+  "initial_plugin_coordinates": 232,
+  "initial_affected_coordinates": 30,
+  "updated_plugin_coordinates": 214,
+  "updated_ci_coordinates": 109,
+  "active_affected_coordinates": 0,
+  "optional_affected_coordinates": 14,
+  "optional_findings": [
+    {
+      "package": "commons-beanutils:commons-beanutils",
+      "version": "1.9.4",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-wxr5-93ph-8wr9",
+          "modified": "2026-09-10T03:50:24.755642Z"
+        }
+      ],
+      "plugins": [
+        "maven-site-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "commons-io:commons-io",
+      "version": "2.11.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-78wr-2p64-hpwj",
+          "modified": "2026-09-10T03:50:19.619589Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "net.i2p.crypto:eddsa",
+      "version": "0.3.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-p53j-g8pw-4w5f",
+          "modified": "2026-09-10T03:49:48.504055Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.apache.commons:commons-lang3",
+      "version": "3.12.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-j288-q9x7-2f5v",
+          "modified": "2026-09-10T03:50:26.176912Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.apache.sshd:sshd-common",
+      "version": "2.7.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-2326-hx7g-3m9r",
+          "modified": "2026-09-10T03:50:17.265389Z"
+        },
+        {
+          "id": "GHSA-fhw8-8j55-vwgq",
+          "modified": "2024-02-16T08:13:30.681636Z"
+        },
+        {
+          "id": "GHSA-mjmq-gwgm-5qhm",
+          "modified": "2026-09-10T03:50:02.653103Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.apache.sshd:sshd-core",
+      "version": "2.7.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-fhw8-8j55-vwgq",
+          "modified": "2024-02-16T08:13:30.681636Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.apache.sshd:sshd-sftp",
+      "version": "2.7.0",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-mjmq-gwgm-5qhm",
+          "modified": "2026-09-10T03:50:02.653103Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.codehaus.plexus:plexus-utils",
+      "version": "3.4.1",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-6fmv-xxpf-w3cw",
+          "modified": "2026-09-10T03:50:37.828087Z"
+        }
+      ],
+      "plugins": [
+        "maven-antrun-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.codehaus.plexus:plexus-utils",
+      "version": "3.5.1",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-6fmv-xxpf-w3cw",
+          "modified": "2026-09-10T03:50:37.828087Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-http",
+      "version": "9.4.58.v20250814",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-355h-qmc2-wpwf",
+          "modified": "2026-09-10T03:50:42.440988Z"
+        },
+        {
+          "id": "GHSA-qh8g-58pp-2wxh",
+          "modified": "2026-09-10T03:50:19.940231Z"
+        }
+      ],
+      "plugins": [
+        "maven-site-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-security",
+      "version": "9.4.58.v20250814",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-2fvj-hgj9-j2gr",
+          "modified": "2026-09-10T03:51:10.292148Z"
+        }
+      ],
+      "plugins": [
+        "maven-site-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.eclipse.jetty:jetty-server",
+      "version": "9.4.58.v20250814",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-7p3p-8qv8-m2vh",
+          "modified": "2026-09-10T03:51:11.096731Z"
+        }
+      ],
+      "plugins": [
+        "maven-site-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.eclipse.jgit:org.eclipse.jgit",
+      "version": "5.13.1.202206130422-r",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-3p86-9955-h393",
+          "modified": "2026-09-10T03:50:03.242975Z"
+        },
+        {
+          "id": "GHSA-vrpq-qp53-qv56",
+          "modified": "2026-09-10T03:50:24.825531Z"
+        }
+      ],
+      "plugins": [
+        "maven-release-plugin"
+      ],
+      "used_by_ci_goals": false
+    },
+    {
+      "package": "org.jsoup:jsoup",
+      "version": "1.22.1",
+      "vulnerabilities": [
+        {
+          "id": "GHSA-65r4-943x-97jj",
+          "modified": "2026-10-05T22:45:05.710363Z"
+        },
+        {
+          "id": "GHSA-pmhh-3w7g-xqp8",
+          "modified": "2026-09-10T03:50:53.809983Z"
+        }
+      ],
+      "plugins": [
+        "maven-site-plugin"
+      ],
+      "used_by_ci_goals": false
+    }
+  ],
+  "npm_audit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 1,
+      "dev": 3,
+      "optional": 1,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 3
+    }
+  },
+  "npm_lock_sha256": "543c3b58d6df878bb3b726d808a4f8f47efbf2113ae8d16037a28ad45cc8d470",
+  "maven_zip_sha256": "5af3b743dd8b876b5c45da33b676251e5f1687712644abb4ee519ca56e1d89ce"
+}

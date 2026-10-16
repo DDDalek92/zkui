@@ -7,7 +7,7 @@ A UI dashboard that allows CRUD operations on Zookeeper.
 
 Requirements
 ====================
-The maintenance build requires JDK 17 (including `javac`). Maven 3.9.9 is
+The maintenance build requires JDK 17 (including `javac`). Maven 3.9.16 is
 provided by the included Maven Wrapper. Jetty 12 EE8 retains the `javax.servlet`
 application API. History storage uses parameterized JDBC and no longer needs
 ActiveJDBC bytecode instrumentation. The original applied V1 remains immutable.
@@ -31,6 +31,8 @@ For an isolated local demo only, `allowSampleUsers=true` explicitly enables samp
 
 Development checks
 ====================
+Build-tool and npm audit scope is documented in [BUILD_TOOL_AUDIT.md](docs/maintenance/BUILD_TOOL_AUDIT.md). The supported CI path uses clean/package/verify; findings in optional site/release and other unexecuted tools remain separately recorded. Runtime OSV results do not approve those goals.
+
 `./mvnw test` runs unit tests. `./mvnw clean verify` also packages the application
 and runs isolated ZooKeeper and HTTP integration tests. Tests start their own
 loopback ZooKeeper servers and use temporary H2 databases; no external ZooKeeper,
