@@ -429,8 +429,33 @@ public enum ZooKeeperUtil {
 
     public void deleteFolders(List<String> roots, ZooKeeper zk) throws KeeperException, InterruptedException {
         TreeWork budget = new TreeWork();
+        Set<String> selected = new java.util.LinkedHashSet<>();
+        TreeWork selectionBudget = new TreeWork();
+        for (String root : roots) {
+            org.apache.zookeeper.common.PathUtils.validatePath(root);
+            if (selected.add(root)) {
+                selectionBudget.reserve(1);
+                selectionBudget.bytes(root.length() * 3);
+            }
+            budget.checkTime();
+        }
+        List<String> disjointRoots = new ArrayList<>();
+        for (String root : selected) {
+            budget.checkTime();
+            boolean covered = !"/".equals(root) && selected.contains("/");
+            for (int slash = root.lastIndexOf('/'); !covered && slash > 0;
+                    slash = root.lastIndexOf('/', slash - 1)) {
+                covered = selected.contains(root.substring(0, slash));
+            }
+            if (!covered) disjointRoots.add(root);
+        }
         java.util.Set<String> targets = new java.util.LinkedHashSet<>();
-        collectDeleteTargets(roots, zk, budget, targets);
+        collectDeleteTargets(disjointRoots, zk, budget, targets);
+        // Coalescing must not hide an explicitly selected missing descendant.
+        for (String root : selected) {
+            budget.checkTime();
+            if (!targets.contains(root)) throw new KeeperException.NoNodeException(root);
+        }
         List<String> ordered = new ArrayList<>(targets);
         // Descendants are always longer than their ancestors, including overlapping selections.
         ordered.sort(Comparator.comparingInt(String::length).reversed());
