@@ -73,7 +73,7 @@ jobs:
       - name: Build owned HTTPS application and browser fixture
         run: |
           ./mvnw -B -ntp -DskipTests verify
-          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:build-classpath -DincludeScope=test -Dmdep.outputFile=target/browser-classpath.txt
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.11.0:build-classpath -DincludeScope=test -Dmdep.outputFile=target/browser-classpath.txt
           npm ci --ignore-scripts
           npx playwright install --with-deps firefox
       - name: Actual Chrome and Firefox login, HTTPS, CSRF, role and logout flows
@@ -104,11 +104,16 @@ jobs:
       - name: Generate runtime SBOM and resolved binary inventory
         run: |
           ./mvnw -B -ntp -Paudit -DskipTests verify
-          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:list -DincludeScope=runtime -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/audit/resolved-runtime.txt
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.11.0:list -DincludeScope=runtime -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/audit/resolved-runtime.txt
       - name: Verify scanner failure handling and query OSV
         run: |
-          python3 -m unittest discover -s scripts -p 'test_audit_runtime.py'
+          python3 -m unittest discover -s scripts -p 'test_audit_*.py'
           python3 scripts/audit_runtime.py
+      - name: Audit resolved Maven plugin graphs and npm development lock
+        run: |
+          ./mvnw -B -ntp -Paudit org.apache.maven.plugins:maven-dependency-plugin:3.11.0:resolve-plugins -DoutputAbsoluteArtifactFilename=true -DoutputFile=target/audit/build-plugin-dependencies.txt
+          python3 scripts/audit_build.py
+          npm audit --include=dev --json > target/audit/npm-audit.json
       - name: Preserve SBOM, hashes, notices and vulnerability evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -224,7 +229,7 @@ jobs:
           docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_dialect_copy > target/mysql-dialect-bridged-export.sql
           docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-dialect-bridged-export.sql
           java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlDialectHistorySmoke verify
-          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/mysql-runtime-dependencies.txt
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.11.0:tree -Dscope=runtime -DoutputFile=target/mysql-runtime-dependencies.txt
           cat target/mysql-runtime-dependencies.txt
       - name: Save synthetic migration evidence
         if: always()
@@ -262,7 +267,7 @@ jobs:
           docker run -d --name zkui-legacy-zk -p 127.0.0.1:12181:2181 zookeeper:3.5.7@sha256:883b014b6535574503bda8fc6a7430ba009c0273242f86d401095689652e5731
           docker image inspect -f '{{index .RepoDigests 0}}' zookeeper:3.5.7@sha256:883b014b6535574503bda8fc6a7430ba009c0273242f86d401095689652e5731 | tee target/zk-legacy-digest.txt
           java -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.ZkCompatibilitySmoke
-          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/updated-runtime-dependencies.txt
+          ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.11.0:tree -Dscope=runtime -DoutputFile=target/updated-runtime-dependencies.txt
           cat target/updated-runtime-dependencies.txt
       - name: Save client compatibility evidence
         if: always()
