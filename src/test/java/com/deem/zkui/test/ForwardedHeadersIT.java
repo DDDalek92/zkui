@@ -43,7 +43,7 @@ public class ForwardedHeadersIT {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             try {
                 try (var out = connection.getOutputStream()) {
-                    out.write(("action=Save+Property&displayPath=%2Fappconfig&newProperty=proxy-test&newValue=value&csrfToken=" + token)
+                    out.write(("action=Save+Property&displayPath=%2Fappconfig&currentPath=%2Fappconfig%2F&newProperty=proxy-test&newValue=value&csrfToken=" + token)
                             .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 }
                 assertEquals(302, connection.getResponseCode());
