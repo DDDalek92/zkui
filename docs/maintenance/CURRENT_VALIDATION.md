@@ -1,5 +1,21 @@
 # 当前维护验证快照
 
+## 2026-10-16 UTC 当前入口：旧MySQL方言历史
+
+#39准确head `c0971059b4315bbe54a1bba8a70b946d588ff5f6` 的PR38831718747/push38831710330全六job成功并逐日志审查后已合并。master `3574b45ec0e2531921cf9729ddb164f43f4af315` 的[38832294886](https://github.com/DDDalek92/zkui/actions/runs/38832294886)也六job成功；三平台各149项零失败/错误/跳过、Chrome3组、容器/旧ZK及现代MySQL真实Main/拒绝/重启均通过。master树e6c79e2与已验head一致。下方#39待CI是提交时快照。
+
+从该最新远程基线隔离接续旧Flyway2先应用独立MySQL方言V1、匹配location原引擎validate/官方Flyway4桥接、现代应用保留历史与Main重启，见[MYSQL_DIALECT_HISTORY.md](MYSQL_DIALECT_HISTORY.md)。仅测试/文档变化，运行实现、两个V1及POM不改。5.6仅旧格式生成器，不声称#28应用支持5.6；未桥接/损坏副本必须拒绝，source不桥接。新head真实MySQL及全部CI仍须独立核验，本地没有Docker不能把Java/H2成功叫作MySQL验收。
+
+首轮本地完整clean verify为32单元通过、117集成中1个SocketTimeoutException（LargeTreeIT.combinedDeleteSelectionIsPreflightedBeforeAnyRootIsRemoved，HTTP读取超时），整体BUILD FAILURE，不能报告149项通过。该实现/断言/超时均未在本增量修改，当前不臆断根因为MySQL夹具或原Windows9s:1s问题。继续原样定向复跑和完整回归，不删除断言/增大限时/跳过该测试；后续成功不抹掉此失败记录。
+
+原样定向复跑于2026-10-16 01:39:01 UTC完成BUILD SUCCESS：7个格式保护单元+5个LargeTreeIT，零失败/错误/跳过。只说明这次没有重现，未证明超时根因已修复，不能冒充完整149项。随后重新执行完整clean verify以清除旧报告并验收全套。
+
+第二轮完整clean verify于2026-10-16 01:43:05 UTC仍BUILD FAILURE：32单元通过，117集成同一LargeTreeIT用例1个HTTP读取超时，其余无失败/错误/跳过。不继续重复求绿，不放宽读取限时或预算；本地完整回归仍未通过。新增MySQL路径仅由准确head CI真实服务验证，CI通过也不等于此本地I02观察已修复。当前确认删除预检在遍历完首个6000子节点根后才发现跨根总预算超限，存在大量顺序exists/getChildren往返；这是源码工作量观察，不声称已证明具体超时原因，更不等于原Windows9s:1s根因。后续I02考虑不改变权限/重叠选择/零删除语义的跨根早期下界预检，须独立复现和回归，不能混入本测试专用增量。
+
+已比较本增量与#39本地通过版本的ZooKeeperUtil.class、LargeTreeIT.class、TestApplication.class，三者逐一SHA256相同；相应实现、测试断言/读取超时及运行POM/V1均未改。这能证明该路径没有代码差异，不能据此推断具体性能根因。新helper的owned开关及旧classpath未知模式拒绝检查通过，未建立数据库连接；本机仍无Docker，真实MySQL路径须看新head CI。
+
+接续检查时Fork无其他未完成PR，上游仍14个开放PR/46个开放Issue，编号集合无新增。分类不是全部修复，D01更广历史/故障/安全依赖与部署及I02原环境限制继续保留。
+
 ## 2026-10-16 UTC 当前入口：MySQL现代运行路径
 
 最终源码完整clean verify于2026-10-16 00:48:32 UTC完成BUILD SUCCESS：32单元+117集成=149项零失败/错误/跳过，Failsafe timeout=false。包括最后的同名VIEW拒绝预检及真实Main负向helper修订；本机未运行MySQL/Docker/Chrome。组装测试证明无旧Flyway类、H2/MySQL provider并存；实际运行图已导出MODERN_RUNTIME_DEPENDENCY_TREE.txt。原V1 blob仍fadfd7e9462b348131965f855949529ac6ceaa39。此前中间149项不代替最终源码结果；新head真实MySQL及所有CI仍须独立核对。

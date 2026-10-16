@@ -135,6 +135,19 @@ jobs:
           docker exec zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_modern_fresh CHARACTER SET utf8mb4'
           java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlFlywayBridgeSmoke modern
           java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlMigrationSmoke verify
+          # Separately cover a database created with the earlier MySQL-specific V1/Flyway2 path.
+          docker exec zkui-mysql56 mysql -uroot -psynthetic-mysql-ci-only -e 'CREATE DATABASE zkui_dialect_source CHARACTER SET utf8mb4; CREATE DATABASE zkui_dialect_copy CHARACTER SET utf8mb4; CREATE DATABASE zkui_dialect_bad CHARACTER SET utf8mb4'
+          java -Duser.timezone=UTC -cp target/test-classes:target/classes:target/migration-drivers/mysql-old.jar:target/migration-drivers/flyway-old.jar com.deem.zkui.test.MySqlDialectHistorySmoke seed
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF zkui_dialect_source > target/mysql-dialect-source-tables.sql
+          for copy in zkui_dialect_copy zkui_dialect_bad; do
+            docker exec -i zkui-mysql56 mysql -uroot -psynthetic-mysql-ci-only "$copy" < target/mysql-dialect-source-tables.sql
+          done
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_dialect_source > target/mysql-dialect-original-export.sql
+          docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-dialect-original-export.sql
+          java -Duser.timezone=UTC -cp target/test-classes:target/classes:target/migration-drivers/mysql-old.jar:target/migration-drivers/flyway-old.jar:target/migration-drivers/flyway-bridge.jar com.deem.zkui.test.MySqlDialectHistorySmoke bridge
+          docker exec zkui-mysql56 mysqldump -uroot -psynthetic-mysql-ci-only --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases zkui_dialect_copy > target/mysql-dialect-bridged-export.sql
+          docker exec -i zkui-mysql84 mysql -uroot -psynthetic-mysql-ci-only < target/mysql-dialect-bridged-export.sql
+          java -Duser.timezone=UTC -Djavax.net.ssl.trustStore="$tls/trust.p12" -Djavax.net.ssl.trustStorePassword=synthetic-trust-only -cp target/test-classes:target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar com.deem.zkui.test.MySqlDialectHistorySmoke verify
           ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.8.1:tree -Dscope=runtime -DoutputFile=target/mysql-runtime-dependencies.txt
           cat target/mysql-runtime-dependencies.txt
       - name: Save synthetic migration evidence
@@ -148,6 +161,8 @@ jobs:
             target/mysql-runtime-dependencies.txt
             target/mysql-flyway-bridge-snapshot.txt
             target/mysql-bridge-app-snapshot.txt
+            target/mysql-dialect-original-snapshot.txt
+            target/mysql-dialect-bridged-snapshot.txt
           retention-days: 14
 
   zk-legacy:

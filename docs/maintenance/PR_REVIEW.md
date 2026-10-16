@@ -1,5 +1,7 @@
 # 上游开放 PR 审核台账（初稿）
 
+> #39现代MySQL运行路径已由准确head两轮六job及合并master六job验证。当前补旧Flyway2/MySQL独立方言历史的第二checksum/location路径，见MYSQL_DIALECT_HISTORY.md；不改原V1或上游状态。#103/#105的维护意图已重写，更多历史/安全/部署限制仍非全部修复。
+
 > MySQL现代路径接续：#38原引擎校验/桥接及合并master六job通过后，现继续统一Flyway13 core/mysql运行路径与旧运行引擎移除，见MODERN_MYSQL_RUNTIME.md。#103/#105的历史版本不直接采纳，实际准入依准确新head；D01其余审计及原环境限制继续保留，不改变上游状态或14/46数量的含义。
 
 > 当前证据（2026-10-15）：#102升级意图已由Fork #37的H22.5.252/现代Flyway独立重写有限验收，准确head两轮六job及合并master六job全成功，三平台各149项；原始2.1.210补丁仍不直接采用，任意历史库迁移仍不普遍放行。下一步MySQL checksum/API/module工作先增加独立引擎桥接预演（MYSQL_FLYWAY_BRIDGE.md），不是应用运行路径切换；上游仍14项，不改其状态。

@@ -159,18 +159,18 @@ public final class MySqlFlywayBridgeSmoke {
                 .cleanDisabled(true).baselineOnMigrate(false).validateOnMigrate(true).load();
     }
 
-    private static boolean hasVersionRank(Connection c) throws Exception {
+    static boolean hasVersionRank(Connection c) throws Exception {
         try (ResultSet columns = c.getMetaData().getColumns(c.getCatalog(), null, "schema_version", "version_rank")) { return columns.next(); }
     }
 
-    private static int checksum(Connection c) throws Exception {
+    static int checksum(Connection c) throws Exception {
         try (Statement s = c.createStatement(); ResultSet r = s.executeQuery("SELECT checksum FROM schema_version WHERE version='1'")) {
             require(r.next(), "Missing V1"); int checksum = r.getInt(1);
             require(!r.wasNull() && !r.next(), "Invalid V1"); return checksum;
         }
     }
 
-    private static int checksum(boolean normalized, String resource) throws Exception {
+    static int checksum(boolean normalized, String resource) throws Exception {
         try (InputStream in = MySqlFlywayBridgeSmoke.class.getResourceAsStream(resource)) {
             require(in != null, "Missing migration resource"); CRC32 crc = new CRC32();
             if (!normalized) crc.update(in.readAllBytes());
