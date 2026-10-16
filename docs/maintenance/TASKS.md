@@ -20,7 +20,8 @@
 - #43 重叠选择计数最终head b9e464e / PR38839636106七项CI全成功，三平台各153项，已合并4da68f3。
 - #44 默认示例账号/可信代理最终head696552bd / PR38839670737七项CI全成功，三平台各158项，已合并dc446d1；本地中断报告不计成功。
 - #45 head2746b29 / PR38853032997八项成功，三平台各161项，真实权限/ENOSPC/503/同路径重启保全标记齐全，已合并0d51bb1；见STORAGE_FAILURE_MATRIX.md。
-- 当前：退出旧jQuery/Bootstrap JS、保留现有原生交互，并补真实Chrome/Firefox HTTPS全流程，见LIVE_BROWSER_VALIDATION.md；准确新headCI待验收。
+- #46 head0cddf648 /PR38853654000九项CI全部成功，三平台各162项、Chrome静态4组、Chrome/Firefox真实HTTPS/会话/CSRF/角色/写入/退出均有标记，已合并8098559。
+- 当前：IPv4/IPv6真实回环传输、fallback/chroot/UI/REST/双栈HTTP，见IP_STACK_VALIDATION.md；本地6项通过，新head三平台CI待验收。
 - 下一项：许可证缺口与范围外依赖审计，随后实际权限/磁盘失败、更多时区夹具与部署验收。无法获得的原用户环境必须明确列为阻塞；分类/延期不冒充修复。
 
 ## 有序工作队列
@@ -40,9 +41,9 @@
 | P02 | UTF-8 端到端、节点自身值、根路径/搜索、离线排序 | 已完成，Fork PR #12/#13/#14；79项Java回归，排序浏览器检查由CI执行 |
 | P03 | ZK Digest 客户端认证与 ACL；LDAP/AD 配置及回归 | Digest 已完成 #10；LDAP 基础已完成 #11，真实 AD/LDAPS 部署验证留在 V01 |
 | P04 | 审查 #41 混合功能，分别采纳/拒绝并保留数据迁移要求 | 已拆分处置，Fork PR #15；描述功能 deferred，见 PR_REVIEW.md |
-| D01 | 统一依赖审计及 Java 升级，替代过时/互相冲突的依赖 PR | #21的Java17/Jetty12 EE8/JDBC、#23的启动/审计失败策略、#28的MySQL8.4/Connector26.7/真实旧库导出与TLS、#29的ZK/Netty/模板/IO已完成。#32–#36补齐有限副本结构/锁/导入中断/差量恢复及文件格式保护。本增量实现H2 2.5.252/Flyway13.10.3运行时与旧V1桥接的真实Main/HTTP/审计ID/重启，见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准入以准确新head全CI为准。现代MySQL API/module与运行Flyway2移除已由#39准确head和master六job验证，见MODERN_MYSQL_RUNTIME.md；本次继续旧MySQL方言历史副本路径，准入见MYSQL_DIALECT_HISTORY.md；实际权限/磁盘失败、更广历史/时区夹具与安全/许可证/SBOM审计未完成；不等于D01或任意旧库迁移全完成。 |
-| I01 | 完成下方 46 个 Issue 正文、评论、复现/文档及结论 | 本轮审查分类完成，Fork PR #19；15 fixed（#59部分）、14 documentation、8 not-reproducible、2 duplicate、5 enhancement、2 deferred；后续仍按限制执行 |
-| V01 | Docker、Windows/macOS、浏览器、H2/MySQL 迁移和回滚验证 | #18 CI三平台各92项、Chrome3组、容器构建/非root/登录资源通过；真实AD/LDAPS、双栈和历史DB迁移仍待验证 |
+| D01 | 现代依赖、历史迁移及供应链/许可证审计 | Java17/Jetty12/JDBC及现代H2/MySQL/Flyway、有限旧V1副本桥接/Main/恢复已完成；#42有54组件运行SBOM/OSV/哈希库存，#45有真实POSIX/ENOSPC/同路径恢复，#46去除旧JS。许可证通知、构建/测试/容器独立审计、非UTC/精度及更广历史矩阵未完成；不得普遍放行任意旧库。 |
+| I01 | 上游46个Issue正文/评论及逐项结论 | 本轮审查分类已完成；最新有限修复证据继续追加。fixed、文档、重复、无法复现、增强和延期不能合称全部修复，逐项表及ISSUE_TRIAGE.md保留原环境限制。 |
+| V01 | 多平台、浏览器、部署与迁移恢复 | #46九项CI/三平台各162项、Chrome静态4组及Chrome/Firefox实际HTTPS流程、容器/MySQL TLS、H2有限迁移和存储故障已通过；IPv4/IPv6回环当前增量本地通过待三平台CI。真实AD/LDAPS、代理TLS、生产网络/原环境仍未验。 |
 | I02 | 超大树工作量边界、报文限制和真实规模负载验证（#6/#85） | 已实现100项分页、8MiB可配置响应缓冲及迭代遍历/删除预检预算；312763子节点真实服务读取、深度/数据预算/跨根删除及重叠选择回归已由#27三平台各112项CI通过，见LARGE_TREE_VALIDATION.md；本地批量预检低效路径由#41广度优先修复，重叠选择并集计数/缺失后代拒绝由#43修复并回归，见CURRENT_VALIDATION.md；原#85环境及9s:1s根因仍未复现 |
 | E01 | 可选hosts初始化、左栏属性、逐节点ACL编辑、新导入协议及Kerberos需求 | hosts显式初始化/幂等/单独覆盖开关已由#31准确head六job验证并合并，默认关闭，见HOSTS_BOOTSTRAP.md；其他增强尚未实现 |
 | V02 | 验收维护版、已知限制和发布说明 | 维护预览说明和验证报告已准备，Fork PR #19；正式发行仍受D01/历史DB与部署验证阻塞，未发布 |

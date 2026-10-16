@@ -20,6 +20,7 @@ final class TestApplication extends ExternalResource {
     private final java.util.function.Supplier<String[]> overrideProvider;
     interface HistoryInitializer { void prepare(java.nio.file.Path ownedDatabaseBase) throws Exception; }
     private final HistoryInitializer historyInitializer;
+    private final String zkBindHost;
     private ProcessBuilder configuredBuilder;
     private File applicationLog;
     private final String password = UUID.randomUUID().toString();
@@ -34,20 +35,29 @@ final class TestApplication extends ExternalResource {
         this(name, () -> overrides);
     }
 
+    TestApplication(String name, boolean ipv6, String... overrides) {
+        this(name, () -> overrides, base -> { }, ipv6 ? "::1" : "127.0.0.1");
+    }
+
     TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider) {
         this(name, overrideProvider, base -> { });
     }
 
     TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider, HistoryInitializer initializer) {
+        this(name, overrideProvider, initializer, "127.0.0.1");
+    }
+
+    private TestApplication(String name, java.util.function.Supplier<String[]> overrideProvider, HistoryInitializer initializer, String host) {
         this.name = name;
         this.overrideProvider = overrideProvider;
         this.historyInitializer = initializer;
+        this.zkBindHost = host;
     }
 
     @Override protected void before() throws Throwable {
         try {
             temporary.create();
-            server = new IsolatedZooKeeper(temporary.newFolder("zk"));
+            server = new IsolatedZooKeeper(temporary.newFolder("zk"), 0, zkBindHost);
             observer = server.connect();
             create("/appconfig", "");
             create("/appconfig/hosts", "");
