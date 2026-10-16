@@ -59,6 +59,37 @@ public class LargeTreeIT {
         assertNull(app.observer.exists(root, false));
     }
 
+    @Test public void overBudgetRootsAreRejectedBeforeReadingTheirDescendants() throws Exception {
+        String first = "/load-fixture-first", second = "/load-fixture-second";
+        app.seedLoadChildren(first, 6000, new byte[0]);
+        app.seedLoadChildren(second, 6000, new byte[0]);
+        java.util.concurrent.CountDownLatch connected = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger reads = new java.util.concurrent.atomic.AtomicInteger();
+        // Real protocol reads, with a deterministic failure if preflight wastes RPCs on leaves.
+        try (org.apache.zookeeper.ZooKeeper client = new org.apache.zookeeper.ZooKeeper(app.zkAddress(), 10000,
+                event -> { if (event.getState() == org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected) connected.countDown(); }) {
+            @Override public org.apache.zookeeper.data.Stat exists(String path, boolean watch)
+                    throws org.apache.zookeeper.KeeperException, InterruptedException {
+                assertFalse("Budget can be rejected using root counts alone", path.startsWith(first + "/") || path.startsWith(second + "/"));
+                reads.incrementAndGet();
+                return super.exists(path, watch);
+            }
+            @Override public java.util.List<String> getChildren(String path, boolean watch)
+                    throws org.apache.zookeeper.KeeperException, InterruptedException {
+                assertFalse("Budget can be rejected using root counts alone", path.startsWith(first + "/") || path.startsWith(second + "/"));
+                reads.incrementAndGet();
+                return super.getChildren(path, watch);
+            }
+        }) {
+            assertTrue(connected.await(10, java.util.concurrent.TimeUnit.SECONDS));
+            assertThrows(com.deem.zkui.utils.TreeWork.LimitException.class,
+                    () -> com.deem.zkui.utils.ZooKeeperUtil.INSTANCE.deleteFolders(java.util.List.of(first, second), client));
+            assertTrue("At most two reads per selected root", reads.get() <= 4);
+        }
+        assertEquals(6000, app.observer.exists(first, false).getNumChildren());
+        assertEquals(6000, app.observer.exists(second, false).getNumChildren());
+    }
+
     @Test public void pageValueBudgetPreventsUnboundedRenderedResponses() throws Exception {
         String root = "/load-fixture-bytes";
         app.seedLoadChildren(root, 26, new byte[400000]);

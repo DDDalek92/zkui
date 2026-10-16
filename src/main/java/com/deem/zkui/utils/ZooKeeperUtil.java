@@ -430,24 +430,26 @@ public enum ZooKeeperUtil {
     public void deleteFolders(List<String> roots, ZooKeeper zk) throws KeeperException, InterruptedException {
         TreeWork budget = new TreeWork();
         java.util.Set<String> targets = new java.util.LinkedHashSet<>();
-        for (String root : roots) {
-            if (!targets.contains(root)) collectDeleteTargets(root, zk, budget, targets);
-        }
+        collectDeleteTargets(roots, zk, budget, targets);
         List<String> ordered = new ArrayList<>(targets);
         // Descendants are always longer than their ancestors, including overlapping selections.
         ordered.sort(Comparator.comparingInt(String::length).reversed());
         for (String path : ordered) { budget.checkTime(); zk.delete(path, -1); }
     }
 
-    private void collectDeleteTargets(String root, ZooKeeper zk, TreeWork budget, Set<String> targets) throws KeeperException, InterruptedException {
+    private void collectDeleteTargets(List<String> roots, ZooKeeper zk, TreeWork budget, Set<String> targets) throws KeeperException, InterruptedException {
         java.util.ArrayDeque<String> pending = new java.util.ArrayDeque<>();
         java.util.ArrayDeque<Integer> depths = new java.util.ArrayDeque<>();
-        budget.reserve(1);
-        budget.bytes(root.length() * 3);
-        pending.push(root); depths.push(0);
+        for (String root : new java.util.LinkedHashSet<>(roots)) {
+            budget.reserve(1);
+            budget.bytes(root.length() * 3);
+            pending.addLast(root); depths.addLast(0);
+        }
+        // Inspect every selected root before walking descendants. A cross-root budget
+        // overflow must not require thousands of sequential leaf reads to discover.
         while (!pending.isEmpty()) {
-            String path = pending.pop();
-            int depth = depths.pop();
+            String path = pending.removeFirst();
+            int depth = depths.removeFirst();
             if (targets.contains(path)) continue;
             budget.visit(depth);
             Stat stat = zk.exists(path, false);
@@ -459,7 +461,7 @@ public enum ZooKeeperUtil {
             for (String child : children) {
                 String childPath = getNodePath(path, child);
                 budget.bytes(childPath.length() * 3);
-                pending.push(childPath); depths.push(depth + 1);
+                pending.addLast(childPath); depths.addLast(depth + 1);
             }
         }
     }

@@ -1,6 +1,6 @@
 # ZKUI 自动维护执行清单
 
-更新：2026-10-15。目标：在 DDDalek92/zkui 建立可验证的维护基础，逐项处置上游积压，再进入二次开发。此文件是执行入口；完成一项后继续下一项，无需用户逐项提示。
+更新：2026-10-16。目标：在 DDDalek92/zkui 建立可验证的维护基础，逐项处置上游积压，再进入二次开发。此文件是执行入口；完成一项后继续下一项，无需用户逐项提示。
 
 ## 执行规则
 
@@ -9,6 +9,12 @@
 - Issue 逐项给出 fixed、duplicate、documentation、not-reproducible、enhancement 或 deferred 结论与证据；缺少环境时记录具体阻塞，继续其他可执行项。
 - 不更改上游仓库状态，不使用生产数据；数据库破坏性迁移及正式发布留待具体方案验收。
 - 在同一仓库开始新一轮工作时，读取本文件及相关验证文档，从首个未完成项继续。此清单本身不是后台定时任务。
+
+## 最新接续（2026-10-16）
+
+- PR #40 已审查合并：head c837c550，PR38836967274/push38836958256 全六项成功，MySQL 原方言桥接及 Main 证据已核实，合并 master d3a45f0。
+- I02：本地跨根删除预检超时关联的大量顺序叶子读取，新增确定性回归已在旧实现判红；改为所有根共享广度优先队列，保持原预算、HTTP 超时和无副作用断言。修复后完整验证待完成。
+- 下一项：依赖运行 SBOM/漏洞/许可证审计，随后实际权限/磁盘失败、更多时区夹具与部署验收。无法获得的原用户环境必须明确列为阻塞；分类/延期不冒充修复。
 
 ## 有序工作队列
 
@@ -108,27 +114,12 @@
 | [#14](https://github.com/DeemOpen/zkui/issues/14) | How do I run this behind an nginx proxy? | fixed；#17应用上下文完整支持；nginx保留前缀示例，未运行真实nginx/TLS。 |
 | [#6](https://github.com/DeemOpen/zkui/issues/6) | Failed to view the node that has more than 300k children | deferred；312763子节点的大报文、遍历/渲染成本需独立负载及资源上限方案；普通CRUD不证明已解决。 |
 
-## 本轮接续与优先队列（2026-10-15）
+## 后续验收顺序
 
-- #39准确headc0971059的PR38831718747/push38831710330全六job成功后已审查合并；master3574b45的38832294886也六job成功，三平台各149项。H2/MySQL统一现代Flyway、运行旧引擎移除及现代Main有限验收完成；下方“待新head/运行Flyway2未移除”为历史。
-- 当前首个接续项：旧Flyway2先应用MySQL独立方言V1的正常/损坏副本，匹配location校验/官方桥接/现代Main重启，见[MYSQL_DIALECT_HISTORY.md](MYSQL_DIALECT_HISTORY.md)。仅测试/文档，运行实现/POM/两个V1不改，新head全CI仍是准入门槛。5.6仅旧格式生成器，不是扩大应用支持基线。后续继续时间精度/实际权限磁盘恢复与安全依赖审计，再推进I02原环境及部署/增强。
+1. I02 跨根删除预检修复：确定性旧实现判红、修复后完整本地回归、准确 head 全 CI 后审查合并。
+2. D01：运行 SBOM/CVE/许可证及打包通知；实际权限/磁盘故障、非 UTC/精度与更广历史夹具。
+3. V01：真实 LDAPS/AD、双栈、Firefox、反向代理 HTTPS。已有三平台/Chrome/Docker/直接 HTTPS 和有限历史迁移分别保留证据。
+4. E01：其余增强按独立安全设计、实现和回归推进；I02 原 Windows 环境无法访问时保留明确阻塞。
+5. V02：只有门槛实际完成才更新正式发行结论；不创建未经请求的正式 Release/公共镜像。
 
-- #38已在准确head8af4efc的PR38825255619/push38825243961全六job成功并审查合并，master3e5873d的38825828726也六job成功；三平台各149项、真实MySQL桥接/拒绝全部标记通过。现从该最新远程基线隔离继续现代MySQL实际应用bootstrap、服务注册合并与运行Flyway2移除，见[MODERN_MYSQL_RUNTIME.md](MODERN_MYSQL_RUNTIME.md)，本增量准确head全CI仍须独立核验。
-- 下一项仍为更广历史方言/时间精度与时区/失败恢复/安全依赖审计，再推进I02原环境及部署/增强矩阵。现代应用有限验收不等于任意用户旧库迁移放行，D01及全部issue不能标为完成。
-
-- #37已由准确head1c4f50a00910190c42aed15267cf6c7fc2a5f16b的PR38819046224/push38819038419全六job成功并审查合并；master5182459的38819831969六job也成功，三平台各149项。H2现代运行时及有限真实桥接应用验收完成，不等于任意历史库普遍迁移放行。
-- 首个接续项是MySQL现代Flyway：先在独立副本补原Flyway2校验/官方Flyway4格式及checksum转换/现代Flyway13+MySQL模块引擎预演、损坏副本转换前拒绝。见[MYSQL_FLYWAY_BRIDGE.md](MYSQL_FLYWAY_BRIDGE.md)，准确新head真实MySQL和全部CI仍是准入门槛。候选MySQL模块只复制测试jar，应用MySQL仍运行Flyway2，旧引擎移除及真实Main组合验收继续下一项；不冒称已完成。
-
-- #36准确head8335b8f6dbc43c3951ef1ef93ab8137d2537aba9的PR38797311625及push38797301172全部六job/三平台各137项成功后已审查合并；master a41ec71的push38797983943也六job成功。重新核查Fork无未完成PR，上游仍14/46且无新增；承接既有干净隔离分支，不复建已合并保护器。
-- 本增量实现H2 2.5.252/Flyway13.10.3运行时、新建方言及原V1离线桥接后的真实Main/HTTP/新审计ID/同路径重启；未桥接、未知版本/标记和schema漂移拒绝，现代H2禁止dev自动clean。真正旧驱动/旧Flyway在子进程隔离，不把新版fat JAR当旧引擎。见[MODERN_H2_RUNTIME.md](MODERN_H2_RUNTIME.md)，准确新head全CI仍是合并门槛。
-- 后续顺序：MySQL现代Flyway API/module及原checksum兼容/移除运行Flyway2；实际权限/磁盘失败、更广历史夹具和时区验收；SBOM/漏洞/许可证及剩余部署/增强。保留Flyway关于H22.5高于厂商已验2.3.232的警告和有限自验证范围。D01整体、所有历史库/原Windows根因及正式发行均未叫作完成。
-
-- #35已核对准确head81aa63fcc21c39faa56a65d72eb0bcc6e18cca17的PR运行38789692993（attempt2）及push38789687026全部六job成功后审查合并；三平台各127项、Chrome3组及容器/MySQL/旧ZK通过。容器首轮依赖解析失败后仅重跑失败job，同head通过，没有更改代码/依赖或关闭校验。master为2c9c68e，其push38790758128 success，无未完成Fork PR；上游仍14/46且无新增。
-- 在该最新基线隔离复现并修复实际应用的H2格式错配静默建空库风险：连接/Flyway/dev清库前拒绝不兼容同base文件，真实JAR拒绝启动并保留两库hash，见[H2_FILE_FORMAT_GUARD.md](H2_FILE_FORMAT_GUARD.md)。本增量不切换运行H2/Flyway，不是完整新版Main/HTTP验收；准确新head全部CI须通过后才合并。完成后继续完整新版新建/历史桥接应用及MySQL旧API/checksum兼容，不跳到发行。
-
-- 当前远程基线4eff9d8：#33准确head69d367f的PR运行38781568897及push运行38781523517全部六job/三平台各121项成功后已审查合并；基线push运行38782275556也success。本地Java17执行可用；没有未完成Fork PR，不复建已合并增量。
-- #32固定V1结构/PK/索引/约束漂移拒绝、#33候选锁竞争/空闲持锁进程终止恢复已完成有限夹具验收，见H2_SCHEMA_VALIDATION.md、H2_LOCK_RECOVERY.md；#30合法NULL历史页与#31默认关闭hosts初始化也已组合验收。均不表示完整H2应用升级完成。
-- 本次从当前远程基线隔离继续受控原生RUNSCRIPT中断半成品拒绝、H2显式只读目标90097导入拒绝，见[H2_IMPORT_FAILURES.md](H2_IMPORT_FAILURES.md)。定向9项及本地完整123项通过，完整日志/报告一致；准确新head六job仍待验收，本增量最终结果以对应Fork PR准确head Checks/审查记录为准。
-- 上游重新查询仍14个开放PR、46个开放Issue，编号集合无新增；分类/延期不等于全部修复。#49默认关闭hosts、#6有限312763子节点边界、#63 MySQL8.4+路径的具体限制继续保留。
-- #34已在准确head8a3157d的PR运行38787905991及push运行38787853716全部六job/三平台各123项成功后审查合并。其上待CI为提交时记录。最新隔离基线498fe7f继续仅追加审计差量保全/旧驱动副本恢复，见[H2_AUDIT_DELTA.md](H2_AUDIT_DELTA.md)；重复回放、ID/重开、基线修改删除拒绝、ID内容冲突整批回滚及载荷完整性拒绝纳入本增量。本地最终127项报告零失败/错误/跳过（文本日志截断），准确新head六job仍待验收，最终证据以对应PR准确head Checks/审查记录为准。
-- 下一项优先完整新版H2/Flyway打包应用Main/HTTP及其MySQL旧API/checksum兼容；有限离线追加差量不等于在线双写/通用降级，H2只读模式不等于实际文件系统权限/磁盘故障，受控中断不代表任意写页崩溃。实际不可写/磁盘故障、更广夹具、依赖审计和其余部署/增强/发行门槛继续保留。I02现有边界不代表原Windows9s:1s故障根因已复现。
+历史逐次增量及中间失败留在 Git 历史（至 PR #40），最新证据汇总见 CURRENT_VALIDATION.md；不要将历史“待 CI”当作当前状态。
